@@ -1,17 +1,14 @@
 import { profile } from "@patorsiang/content";
 import { ImageResponse } from "next/og";
 
-import { BRAND_COLORS, MARK_PATH, MARK_STROKE_WIDTH, MARK_VIEW_BOX } from "@/lib/brand";
+import { BRAND_COLORS } from "@/lib/brand";
 import { postDateFormat } from "@/lib/dates";
+import { OgImageFrame, ogImageContentType, ogImageSize } from "@/lib/og-image";
 import { getPost, getPosts } from "@/lib/posts";
 import { ownerName } from "@/lib/seo";
 
-export const size = {
-  width: 1200,
-  height: 630,
-};
-
-export const contentType = "image/png";
+export const size = ogImageSize;
+export const contentType = ogImageContentType;
 export const revalidate = 3600;
 
 export async function generateStaticParams() {
@@ -45,63 +42,37 @@ export default async function Image({ params }: { params: Promise<{ slug: string
   const summary = post ? post.summary : profile.headline.en;
 
   return new ImageResponse(
-    <div
-      style={{
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-between",
-        padding: "72px 86px",
-        background: BRAND_COLORS.pageLight,
-        fontFamily: "sans-serif",
-      }}
-    >
-      <svg
-        viewBox={MARK_VIEW_BOX}
-        width={96}
-        height={96}
-        fill="none"
-        stroke={BRAND_COLORS.accentLight}
-        strokeWidth={MARK_STROKE_WIDTH}
-        strokeLinecap="round"
-        strokeLinejoin="round"
+    <OgImageFrame>
+      <div
+        style={{
+          fontSize: 60,
+          fontWeight: 700,
+          color: BRAND_COLORS.textStrongLight,
+          lineHeight: 1.1,
+        }}
       >
-        <path d={MARK_PATH} />
-      </svg>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-        <div
-          style={{
-            fontSize: 60,
-            fontWeight: 700,
-            color: BRAND_COLORS.textStrongLight,
-            lineHeight: 1.1,
-          }}
-        >
-          {headline}
-        </div>
-        <div
-          style={{
-            fontSize: 34,
-            color: BRAND_COLORS.textMutedLight,
-            lineHeight: 1.2,
-          }}
-        >
-          {byline}
-        </div>
-        <div
-          style={{
-            fontSize: 30,
-            color: BRAND_COLORS.textMutedLight,
-            lineHeight: 1.35,
-            maxWidth: 900,
-          }}
-        >
-          {summary}
-        </div>
+        {headline}
       </div>
-    </div>,
+      <div
+        style={{
+          fontSize: 34,
+          color: BRAND_COLORS.textMutedLight,
+          lineHeight: 1.2,
+        }}
+      >
+        {byline}
+      </div>
+      <div
+        style={{
+          fontSize: 30,
+          color: BRAND_COLORS.textMutedLight,
+          lineHeight: 1.35,
+          maxWidth: 900,
+        }}
+      >
+        {summary}
+      </div>
+    </OgImageFrame>,
     size,
   );
 }

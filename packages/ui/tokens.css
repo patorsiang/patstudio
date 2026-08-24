@@ -20,6 +20,11 @@
   --color-border: #d4d4d8;
   --color-border-strong: #71717a;
   --color-accent: #0f766e;
+  /* Resting-state wash for a control with no hover to lean on (/card's Save
+     Contact) - see docs/design/namecard.md section 6. 7% here vs 10% in dark:
+     the deeper light accent needs less to register, and clear AA at 7% turns
+     into sub-4.5:1 text at 10%. */
+  --color-accent-soft: rgba(15, 118, 110, 0.07);
   --color-accent-strong: #18181b;
   --color-accent-warm: #b45309;
   --color-focus: #0d9488;
@@ -61,6 +66,7 @@
   --color-border: #3f3f46;
   --color-border-strong: #71717a;
   --color-accent: #5eead4;
+  --color-accent-soft: rgba(94, 234, 212, 0.1);
   --color-accent-strong: #0f766e;
   --color-accent-warm: #fcd34d;
   --color-focus: #2dd4bf;
@@ -82,6 +88,7 @@
     --color-border: #3f3f46;
     --color-border-strong: #71717a;
     --color-accent: #5eead4;
+    --color-accent-soft: rgba(94, 234, 212, 0.1);
     --color-accent-strong: #0f766e;
     --color-accent-warm: #fcd34d;
     --color-focus: #2dd4bf;
@@ -114,6 +121,7 @@
     --color-border: #d4d4d8;
     --color-border-strong: #71717a;
     --color-accent: #0f766e;
+    --color-accent-soft: rgba(15, 118, 110, 0.07);
     --color-accent-strong: #18181b;
     --color-accent-warm: #b45309;
     --color-focus: #0d9488;

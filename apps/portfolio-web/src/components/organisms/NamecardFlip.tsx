@@ -41,8 +41,12 @@ const vcardHref = "/card/vcard";
 const iconLinkClassName =
   "flex h-[52px] w-[52px] items-center justify-center rounded-full text-(--color-text-muted) transition-colors hover:bg-(--color-surface-muted) hover:text-(--color-accent) focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-(--color-focus)";
 
+// tap-reach rather than a real 40px box: the badge is deliberately small
+// (28px) so it reads as a corner label, not a button - see
+// docs/design/namecard.md section 2 for the geometry. The ::after overlay
+// gives it a real 40px hit area without changing how it looks.
 const cueClassName =
-  "absolute top-[15px] right-[15px] z-10 flex h-7 items-center gap-1.5 rounded-md border border-(--color-border) bg-background px-2.5 font-mono text-[9.5px] font-medium tracking-[0.03em] text-(--color-text-subtle) transition-colors hover:border-(--color-accent) hover:text-(--color-accent) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-focus)";
+  "tap-reach absolute top-[15px] right-[15px] z-10 flex h-7 items-center gap-1.5 rounded-md border border-(--color-border) bg-background px-2.5 font-mono text-[9.5px] font-medium tracking-[0.03em] text-(--color-text-subtle) transition-colors hover:border-(--color-accent) hover:text-(--color-accent) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-focus)";
 
 /**
  * The namecard: a two-faced object at print proportions (55x90mm, 308x504px)
@@ -128,7 +132,7 @@ export function NamecardFlip() {
             aria-hidden={flipped}
             inert={flipped ? true : undefined}
             ref={frontRef}
-            className="namecard-face absolute inset-0 flex cursor-pointer flex-col items-center rounded-[10px] border border-(--color-border) bg-(--color-surface) px-5 pt-[22px] pb-[34px] text-left shadow-[0_18px_40px_rgba(0,0,0,0.45)]"
+            className="namecard-face absolute inset-0 flex cursor-pointer flex-col items-center rounded-[10px] border border-(--color-border) bg-(--color-surface) px-5 pt-[22px] pb-[34px] text-left shadow-[0_18px_40px_rgba(0,0,0,0.45)] focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-(--color-focus)"
           >
             <span className={cueClassName} aria-hidden="true">
               <FlipIcon />
@@ -182,7 +186,7 @@ export function NamecardFlip() {
               rel="noreferrer"
               onClick={stopFlip}
               tabIndex={flipped ? -1 : undefined}
-              className="mt-3 font-mono text-[9px] tracking-[0.02em] text-(--color-text-subtle) underline-offset-2 hover:text-(--color-accent) hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-focus)"
+              className="tap-reach mt-3 font-mono text-[9px] tracking-[0.02em] text-(--color-text-subtle) underline-offset-2 hover:text-(--color-accent) hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-focus)"
             >
               {displayUrl}
             </a>

@@ -81,6 +81,15 @@ for (const route of routes) {
           // would need). See the module docstring above for the full reasoning.
           if (element.closest(".post-body")) continue;
 
+          // An inert element (or a descendant of one) cannot be reached by a
+          // real tap or click at all - the browser excludes it from hit-
+          // testing entirely, same as it would a display:none element. The
+          // selector above has no way to express that, so it dutifully
+          // matches these anyway; skip them explicitly rather than letting
+          // the reachability probe fail on a control that was never tappable
+          // to begin with (e.g. the hidden face of a flip card).
+          if (element.closest("[inert]")) continue;
+
           const initial = element.getBoundingClientRect();
 
           // Zero-area elements are not rendered (print-only blocks, collapsed

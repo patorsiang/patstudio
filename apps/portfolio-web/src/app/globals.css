@@ -158,6 +158,74 @@ body {
 }
 
 /*
+ * Namecard flip (/card). Named exception in docs/design/motion-guidelines.md
+ * under "Namecard (/card)"; full affordance rationale in
+ * docs/design/namecard.md section 7.
+ *
+ * .namecard-stage supplies the 3D perspective. .namecard-tilt carries both
+ * the hover lean and the one-shot entrance peek, kept on its own element so
+ * neither ever shares a transition duration with the 560ms flip itself - a
+ * 9deg hover lean at 560ms would feel sluggish.
+ *
+ * No bespoke reduced-motion query here: the sitewide
+ * `transition-duration: 0.01ms !important` / `animation-duration: 0.01ms
+ * !important` block below already collapses both the flip and the peek to
+ * their end states with no visible motion. A longhand !important always wins
+ * over this rule's shorthand value for that one sub-property, regardless of
+ * selector specificity, so the override applies without anything bespoke here.
+ *
+ * No animation-fill-mode on .namecard-tilt: `both` would pin the peek's final
+ * keyframe as the element's new base transform and permanently defeat the
+ * :hover rule below, since the browser would treat the animation, not
+ * :hover, as still owning `transform`.
+ */
+.namecard-stage {
+  perspective: 1700px;
+}
+
+.namecard-tilt {
+  transform-style: preserve-3d;
+  transition: transform 220ms cubic-bezier(0, 0, 0.2, 1);
+  animation: namecard-peek 1100ms cubic-bezier(0.3, 0, 0.2, 1) 650ms 1;
+}
+
+.namecard-stage:hover .namecard-tilt {
+  transform: rotateY(-9deg);
+}
+
+@keyframes namecard-peek {
+  0% {
+    transform: rotateY(0deg);
+  }
+  35% {
+    transform: rotateY(-17deg);
+  }
+  72% {
+    transform: rotateY(5deg);
+  }
+  100% {
+    transform: rotateY(0deg);
+  }
+}
+
+.namecard-inner {
+  transform-style: preserve-3d;
+  transition: transform 560ms cubic-bezier(0.2, 0, 0.2, 1);
+}
+
+.namecard-inner[data-flipped="true"] {
+  transform: rotateY(180deg);
+}
+
+.namecard-face {
+  backface-visibility: hidden;
+}
+
+.namecard-face--back {
+  transform: rotateY(180deg);
+}
+
+/*
  * Typography for rendered post markdown.
  *
  * Not Tailwind's `prose` plugin: that ships its own type scale and colour

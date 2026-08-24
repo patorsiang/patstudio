@@ -15,7 +15,8 @@ export const dynamic = "force-static";
  * generated from the same cvLanguages/cvRoleSlugs the router uses, so adding a
  * role or a language cannot leave this file behind.
  *
- * `/cv/export/*` is also absent - those are download endpoints, not pages.
+ * `/cv/export/*` and `/card/vcard` are also absent - those are download
+ * endpoints, not pages. `/card` itself is listed; only its .vcf is not.
  *
  * Post entries come from POST_FALLBACK, not a live fetch, because this file is
  * `force-static` - a live-fetched sitemap would make the whole route dynamic.
@@ -35,6 +36,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/experience", priority: 0.8 },
     { path: "/projects", priority: 0.8 },
     { path: "/contact", priority: 0.6 },
+    { path: "/card", priority: 0.6 },
     { path: "/posts", priority: 0.7 },
     ...cvLanguages.flatMap((lang) =>
       cvRoleSlugs.map((role) => ({ path: `/${lang}/cv/${role}`, priority: 0.7 })),

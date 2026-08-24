@@ -47,15 +47,17 @@ Forbidden patterns:
 
 ### Duration
 
-| Motion type                                  |        Duration |
-| -------------------------------------------- | --------------: |
-| Hover/focus feedback                         |       100-150ms |
-| Button active/pressed feedback               |        75-120ms |
-| Small menu or disclosure open/close          |       150-200ms |
-| Section reveal, if used                      |       180-240ms |
-| Loading shimmer, if used                     | 900-1400ms loop |
-| Toast or temporary status entry              |       150-220ms |
-| One-shot brand-mark reveal (named exception) |           500ms |
+| Motion type                                       |        Duration |
+| ------------------------------------------------- | --------------: |
+| Hover/focus feedback                              |       100-150ms |
+| Button active/pressed feedback                    |        75-120ms |
+| Small menu or disclosure open/close               |       150-200ms |
+| Section reveal, if used                           |       180-240ms |
+| Loading shimmer, if used                          | 900-1400ms loop |
+| Toast or temporary status entry                   |       150-220ms |
+| One-shot brand-mark reveal (named exception)      |           500ms |
+| Namecard flip, `/card` (named exception)          |           560ms |
+| Namecard entrance peek, `/card` (named exception) | 1100ms one-shot |
 
 Rules:
 
@@ -64,6 +66,7 @@ Rules:
 - Loading animations may loop, but they must be visually quiet.
 - Never delay content appearance just to play an animation.
 - Exception: a one-shot brand-mark stroke-draw (e.g. the homepage hero mark) may run up to 500ms, since a self-drawing stroke at 250ms reads as a glitch rather than a draw. Scoped narrowly to that one moment - every other transition on this page keeps the 250ms cap above.
+- Exception: the `/card` namecard flip may run up to 560ms, and its one-shot entrance peek up to 1100ms. Both are scoped to that single route and are covered in detail under "Namecard (`/card`)" below.
 
 ### Easing
 
@@ -96,6 +99,24 @@ Avoid springy, elastic, bounce, or overshoot easing for portfolio UI.
 - Allowed: border colour change, subtle background change, or very small shadow change.
 - Avoid card lift, 3D tilt, scaling, or image zoom as default behavior.
 - Project cards should not animate content in a way that hides details.
+- These rules govern **content cards** - project cards, post cards, CV blocks. The namecard on `/card` is a different thing: it is a depiction of a physical object rather than a container for content, and it has its own named exception below. Do not read that exception as permission to tilt or flip a project card.
+
+### Namecard (`/card`)
+
+A named exception, scoped to this one route. `/card` renders a 55x90mm business card at the same ratio as the printed one, and turning it over is the interaction.
+
+Allowed here and nowhere else:
+
+- **Flip:** `rotateY(0 -> 180deg)`, 560ms, `cubic-bezier(0.2, 0, 0.2, 1)`. Below roughly 200ms a flip reads as a glitch rather than a card turning, which is the same reasoning as the brand-mark exception.
+- **Entrance peek:** one shot, 1100ms, starting 650ms after load - the card turns 17 degrees and settles. It is the only flip affordance that needs no hover and no reading, which matters because this route is opened mostly by scanning a QR on a phone. It runs **once**; a looping wiggle would be the forbidden decorative loop.
+- **Hover lean:** `rotateY(-9deg)`, 220ms, on a separate wrapper from the flip so the lean never inherits the 560ms duration.
+
+Constraints that come with the exception:
+
+- The peek must carry `animation-fill-mode: none`. With `both`, the final keyframe pins the transform and permanently defeats the hover rule.
+- Hover state changes must animate `transform`, never `padding` - animating padding relayouts every frame and leaves the resting and hover states on different axes.
+- Under `prefers-reduced-motion: reduce` the flip becomes an instant swap and the peek does not run at all. Because the peek is pure motion, it must be **replaced** rather than shortened: the always-visible page dots and corner pill carry the same message statically.
+- The face-down side stays in the DOM, so it must be made `inert` (or equivalent) while hidden, or keyboard focus lands on invisible links and screen readers announce both faces.
 
 ### Navigation
 
@@ -183,7 +204,7 @@ If a library such as Framer Motion is introduced later:
 - Motion supports clarity, state feedback, or loading feedback.
 - No animation delays reading key portfolio or CV content.
 - Hover, focus, active, selected, and loading states are consistent across components.
-- Normal UI transitions stay under 250ms (see the one-shot brand-mark reveal exception above).
+- Normal UI transitions stay under 250ms (see the one-shot brand-mark reveal and `/card` namecard exceptions above).
 - Scroll animation, parallax, decorative loops, and large text reveals are not used.
 - Reduced-motion users receive instant or near-instant state changes with no non-essential animation.
 - Future UI work can implement motion with CSS/Tailwind without adding a heavy dependency.

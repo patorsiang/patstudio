@@ -14,6 +14,9 @@ export type Profile = ContentMeta & {
     readonly email: Link;
     readonly github: Link;
     readonly linkedin: Link;
+    readonly phone?: Link;
+    readonly line?: Link;
+    readonly whatsapp?: Link;
   };
   readonly links: readonly Link[];
 };

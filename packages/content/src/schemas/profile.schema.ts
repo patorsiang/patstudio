@@ -15,6 +15,9 @@ export const profileSchema = contentMetaSchema.extend({
     email: linkSchema,
     github: linkSchema,
     linkedin: linkSchema,
+    phone: linkSchema.optional(),
+    line: linkSchema.optional(),
+    whatsapp: linkSchema.optional(),
   }),
   links: z.array(linkSchema),
 });

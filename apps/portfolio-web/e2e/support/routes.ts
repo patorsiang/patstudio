@@ -24,6 +24,7 @@ export const routes = [
   "/experience",
   "/projects",
   "/contact",
+  "/card",
   "/posts",
   "/posts/bkkjs-summer-2026",
   "/en/cv/fullstack-engineer",

@@ -225,7 +225,20 @@ export function NamecardFlip() {
           {/* BACK - contact. Adapted from the printed card's back face (same
               portrait/email/rule/icon-row composition). The whole face flips
               on click, same as the front; every real link below stops that
-              click from bubbling here first, via stopFlip. */}
+              click from bubbling here first, via stopFlip.
+
+              This div's onClick has no keyboard listener of its own (flagged
+              by static analysis, e.g. SonarCloud S1082/S6848) - that is a
+              deliberate, accepted finding, not an oversight. Keyboard access
+              already exists via the real <button ref={backCueRef}> just
+              below: its native Enter/Space activation synthesizes a click
+              that bubbles up to this handler. Adding a matching onKeyDown
+              here would double-fire (keydown *and* the button's synthesized
+              click would each call toggle()), and it would also fire while
+              any of the focusable link/anchors below are focused, flipping
+              the card underneath a link a keyboard user only meant to
+              activate. There is no fix that adds real keyboard coverage
+              without introducing one of those two bugs. */}
           <div
             onClick={toggle}
             aria-hidden={!flipped}

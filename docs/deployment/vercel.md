@@ -65,13 +65,13 @@ These packages are transpiled by Next.js as configured in `apps/portfolio-web/ne
 
 The following environment variables should be configured in the Vercel Dashboard:
 
-| Variable                       | Scope      | Required    | Description                                                                                                     |
-| :----------------------------- | :--------- | :---------- | :-------------------------------------------------------------------------------------------------------------- |
-| `NEXT_PUBLIC_APP_ENV`          | Production | Yes         | Set to `production`. Configured.                                                                                |
-| `NEXT_PUBLIC_SITE_URL`         | Production | Recommended | `https://patstudio.vercel.app`. Configured.                                                                     |
-| `NEW_RELIC_LICENSE_KEY`        | Production | Optional    | Private license key for New Relic.                                                                              |
-| `NEXT_PUBLIC_NEW_RELIC_APP_ID` | Production | Optional    | Public application ID for New Relic Browser.                                                                    |
-| `GOOGLE_SITE_VERIFICATION`     | Production | Recommended | Google Search Console HTML-tag verification code; provided by whoever registers the property, never fabricated. |
+| Variable                       | Scope      | Required    | Description                                                                                                                                                  |
+| :----------------------------- | :--------- | :---------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_APP_ENV`          | Production | Yes         | Set to `production`. Configured.                                                                                                                             |
+| `NEXT_PUBLIC_SITE_URL`         | Production | Recommended | `https://patstudio.vercel.app`. Configured (was left pointing at the pre-rename domain `patorsiang-github-io.vercel.app` for a while; corrected 2026-08-24). |
+| `NEW_RELIC_LICENSE_KEY`        | Production | Optional    | Private license key for New Relic.                                                                                                                           |
+| `NEXT_PUBLIC_NEW_RELIC_APP_ID` | Production | Optional    | Public application ID for New Relic Browser.                                                                                                                 |
+| `GOOGLE_SITE_VERIFICATION`     | Production | Recommended | Google Search Console HTML-tag verification code; provided by whoever registers the property, never fabricated.                                              |
 
 Only the Production environment is configured so far - Preview builds still fall back to the defaults in `src/lib/seo.ts`, which is correct: a preview deploy's real URL is different on every run, so a fixed `NEXT_PUBLIC_SITE_URL` would be wrong there.
 
@@ -84,15 +84,15 @@ Only the Production environment is configured so far - Preview builds still fall
 
 ## Deployment Verification
 
-- **Last Checked**: 2026-08-22
-- **Result**: Production deployment is active and reachable at `https://patstudio.vercel.app`.
+- **Last Checked**: 2026-08-24
+- **Result**: Production deployment is active and reachable at `https://patstudio.vercel.app`. Canonical/OG/vCard URLs confirmed pointing at the live domain after correcting `NEXT_PUBLIC_SITE_URL` (see below).
 - **Notes**: SEO metadata now falls back to the current production origin.
 
 ## Production Cutover TODO
 
 - [ ] Choose a custom domain, if any - currently shipping on the Vercel-assigned `patstudio.vercel.app`.
 - [x] Configure production-specific environment variables in Vercel: `NEXT_PUBLIC_APP_ENV`, `NEXT_PUBLIC_SITE_URL`.
-- [x] Update `NEXT_PUBLIC_SITE_URL` to the current production domain.
-- [ ] Verify SEO and Open Graph metadata on the live deployment (pending redeploy with the updated fallback and renamed project).
+- [x] Update `NEXT_PUBLIC_SITE_URL` to the current production domain (had drifted to the pre-rename `patorsiang-github-io.vercel.app`, a dead domain; corrected 2026-08-24, redeployed via `deploy-production.yml`'s `workflow_dispatch`).
+- [x] Verify SEO and Open Graph metadata on the live deployment: canonical tags, OG image URLs, and the `/card` vCard's `URL:` field all confirmed pointing at `patstudio.vercel.app`.
 - [x] Finalize the `legacy-v1` fallback and archival plan: its GitHub Pages workflow is removed, source stays in the repo unbuilt by default.
 - [x] Decide what happens to the already-live GitHub Pages site at `patorsiang.github.io`: disabled in repo Settings. Repo and Vercel project both renamed to `patstudio`.

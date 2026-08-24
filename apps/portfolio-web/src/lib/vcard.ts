@@ -27,10 +27,10 @@ function octetLength(value: string): number {
  */
 function escapeValue(value: string): string {
   return value
-    .replace(/\\/g, "\\\\")
-    .replace(/;/g, "\\;")
-    .replace(/,/g, "\\,")
-    .replace(/\r\n|\r|\n/g, "\\n");
+    .replaceAll("\\", String.raw`\\`)
+    .replaceAll(";", String.raw`\;`)
+    .replaceAll(",", String.raw`\,`)
+    .replace(/\r\n|\r|\n/g, String.raw`\n`);
 }
 
 /**
@@ -78,7 +78,7 @@ function splitName(fullName: string): { readonly given: string; readonly family:
   const parts = fullName.trim().split(/\s+/);
   if (parts.length < 2) return { given: fullName.trim(), family: "" };
 
-  const family = parts[parts.length - 1] ?? "";
+  const family = parts.at(-1) ?? "";
   return { given: parts.slice(0, -1).join(" "), family };
 }
 

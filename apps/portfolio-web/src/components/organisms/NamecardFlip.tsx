@@ -48,6 +48,43 @@ const iconLinkClassName =
 const cueClassName =
   "tap-reach absolute top-[15px] right-[15px] z-10 flex h-7 items-center gap-1.5 rounded-md border border-(--color-border) bg-background px-2.5 font-mono text-[9.5px] font-medium tracking-[0.03em] text-(--color-text-subtle) transition-colors hover:border-(--color-accent) hover:text-(--color-accent) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-focus)";
 
+// Lets a click on a real link (the icon row, Save Contact) do only that,
+// rather than also bubbling up to the back face's onClick and flipping the
+// card out from under whatever the person was actually reaching for.
+function stopFlip(event: React.MouseEvent) {
+  event.stopPropagation();
+}
+
+// Line/WhatsApp are optional on the profile; GitHub/LinkedIn always render.
+// Computed once at module scope, not per-render, since profile is static
+// content rather than component state.
+const contactChannels = [
+  profile.contact.line && {
+    href: sanitizeUrl(profile.contact.line.url),
+    ariaLabel: "LINE",
+    title: profile.contact.line.label.en,
+    Icon: LineIcon,
+  },
+  profile.contact.whatsapp && {
+    href: sanitizeUrl(profile.contact.whatsapp.url),
+    ariaLabel: "WhatsApp",
+    title: profile.contact.whatsapp.label.en,
+    Icon: WhatsAppIcon,
+  },
+  {
+    href: sanitizeUrl(profile.contact.github.url),
+    ariaLabel: "GitHub",
+    title: profile.contact.github.label.en,
+    Icon: GitHubIcon,
+  },
+  {
+    href: sanitizeUrl(profile.contact.linkedin.url),
+    ariaLabel: "LinkedIn",
+    title: profile.contact.linkedin.label.en,
+    Icon: LinkedInIcon,
+  },
+].filter((channel): channel is NonNullable<typeof channel> => Boolean(channel));
+
 /**
  * The namecard: a two-faced object at print proportions (55x90mm, 308x504px)
  * that the visitor turns over. Front is identity + QR; back is the contact
@@ -82,13 +119,6 @@ export function NamecardFlip() {
       document.activeElement.blur();
     }
     setFlipped((value) => !value);
-  }
-
-  // Lets a click on a real link (the icon row, Save Contact) do only that,
-  // rather than also bubbling up to the back face's onClick and flipping the
-  // card out from under whatever the person was actually reaching for.
-  function stopFlip(event: React.MouseEvent) {
-    event.stopPropagation();
   }
 
   /**
@@ -241,58 +271,21 @@ export function NamecardFlip() {
                 (profile.contact.*.label.en), not just a repeat of the
                 icon's channel name. */}
             <div className="mt-3.5 grid w-full grid-cols-4 place-items-center">
-              {profile.contact.line ? (
+              {contactChannels.map(({ href, ariaLabel, title, Icon }) => (
                 <a
-                  href={sanitizeUrl(profile.contact.line.url)}
+                  key={ariaLabel}
+                  href={href}
                   target="_blank"
                   rel="noreferrer"
-                  aria-label="LINE"
-                  title={profile.contact.line.label.en}
+                  aria-label={ariaLabel}
+                  title={title}
                   onClick={stopFlip}
                   tabIndex={flipped ? undefined : -1}
                   className={iconLinkClassName}
                 >
-                  <LineIcon size={22} />
+                  <Icon size={22} />
                 </a>
-              ) : null}
-              {profile.contact.whatsapp ? (
-                <a
-                  href={sanitizeUrl(profile.contact.whatsapp.url)}
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label="WhatsApp"
-                  title={profile.contact.whatsapp.label.en}
-                  onClick={stopFlip}
-                  tabIndex={flipped ? undefined : -1}
-                  className={iconLinkClassName}
-                >
-                  <WhatsAppIcon size={22} />
-                </a>
-              ) : null}
-              <a
-                href={sanitizeUrl(profile.contact.github.url)}
-                target="_blank"
-                rel="noreferrer"
-                aria-label="GitHub"
-                title={profile.contact.github.label.en}
-                onClick={stopFlip}
-                tabIndex={flipped ? undefined : -1}
-                className={iconLinkClassName}
-              >
-                <GitHubIcon size={22} />
-              </a>
-              <a
-                href={sanitizeUrl(profile.contact.linkedin.url)}
-                target="_blank"
-                rel="noreferrer"
-                aria-label="LinkedIn"
-                title={profile.contact.linkedin.label.en}
-                onClick={stopFlip}
-                tabIndex={flipped ? undefined : -1}
-                className={iconLinkClassName}
-              >
-                <LinkedInIcon size={22} />
-              </a>
+              ))}
             </div>
 
             <div className="flex-1" />

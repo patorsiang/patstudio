@@ -33,12 +33,10 @@ export function groupSkillsForRole(
         skillGroup.groupId !== "languages" &&
         priorityGroups.has(skillGroup.groupId),
     )
-    .map(
-      (skillGroup): RankedSkillGroup => ({
-        skillGroup,
-        priorityIndex: priorityGroups.get(skillGroup.groupId) ?? Number.POSITIVE_INFINITY,
-      }),
-    )
+    .map((skillGroup): RankedSkillGroup => ({
+      skillGroup,
+      priorityIndex: priorityGroups.get(skillGroup.groupId) ?? Number.POSITIVE_INFINITY,
+    }))
     .sort((a, b) => {
       if (a.priorityIndex !== b.priorityIndex) {
         return a.priorityIndex - b.priorityIndex;

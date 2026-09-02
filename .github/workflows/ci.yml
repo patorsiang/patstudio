@@ -50,6 +50,17 @@ jobs:
       - name: Lint
         run: bun run lint
 
+      # Fails the build on any high-severity advisory in the dependency tree.
+      # Without this, a dead upstream release line goes unnoticed until someone
+      # runs an audit by hand - which is exactly how next@16.2.x sat unpatched
+      # past the August 2026 security release.
+      #
+      # The script carries an --ignore list of advisories with no fix available.
+      # Each one is justified in docs/architecture/code-quality.md; extend that
+      # register before extending the list, never the other way round.
+      - name: Audit dependencies
+        run: bun run security:audit
+
       - name: Typecheck
         run: bun run typecheck
 

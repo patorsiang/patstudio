@@ -45,6 +45,26 @@ Standardized security utilities are provided in `@patorsiang/utils`:
 - **HTML Content**: Use the `<SanitizedHTML />` component in `apps/portfolio-web` or `sanitizeHTML` with `dangerouslySetInnerHTML` for trusted HTML from data files.
 - **Dynamic Links**: Always wrap dynamic URLs with `sanitizeUrl`.
 
+### 4. Dependency Auditing
+
+`bun run security:audit` fails on any **high**-severity advisory in the dependency tree, and CI runs it on every push (`Audit dependencies`, in the `checks` job). Treat a red audit as a build failure like any other — do not merge past it.
+
+Transitive versions are pinned through the `overrides` block in the root `package.json`. Reach for an override only when a dependent pins a vulnerable version it will not update on its own; prefer `bun update` first.
+
+> **Bun caveat:** bun (as of 1.3.11) supports only **flat** overrides. Scoped keys — `"minimatch/brace-expansion"`, in either `overrides` or `resolutions` — are silently ignored, not rejected. If you write one, nothing will warn you; it simply will not apply. Always confirm an override landed by checking `bun.lock`.
+
+#### Accepted dependency risks
+
+Each ID below is in the `--ignore` list of the `security:audit` script. Every one is **DoS-class, dev/build-time only, and unreachable from the deployed application** — none of these packages ship in the production bundle or run on a request path.
+
+**Do not add an ID to that list without adding its entry here, including why it cannot be fixed.** Re-check this table whenever the toolchain is upgraded; entries should be removed as fixes become available.
+
+| Package           | Advisories                                                          | Reached via                                                                        | Why it is not fixed                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| :---------------- | :------------------------------------------------------------------ | :--------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `brace-expansion` | `GHSA-mh99-v99m-4gvg`, `GHSA-rgw5-rvv9-x895`, `GHSA-3jxr-9vmj-r5cp` | `eslint`, `eslint-config-next`, `@storybook/nextjs-vite` — all via `minimatch@3.x` | Two major lines are installed. The fix (`1.1.18`) applies only to the `minimatch@3.x` → `brace-expansion@1.x` path, but `minimatch@10.x` needs `brace-expansion@5.x` and imports the **named** `expand` export, which `1.x` (CJS, default export only) does not provide. A flat override would break `typescript-eslint` and `glob`, and bun ignores scoped overrides (see caveat above). Fixable only when the upstream toolchain drops `minimatch@3.x`. |
+| `image-size`      | `GHSA-w3rx-r6r6-pgpr`, `GHSA-5p2g-fcmc-qvqq`                        | `@storybook/nextjs-vite`                                                           | **No fixed version exists.** The latest published release (`2.0.2`) is itself inside the vulnerable range. Nothing to upgrade to.                                                                                                                                                                                                                                                                                                                         |
+| `js-yaml`         | `GHSA-52cp-r559-cp3m`, `GHSA-5p4m-2wfm-xmqj`                        | `eslint`                                                                           | `4.1.1` is the final `4.x` release and is vulnerable; `GHSA-5p4m-2wfm-xmqj` states the fix was **not backported** to `4.x`. Only `js-yaml@5.x` is patched, and forcing a major version onto eslint's config loader is a larger risk than the DoS it resolves.                                                                                                                                                                                             |
+
 ## SonarQube / SonarCloud
 
 `sonar-project.properties` provides the foundation for future SonarQube or SonarCloud analysis.

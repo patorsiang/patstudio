@@ -70,6 +70,7 @@ export function CvToolbar({ role, lang }: CvToolbarProps) {
         <SegmentedLinks
           label={uiLabels[lang].roleSelector}
           className="w-full sm:w-auto"
+          collapsible={{ summary: roleLabels[lang][role] }}
           items={roleIds.map((roleId) => ({
             id: roleId,
             href: buildCanonicalCvHref(roleId, lang),

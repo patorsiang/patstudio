@@ -90,6 +90,14 @@ for (const route of routes) {
           // to begin with (e.g. the hidden face of a flip card).
           if (element.closest("[inert]")) continue;
 
+          // Content inside a closed <details> (e.g. the CV role dropdown's
+          // hidden options) still reports a non-zero getBoundingClientRect,
+          // so the zero-area check below does not catch it - but it is not
+          // rendered and not hit-testable. checkVisibility() understands the
+          // closed-<details> case natively (verified). Same reasoning as the
+          // [inert] skip above.
+          if (!element.checkVisibility()) continue;
+
           const initial = element.getBoundingClientRect();
 
           // Zero-area elements are not rendered (print-only blocks, collapsed

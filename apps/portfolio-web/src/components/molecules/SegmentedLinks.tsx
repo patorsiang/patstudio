@@ -30,8 +30,13 @@ type SegmentedLinksProps = {
   };
 };
 
+// Deliberately no `min-w-0`. With `flex-1`, `min-w-0` sets the flex base size
+// to 0, so the line never breaks and `flex-wrap` becomes inert - segments shrink
+// below their `whitespace-nowrap` text and it spills out of each anchor instead.
+// Leaving the default `min-width: auto` floors each segment at min-content, which
+// is what lets the row actually wrap to a second line.
 const rowItemClassName =
-  "inline-flex h-10 min-w-0 flex-1 items-center justify-center whitespace-nowrap rounded-md px-3 text-xs font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-focus) motion-safe:active:translate-y-px sm:flex-none";
+  "inline-flex h-10 flex-1 items-center justify-center whitespace-nowrap rounded-md px-3 text-xs font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-focus) motion-safe:active:translate-y-px sm:flex-none";
 
 const listItemClassName =
   "flex h-10 items-center justify-between gap-2 rounded-md px-3 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-focus)";
@@ -85,7 +90,7 @@ export function SegmentedLinks({ items, label, className, collapsible }: Segment
           )}
         >
           <span className="truncate">{collapsible.summary}</span>
-          <ChevronIcon className="shrink-0 transition-transform duration-150 motion-safe:group-open:rotate-180" />
+          <ChevronIcon className="shrink-0 group-open:rotate-180 motion-safe:transition-transform motion-safe:duration-150" />
         </summary>
 
         <div className="flex flex-col gap-1 border-t border-(--color-border-strong) p-1">

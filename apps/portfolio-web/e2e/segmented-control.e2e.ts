@@ -31,9 +31,17 @@ type ContainmentResult = {
 };
 
 /**
- * Measures whichever of the control's two children (the closed dropdown, or
- * the row) is actually rendered at the current viewport, and whether any of
- * its links spill past its own padding box.
+ * Measures the element that actually carries the control's rounded border -
+ * the thing a segment can visibly spill out of - and whether any visible link
+ * inside it crosses that border's inner edge.
+ *
+ * Anchoring on the border rather than on "nav's first child" is deliberate and
+ * load-bearing. The first-child rule described the current markup only: here
+ * the nav wraps a `<details>` and a row `<div>`, but in the markup this test
+ * exists to guard against, the nav's children *were* the `<a>` segments. That
+ * rule therefore measured a single anchor against itself, found no nested
+ * `<a>`, and passed against the very bug it was written for. The border is the
+ * one landmark both shapes share.
  */
 async function measureContainment(page: Page, label: string): Promise<ContainmentResult> {
   return page.evaluate((ariaLabel) => {
@@ -41,10 +49,17 @@ async function measureContainment(page: Page, label: string): Promise<Containmen
     const notFound = { found: false, scrollWidth: 0, clientWidth: 0, overflowingLinks: [] };
     if (!nav) return notFound;
 
-    const box = [...nav.children].find((el) => {
+    const isRendered = (el: Element) => {
       const rect = el.getBoundingClientRect();
-      return rect.width > 0 && rect.height > 0;
-    }) as HTMLElement | undefined;
+      return rect.width > 0 && rect.height > 0 && el.checkVisibility();
+    };
+
+    // The nav itself when it is the bordered control (the pre-fix shape, and
+    // the non-collapsible one), otherwise whichever child is currently on
+    // screen - the closed dropdown below `sm`, the row from `sm` up.
+    const box = [nav, ...nav.children].find(
+      (el) => isRendered(el) && Number.parseFloat(getComputedStyle(el).borderRightWidth) > 0,
+    ) as HTMLElement | undefined;
     if (!box) return notFound;
 
     const style = getComputedStyle(box);

@@ -64,6 +64,16 @@ for (const route of routes) {
     // below would pass on it vacuously.
     expect(response?.status(), `${route} did not render`).toBeLessThan(500);
 
+    // Open every <details> before sweeping. The checkVisibility() skip further
+    // down is correct - a closed dropdown's options genuinely cannot be tapped -
+    // but on its own it silently exempts them from this check forever, which is
+    // the entire coverage of the CV role dropdown's options. Opening first means
+    // they are measured like any other control; the skip then only excludes what
+    // is still genuinely unreachable.
+    await page.evaluate(() => {
+      for (const details of document.querySelectorAll("details")) details.open = true;
+    });
+
     const failures = await page.evaluate(
       ({ selector, minHeight, probeOffset }) => {
         const results: Failure[] = [];

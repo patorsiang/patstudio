@@ -50,17 +50,6 @@ jobs:
       - name: Lint
         run: bun run lint
 
-      # Fails the build on any high-severity advisory in the dependency tree.
-      # Without this, a dead upstream release line goes unnoticed until someone
-      # runs an audit by hand - which is exactly how next@16.2.x sat unpatched
-      # past the August 2026 security release.
-      #
-      # The script carries an --ignore list of advisories with no fix available.
-      # Each one is justified in docs/architecture/code-quality.md; extend that
-      # register before extending the list, never the other way round.
-      - name: Audit dependencies
-        run: bun run security:audit
-
       - name: Typecheck
         run: bun run typecheck
 
@@ -69,6 +58,24 @@ jobs:
 
       - name: Build
         run: bun run build
+
+      # Deliberately placed AFTER the code checks, unlike everything above it.
+      # This step is the one whose result changes with no commit: a new advisory
+      # against any dev-only transitive package turns every branch red on its
+      # own schedule. Run first, it masked real typecheck and test failures
+      # behind an unrelated upstream disclosure. Run here, a broken build still
+      # reports as a broken build.
+      #
+      # It stays inside `checks` - and so still gates deploy-preview - on
+      # purpose: the whole point is that a dead upstream release line fails the
+      # build rather than waiting for someone to audit by hand, which is exactly
+      # how next@16.2.x sat unpatched past the August 2026 security release.
+      #
+      # The script carries an --ignore list of advisories with no fix available.
+      # Each one is justified in docs/architecture/code-quality.md; extend that
+      # register before extending the list, never the other way round.
+      - name: Audit dependencies
+        run: bun run security:audit
 
       # The accessibility rules no unit test covers: tap target height, and text
       # and focus-ring contrast in both themes. The cv-engine tests would pass
@@ -91,6 +98,17 @@ jobs:
       # breaks it without touching the app build. Nothing else catches that.
       - name: Build Storybook
         run: bun run build:storybook
+
+      # legacy-v1 sits in the workspace, so the root `overrides` block rewrites
+      # its dependency tree as well - it lifts postcss off the exact pin
+      # next@15 declares, and jumps uuid three majors for pdfjs. Nothing else in
+      # this job touches it, so without these two steps an override tuned for
+      # portfolio-web can break legacy-v1 and no one finds out.
+      - name: Typecheck legacy-v1
+        run: bun run typecheck:legacy
+
+      - name: Build legacy-v1
+        run: bun run build:legacy
 
   deploy-preview:
     name: Deploy portfolio-web to Vercel Preview

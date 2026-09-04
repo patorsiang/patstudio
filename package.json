@@ -16,7 +16,7 @@
     "test": "bun test",
     "test:e2e": "bun run --cwd apps/portfolio-web test:e2e",
     "//security:audit": "The --ignore list is the accepted-risk register. Every ID here is justified in docs/architecture/code-quality.md > Accepted dependency risks. Do NOT append an ID without adding its entry there.",
-    "security:audit": "bun audit --audit-level high --ignore=GHSA-mh99-v99m-4gvg --ignore=GHSA-rgw5-rvv9-x895 --ignore=GHSA-3jxr-9vmj-r5cp --ignore=GHSA-w3rx-r6r6-pgpr --ignore=GHSA-5p2g-fcmc-qvqq --ignore=GHSA-52cp-r559-cp3m --ignore=GHSA-5p4m-2wfm-xmqj",
+    "security:audit": "bun audit --audit-level high --ignore=GHSA-mh99-v99m-4gvg --ignore=GHSA-rgw5-rvv9-x895 --ignore=GHSA-3jxr-9vmj-r5cp --ignore=GHSA-w3rx-r6r6-pgpr --ignore=GHSA-5p2g-fcmc-qvqq",
     "format": "prettier --write . --ignore-unknown",
     "format:check": "prettier --check . --ignore-unknown",
     "dev:portfolio": "bun run --cwd apps/portfolio-web dev",
@@ -40,7 +40,7 @@
     "postcss": "^8.5.26",
     "postcss-selector-parser": "^6.1.4",
     "undici": "^7.29.0",
-    "esbuild": "^0.28.2",
+    "js-yaml": "^4.3.2",
     "sharp": "^0.35.4",
     "uuid": "^11.1.1",
     "@babel/core": "^7.29.7"

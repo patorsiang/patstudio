@@ -1,11 +1,24 @@
 version: 2
 updates:
+  # GitHub Actions only. This ecosystem has no lockfile, so dependabot can open
+  # a complete, mergeable PR.
+  #
+  # The "npm" ecosystem is deliberately NOT here. Dependabot edits package.json
+  # but cannot write bun.lock, and CI installs with --frozen-lockfile, so every
+  # npm PR it opened died at the install step:
+  #
+  #   error: lockfile had changes, but lockfile is frozen
+  #
+  # Four such PRs (#6, #7, #14, #16) sat open from mid-August, one arriving each
+  # week, none of them mergeable by anyone. Re-enabling this without also
+  # solving the lockfile write just resumes that.
+  #
+  # Dependency security is covered better elsewhere: `bun run security:audit`
+  # fails the build on any high advisory, on EVERY push rather than weekly, and
+  # the accepted-risk register in docs/architecture/code-quality.md records what
+  # is deliberately not fixed. Version currency is a `bun update` when it earns
+  # the time.
   - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-
-  - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "weekly"

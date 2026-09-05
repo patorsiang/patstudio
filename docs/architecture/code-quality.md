@@ -59,6 +59,14 @@ Transitive versions are pinned through the `overrides` block in the root `packag
 
 > **Bun caveat:** bun (as of 1.3.11) supports only **flat** overrides. Scoped keys — `"minimatch/brace-expansion"`, in either `overrides` or `resolutions` — are silently ignored, not rejected. If you write one, nothing will warn you; it simply will not apply. Always confirm an override landed by checking `bun.lock`.
 
+#### Why there is no dependabot for npm
+
+`.github/dependabot.yml` covers **github-actions only**. Dependabot edits `package.json` but cannot write `bun.lock`, and CI installs with `--frozen-lockfile` — so every npm PR it opened failed at the install step with `error: lockfile had changes, but lockfile is frozen`. Four accumulated over three weeks, none mergeable by anyone.
+
+Dependency security is covered better without it: `bun run security:audit` fails the build on any high advisory on **every push**, not weekly, and the register below records what is deliberately not fixed. Version currency is a deliberate `bun update`, which writes the lockfile the way the rest of the repo expects.
+
+If npm updates are ever re-enabled, the lockfile write has to be solved first — otherwise the PRs are dead on arrival again.
+
 #### Accepted dependency risks
 
 Each ID below is in the `--ignore` list of the `security:audit` script. Every one is **DoS-class, dev/build-time only, and unreachable from the deployed application** — none of these packages ship in the production bundle or run on a request path.

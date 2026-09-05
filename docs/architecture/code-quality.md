@@ -51,6 +51,10 @@ Standardized security utilities are provided in `@patorsiang/utils`:
 
 Transitive versions are pinned through the `overrides` block in the root `package.json`. Reach for an override only when a dependent pins a vulnerable version it will not update on its own; prefer `bun update` first.
 
+> **`bun.lock` is the only lockfile.** CI rejects any committed `yarn.lock`, `package-lock.json` or `pnpm-lock.yaml` (`Reject stray lockfiles`). This is not tidiness. A stray lockfile changes nothing about what gets installed, so it drifts silently and forever — and security scanners read it as the truth. `legacy-v1/yarn.lock` outlived the migration to bun workspaces still pinning `next@14.2.1`, which carries a critical middleware auth bypass (`GHSA-f82v-jwr5-mffw`) and a dozen highs, while the workspace actually resolved `next@15.5.x`. Snyk failed the PR on a version nobody had installed. A phantom lockfile is worse than no lockfile: it gives confident, specific, wrong answers, and the noise trains you to dismiss the scanner.
+>
+> Snyk cannot read `bun.lock`, so with the stray file gone it scans manifests directly. If it ever needs a lockfile it can parse, generate one in CI as a throwaway artifact — never commit it.
+
 > **Bun caveat:** bun (as of 1.3.11) supports only **flat** overrides. Scoped keys — `"minimatch/brace-expansion"`, in either `overrides` or `resolutions` — are silently ignored, not rejected. If you write one, nothing will warn you; it simply will not apply. Always confirm an override landed by checking `bun.lock`.
 
 #### Accepted dependency risks

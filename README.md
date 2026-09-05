@@ -75,6 +75,7 @@ A specialized engine that generates role-targeted CVs. It handles:
 
 - **Do NOT delete** this directory.
 - Kept for migration reference; eventually archived.
+- It is a **bun workspace member**, installed from the root `bun.lock` like everything else. It had a leftover `yarn.lock` from before the migration, pinning versions nobody installed; it was removed and CI now rejects stray lockfiles. Do not add one back.
 
 ## Environment & Secrets
 

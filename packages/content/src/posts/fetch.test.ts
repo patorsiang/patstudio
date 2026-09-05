@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { orderPosts, selectImageUrls, settleFetchedPosts } from "./fetch";
+import { githubApiHeaders, orderPosts, selectImageUrls, settleFetchedPosts } from "./fetch";
 import type { Post } from "../types/post";
 
 const post = (slug: string, date: string): Post => ({
@@ -81,5 +81,40 @@ describe("settleFetchedPosts", () => {
     ];
 
     expect(settleFetchedPosts(paths, results)).toEqual([]);
+  });
+});
+
+// The listing call is the only one that hits api.github.com, which allows 60
+// requests/hour per IP unauthenticated. GitHub Actions runners share IPs, so
+// that budget is spent by strangers and the listing 403s at random - it took
+// down a required check on an unrelated PR. Authenticating raises it to
+// 5000/hour. Header construction is the isolable piece; `listPostPaths` calls
+// the real fetch global, same reasoning as `settleFetchedPosts` above.
+describe("githubApiHeaders", () => {
+  test("authenticates when a token is available", () => {
+    expect(githubApiHeaders("ghs_example")).toEqual({
+      Accept: "application/vnd.github+json",
+      Authorization: "Bearer ghs_example",
+    });
+  });
+
+  test("omits Authorization entirely when there is no token", () => {
+    expect(githubApiHeaders(undefined)).toEqual({ Accept: "application/vnd.github+json" });
+  });
+
+  // CI and shell environments routinely set an unset variable to "". Sending
+  // `Authorization: Bearer ` is worse than sending nothing: GitHub rejects a
+  // malformed credential with 401 instead of falling back to the anonymous
+  // rate limit, turning a slow path into a hard failure.
+  test("treats an empty or whitespace token as absent", () => {
+    expect(githubApiHeaders("")).toEqual({ Accept: "application/vnd.github+json" });
+    expect(githubApiHeaders("   ")).toEqual({ Accept: "application/vnd.github+json" });
+  });
+
+  test("trims a token that arrived with stray whitespace", () => {
+    expect(githubApiHeaders("  ghs_example\n")).toEqual({
+      Accept: "application/vnd.github+json",
+      Authorization: "Bearer ghs_example",
+    });
   });
 });

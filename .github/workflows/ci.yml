@@ -42,22 +42,37 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      # bun.lock is the only lockfile in this repo, and the only one anything
-      # installs from. A stray yarn.lock / package-lock.json does not change a
-      # single installed byte, which is exactly what makes it dangerous: security
-      # scanners read it as the truth. legacy-v1/yarn.lock sat here pinning
-      # next@14.2.1 - carrying a critical middleware auth bypass and a dozen
-      # highs - long after the workspace actually resolved next@15.5.x. Snyk
-      # dutifully failed on a version nobody had installed.
+      # bun.lock is the source of truth for what actually gets installed.
       #
-      # A phantom lockfile is worse than no lockfile: it produces confident,
-      # specific, wrong answers.
+      # The root yarn.lock is a GENERATED MIRROR of it, committed for one
+      # reason: Snyk cannot parse bun.lock, and without a lockfile it under-
+      # stands it fails the PR check outright ("Missing required yarn.lock").
+      # It is regenerated and diffed below, so it can never drift.
+      #
+      # Any OTHER lockfile is rejected. legacy-v1/yarn.lock sat here for a
+      # month pinning next@14.2.1 - a critical middleware auth bypass and a
+      # dozen highs - while the workspace actually resolved next@15.5.x.
+      # Nothing installed from it, which is exactly what made it dangerous:
+      # a hand-stale lockfile changes no installed byte but scanners read it
+      # as truth. A phantom lockfile is worse than no lockfile.
       - name: Reject stray lockfiles
         run: |
-          stray=$(git ls-files '*yarn.lock' '*package-lock.json' '*pnpm-lock.yaml')
+          stray=$(git ls-files '*/yarn.lock' '*package-lock.json' '*pnpm-lock.yaml')
           if [ -n "$stray" ]; then
-            echo "::error::Non-bun lockfile(s) committed - bun.lock is the only source of truth:"
+            echo "::error::Only the generated root yarn.lock is allowed; bun.lock is the source of truth:"
             echo "$stray"
+            exit 1
+          fi
+
+      # Proves the committed yarn.lock still describes the same tree bun.lock
+      # resolves. Without this the mirror becomes the very phantom it replaced.
+      - name: Verify yarn.lock mirrors bun.lock
+        run: |
+          cp yarn.lock /tmp/yarn.lock.committed
+          bun install --yarn --frozen-lockfile >/dev/null
+          if ! diff -q /tmp/yarn.lock.committed yarn.lock >/dev/null; then
+            echo "::error::yarn.lock is out of sync with bun.lock. Regenerate with: bun install --yarn"
+            diff /tmp/yarn.lock.committed yarn.lock | head -30
             exit 1
           fi
 

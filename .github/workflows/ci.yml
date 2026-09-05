@@ -155,12 +155,17 @@ jobs:
     name: Deploy portfolio-web to Vercel Preview
     runs-on: ubuntu-latest
     needs: checks
-    # Same scope the standalone staging workflow had: the active feature branch,
-    # any PR into main, or a manual run. Other branches get checks only.
+    # Any PR into main, or a manual run. Pushes to other branches get checks
+    # only.
+    #
+    # This used to carry a third arm for pushes to feat/portfolio-platform-2026,
+    # the branch the 2026 rebuild happened on. That branch was merged and has
+    # been deleted, so the condition could never be true again - a ref
+    # comparison against a branch that does not exist is silent dead code,
+    # which is why it outlived the branch by three weeks.
     if: >-
       github.event_name == 'pull_request' ||
-      github.event_name == 'workflow_dispatch' ||
-      github.ref == 'refs/heads/feat/portfolio-platform-2026'
+      github.event_name == 'workflow_dispatch'
 
     env:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}

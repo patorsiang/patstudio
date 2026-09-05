@@ -24,15 +24,17 @@ This document outlines the deployment setup for the Patorsiang Portfolio Platfor
 
 ## Vercel Project Settings
 
-| Setting                | Value                          |
-| :--------------------- | :----------------------------- |
-| **Framework Preset**   | Next.js                        |
-| **Root Directory**     | `apps/portfolio-web`           |
-| **Build Command**      | `bun run build:portfolio`      |
-| **Install Command**    | `bun install`                  |
-| **Output Directory**   | Next.js default (`.next`)      |
-| **Production Branch**  | `main`                         |
-| **Development Branch** | `feat/portfolio-platform-2026` |
+| Setting                | Value                           |
+| :--------------------- | :------------------------------ |
+| **Framework Preset**   | Next.js                         |
+| **Root Directory**     | `apps/portfolio-web`            |
+| **Build Command**      | `bun run build:portfolio`       |
+| **Install Command**    | `bun install`                   |
+| **Output Directory**   | Next.js default (`.next`)       |
+| **Production Branch**  | `main`                          |
+| **Development Branch** | _needs review_ — see note below |
+
+> **Development Branch needs updating in the Vercel dashboard.** It pointed at `feat/portfolio-platform-2026`, the branch the 2026 rebuild was built on. That branch was merged into `main` and has now been deleted, so the setting names a ref that no longer exists. This table documents the dashboard, which only a project admin can change — update it there, then correct this row. **Production Branch (`main`) is unaffected**; only the development/preview association is stale.
 
 ## GitHub Actions Workflows
 
@@ -47,7 +49,7 @@ The repository uses automated workflows for deployment:
 
 ### Staging / Preview (`ci.yml`, `deploy-preview` job)
 
-- **Trigger**: Push to `feat/portfolio-platform-2026`, Pull Request to `main`, or manual dispatch. Runs after the `checks` job passes.
+- **Trigger**: Pull Request to `main`, or manual dispatch. Runs after the `checks` job passes.
 - **Environment**: Pulls settings from the **Preview** environment.
 - **Build**: Runs `bun run build:portfolio` locally.
 - **Result**: Generates a temporary Preview URL.

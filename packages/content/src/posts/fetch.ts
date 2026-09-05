@@ -27,10 +27,44 @@ export function selectImageUrls(markdown: string): string[] {
   return [...new Set(found)];
 }
 
+/**
+ * Exported for testing: header construction is the isolable piece, the same
+ * way `settleFetchedPosts` is for the per-post failure path.
+ *
+ * `listPostPaths` is the only call that touches api.github.com, and
+ * unauthenticated that endpoint allows 60 requests/hour **per IP**. GitHub
+ * Actions runners share IPs with every other job on the fleet, so the budget is
+ * spent by strangers and the listing 403s on nobody's schedule but theirs - it
+ * failed a required check on an unrelated PR, and a plain re-run of identical
+ * code passed. Authenticating raises the limit to 5000/hour.
+ *
+ * The token stays optional on purpose. Local dev and Vercel builds have no
+ * `GITHUB_TOKEN`, and `thinking-in-public` is a public repo, so anonymous
+ * access still works there - it is only the shared-IP case that needs help.
+ * An absent token must therefore degrade to today's behaviour, never fail.
+ */
+export function githubApiHeaders(token: string | undefined): Record<string, string> {
+  const headers: Record<string, string> = { Accept: "application/vnd.github+json" };
+
+  // Empty and whitespace-only are treated as absent. CI routinely sets an unset
+  // variable to "", and `Authorization: Bearer ` is worse than no header at
+  // all: GitHub rejects a malformed credential with 401 rather than falling
+  // back to the anonymous limit, converting a slow path into a hard failure.
+  const trimmed = token?.trim();
+
+  if (trimmed) {
+    headers.Authorization = `Bearer ${trimmed}`;
+  }
+
+  return headers;
+}
+
 async function listPostPaths(): Promise<string[]> {
   const response = await fetch(
     `https://api.github.com/repos/${OWNER}/${REPO}/contents/posts?ref=${BRANCH}`,
-    { headers: { Accept: "application/vnd.github+json" } },
+    // GH_TOKEN is the gh CLI's variable; accepted so a local run that already
+    // has one authenticates without extra setup.
+    { headers: githubApiHeaders(process.env.GITHUB_TOKEN ?? process.env.GH_TOKEN) },
   );
 
   if (!response.ok) {

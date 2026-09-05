@@ -30,6 +30,19 @@ jobs:
     name: Format, lint, types, tests, build
     runs-on: ubuntu-latest
 
+    # The build and the e2e web server both list posts from the
+    # thinking-in-public repo through api.github.com. Unauthenticated that
+    # endpoint allows 60 requests/hour PER IP, and Actions runners share IPs, so
+    # the budget is spent by unrelated jobs and the listing 403s at random - it
+    # failed this required check on a PR that touched none of that code, and a
+    # re-run of identical code passed. The token raises the limit to 5000/hour.
+    #
+    # Job-level rather than per-step because `build`, `test:e2e` and the app's
+    # ISR path all reach the same fetch. `permissions: contents: read` above
+    # already scopes it to reading, and thinking-in-public is public anyway.
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -152,6 +165,9 @@ jobs:
     env:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      # Same shared-IP rate limit as the checks job; this one builds the app
+      # locally, so it lists posts through api.github.com too.
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
       - name: Checkout

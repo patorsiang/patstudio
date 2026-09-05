@@ -16,7 +16,7 @@
     "@patorsiang/utils": "workspace:*"
   },
   "devDependencies": {
-    "bun-types": "latest",
+    "bun-types": "^1.4.1",
     "typescript": "^5"
   }
 }

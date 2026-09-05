@@ -9,6 +9,7 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.scripts.json",
     "test:e2e": "playwright test",
+    "test:e2e:install": "playwright install --with-deps chromium",
     "generate:brand": "bun run scripts/generate-brand-assets.ts",
     "generate:qr": "bun run scripts/generate-qr.ts",
     "vendor:post-images": "bun run scripts/vendor-post-images.ts",
@@ -22,9 +23,9 @@
     "@patorsiang/utils": "workspace:*",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
-    "next": "16.2.11",
+    "next": "16.3.4",
     "react": "19.2.8",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.8"
   },
   "devDependencies": {
     "@patorsiang/configs": "workspace:*",
@@ -36,7 +37,7 @@
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "bun-types": "latest",
+    "bun-types": "^1.4.1",
     "eslint": "^9",
     "eslint-config-next": "16.3.0",
     "qrcode": "^1.5.4",

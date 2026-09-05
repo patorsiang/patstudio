@@ -14,12 +14,7 @@ export type ProjectCategory =
   | "iot";
 
 export type ProjectStatus =
-  | "idea"
-  | "prototype"
-  | "in-progress"
-  | "launched"
-  | "paused"
-  | "archived";
+  "idea" | "prototype" | "in-progress" | "launched" | "paused" | "archived";
 
 export type ProjectPlacement = "featured-project" | "project" | "playground" | "hidden";
 

@@ -42,6 +42,25 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      # bun.lock is the only lockfile in this repo, and the only one anything
+      # installs from. A stray yarn.lock / package-lock.json does not change a
+      # single installed byte, which is exactly what makes it dangerous: security
+      # scanners read it as the truth. legacy-v1/yarn.lock sat here pinning
+      # next@14.2.1 - carrying a critical middleware auth bypass and a dozen
+      # highs - long after the workspace actually resolved next@15.5.x. Snyk
+      # dutifully failed on a version nobody had installed.
+      #
+      # A phantom lockfile is worse than no lockfile: it produces confident,
+      # specific, wrong answers.
+      - name: Reject stray lockfiles
+        run: |
+          stray=$(git ls-files '*yarn.lock' '*package-lock.json' '*pnpm-lock.yaml')
+          if [ -n "$stray" ]; then
+            echo "::error::Non-bun lockfile(s) committed - bun.lock is the only source of truth:"
+            echo "$stray"
+            exit 1
+          fi
+
       # Ordered cheapest-first so an obvious failure reports in seconds rather
       # than after a full build.
       - name: Check formatting
@@ -59,6 +78,24 @@ jobs:
       - name: Build
         run: bun run build
 
+      # Deliberately placed AFTER the code checks, unlike everything above it.
+      # This step is the one whose result changes with no commit: a new advisory
+      # against any dev-only transitive package turns every branch red on its
+      # own schedule. Run first, it masked real typecheck and test failures
+      # behind an unrelated upstream disclosure. Run here, a broken build still
+      # reports as a broken build.
+      #
+      # It stays inside `checks` - and so still gates deploy-preview - on
+      # purpose: the whole point is that a dead upstream release line fails the
+      # build rather than waiting for someone to audit by hand, which is exactly
+      # how next@16.2.x sat unpatched past the August 2026 security release.
+      #
+      # The script carries an --ignore list of advisories with no fix available.
+      # Each one is justified in docs/architecture/code-quality.md; extend that
+      # register before extending the list, never the other way round.
+      - name: Audit dependencies
+        run: bun run security:audit
+
       # The accessibility rules no unit test covers: tap target height, and text
       # and focus-ring contrast in both themes. The cv-engine tests would pass
       # just as happily with every control 8px tall and every label the same
@@ -67,8 +104,17 @@ jobs:
       # colour pair nobody thought to list in the token table.
       #
       # Chromium only; the config pins both viewports to it.
+      # `bunx playwright` ignores the lockfile and fetches whatever npm calls
+      # latest, so it installed browsers for a different Playwright than the one
+      # that then runs the tests. The day 1.63.0 shipped, CI installed 1.63.0's
+      # chromium and the pinned 1.62.1 runner went looking for a build id that
+      # was never downloaded: "Executable doesn't exist at
+      # .../chromium_headless_shell-1234". Nothing in the repo had changed.
+      #
+      # This script runs the workspace's own playwright, so the browser and the
+      # runner are always the same version bun.lock resolved.
       - name: Install Playwright browser
-        run: bunx playwright install --with-deps chromium
+        run: bun run test:e2e:install
 
       # Builds the app again rather than reusing the step above, so the config
       # stays runnable from a cold checkout and does not silently depend on CI
@@ -80,6 +126,17 @@ jobs:
       # breaks it without touching the app build. Nothing else catches that.
       - name: Build Storybook
         run: bun run build:storybook
+
+      # legacy-v1 sits in the workspace, so the root `overrides` block rewrites
+      # its dependency tree as well - it lifts postcss off the exact pin
+      # next@15 declares, and jumps uuid three majors for pdfjs. Nothing else in
+      # this job touches it, so without these two steps an override tuned for
+      # portfolio-web can break legacy-v1 and no one finds out.
+      - name: Typecheck legacy-v1
+        run: bun run typecheck:legacy
+
+      - name: Build legacy-v1
+        run: bun run build:legacy
 
   deploy-preview:
     name: Deploy portfolio-web to Vercel Preview

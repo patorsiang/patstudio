@@ -8,10 +8,7 @@ export type { ExperienceRankDebug } from "./experience-selection";
 export type { ProjectRankDebug } from "./project-ranking";
 
 export type CvRoleId =
-  | "fullstack_engineer"
-  | "ai_ml_engineer"
-  | "security_engineer"
-  | "apple_specialist";
+  "fullstack_engineer" | "ai_ml_engineer" | "security_engineer" | "apple_specialist";
 export type CvLanguage = "en" | "th";
 
 export type CvSectionId =

@@ -9,6 +9,7 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.scripts.json",
     "test:e2e": "playwright test",
+    "test:e2e:install": "playwright install --with-deps chromium",
     "generate:brand": "bun run scripts/generate-brand-assets.ts",
     "generate:qr": "bun run scripts/generate-qr.ts",
     "vendor:post-images": "bun run scripts/vendor-post-images.ts",

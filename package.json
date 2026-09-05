@@ -15,6 +15,7 @@
     "typecheck": "bun run --cwd apps/portfolio-web typecheck",
     "test": "bun test",
     "test:e2e": "bun run --cwd apps/portfolio-web test:e2e",
+    "test:e2e:install": "bun run --cwd apps/portfolio-web test:e2e:install",
     "//security:audit": "The --ignore list is the accepted-risk register. Every ID here is justified in docs/architecture/code-quality.md > Accepted dependency risks. Do NOT append an ID without adding its entry there.",
     "security:audit": "bun audit --audit-level high --ignore=GHSA-mh99-v99m-4gvg --ignore=GHSA-rgw5-rvv9-x895 --ignore=GHSA-3jxr-9vmj-r5cp --ignore=GHSA-w3rx-r6r6-pgpr --ignore=GHSA-5p2g-fcmc-qvqq",
     "format": "prettier --write . --ignore-unknown",

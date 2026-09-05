@@ -104,8 +104,17 @@ jobs:
       # colour pair nobody thought to list in the token table.
       #
       # Chromium only; the config pins both viewports to it.
+      # `bunx playwright` ignores the lockfile and fetches whatever npm calls
+      # latest, so it installed browsers for a different Playwright than the one
+      # that then runs the tests. The day 1.63.0 shipped, CI installed 1.63.0's
+      # chromium and the pinned 1.62.1 runner went looking for a build id that
+      # was never downloaded: "Executable doesn't exist at
+      # .../chromium_headless_shell-1234". Nothing in the repo had changed.
+      #
+      # This script runs the workspace's own playwright, so the browser and the
+      # runner are always the same version bun.lock resolved.
       - name: Install Playwright browser
-        run: bunx playwright install --with-deps chromium
+        run: bun run test:e2e:install
 
       # Builds the app again rather than reusing the step above, so the config
       # stays runnable from a cold checkout and does not silently depend on CI

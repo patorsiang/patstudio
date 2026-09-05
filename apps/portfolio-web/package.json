@@ -43,7 +43,7 @@
     "qrcode": "^1.5.4",
     "storybook": "^10.4.2",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^7"
   },
   "ignoreScripts": [
     "sharp",

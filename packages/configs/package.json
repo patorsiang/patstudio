@@ -8,7 +8,7 @@
     "./tsconfig-next.json": "./tsconfig-next.json"
   },
   "dependencies": {
-    "eslint": "^9",
+    "eslint": "^10",
     "eslint-config-next": "16.3.0",
     "eslint-config-prettier": "^10.1.8"
   }

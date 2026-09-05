@@ -64,6 +64,16 @@ for (const route of routes) {
     // below would pass on it vacuously.
     expect(response?.status(), `${route} did not render`).toBeLessThan(500);
 
+    // Open every <details> before sweeping. The checkVisibility() skip further
+    // down is correct - a closed dropdown's options genuinely cannot be tapped -
+    // but on its own it silently exempts them from this check forever, which is
+    // the entire coverage of the CV role dropdown's options. Opening first means
+    // they are measured like any other control; the skip then only excludes what
+    // is still genuinely unreachable.
+    await page.evaluate(() => {
+      for (const details of document.querySelectorAll("details")) details.open = true;
+    });
+
     const failures = await page.evaluate(
       ({ selector, minHeight, probeOffset }) => {
         const results: Failure[] = [];
@@ -89,6 +99,14 @@ for (const route of routes) {
           // the reachability probe fail on a control that was never tappable
           // to begin with (e.g. the hidden face of a flip card).
           if (element.closest("[inert]")) continue;
+
+          // Content inside a closed <details> (e.g. the CV role dropdown's
+          // hidden options) still reports a non-zero getBoundingClientRect,
+          // so the zero-area check below does not catch it - but it is not
+          // rendered and not hit-testable. checkVisibility() understands the
+          // closed-<details> case natively (verified). Same reasoning as the
+          // [inert] skip above.
+          if (!element.checkVisibility()) continue;
 
           const initial = element.getBoundingClientRect();
 

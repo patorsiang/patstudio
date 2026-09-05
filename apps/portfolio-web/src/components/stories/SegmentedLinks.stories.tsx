@@ -39,10 +39,57 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
 
-/** How the CV toolbar renders it on mobile: full width, segments splitting evenly. */
+/**
+ * Three segments, full width. Kept for the row's own sake, but note this is
+ * *not* how many roles the real CV toolbar renders - see CvVariants below,
+ * which is the production shape (four roles) and is why this story alone
+ * let the mobile overflow bug ship unnoticed.
+ */
 export const FullWidth: Story = {
   args: {
     className: "w-full",
+  },
+};
+
+/**
+ * The real CV toolbar shape: four roles, full width, `collapsible` so it
+ * renders as a dropdown below `sm` and a wrap-safe row from `sm` up. Resize
+ * the preview below 640px to see the dropdown.
+ */
+export const CvVariants: Story = {
+  args: {
+    className: "w-full",
+    collapsible: { summary: "Apple Specialist" },
+    items: [
+      {
+        id: "fullstack",
+        href: "/en/cv/fullstack-engineer",
+        label: "Full-Stack",
+        fullLabel: "Full-Stack Engineer",
+        active: false,
+      },
+      {
+        id: "ai-ml",
+        href: "/en/cv/ai-ml-engineer",
+        label: "AI / ML",
+        fullLabel: "AI / ML Engineer",
+        active: false,
+      },
+      {
+        id: "security",
+        href: "/en/cv/security-engineer",
+        label: "Security",
+        fullLabel: "Security Engineer",
+        active: false,
+      },
+      {
+        id: "apple",
+        href: "/en/cv/apple-specialist",
+        label: "Apple Specialist",
+        fullLabel: "Apple Specialist",
+        active: true,
+      },
+    ],
   },
 };
 

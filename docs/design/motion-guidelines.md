@@ -47,17 +47,18 @@ Forbidden patterns:
 
 ### Duration
 
-| Motion type                                       |        Duration |
-| ------------------------------------------------- | --------------: |
-| Hover/focus feedback                              |       100-150ms |
-| Button active/pressed feedback                    |        75-120ms |
-| Small menu or disclosure open/close               |       150-200ms |
-| Section reveal, if used                           |       180-240ms |
-| Loading shimmer, if used                          | 900-1400ms loop |
-| Toast or temporary status entry                   |       150-220ms |
-| One-shot brand-mark reveal (named exception)      |           500ms |
-| Namecard flip, `/card` (named exception)          |           560ms |
-| Namecard entrance peek, `/card` (named exception) | 1100ms one-shot |
+| Motion type                                        |        Duration |
+| -------------------------------------------------- | --------------: |
+| Hover/focus feedback                               |       100-150ms |
+| Button active/pressed feedback                     |        75-120ms |
+| Small menu or disclosure open/close                |       150-200ms |
+| Section reveal, if used                            |       180-240ms |
+| Loading shimmer, if used                           | 900-1400ms loop |
+| Toast or temporary status entry                    |       150-220ms |
+| One-shot brand-mark reveal (named exception)       |           500ms |
+| Namecard flip, `/card` (named exception)           |           560ms |
+| Namecard entrance peek, `/card` (named exception)  | 1100ms one-shot |
+| Namecard lanyard settle, `/card` (named exception) | 1100ms one-shot |
 
 Rules:
 
@@ -110,6 +111,8 @@ Allowed here and nowhere else:
 - **Flip:** `rotateY(0 -> 180deg)`, 560ms, `cubic-bezier(0.2, 0, 0.2, 1)`. Below roughly 200ms a flip reads as a glitch rather than a card turning, which is the same reasoning as the brand-mark exception.
 - **Entrance peek:** one shot, 1100ms, starting 650ms after load - the card turns 17 degrees and settles. It is the only flip affordance that needs no hover and no reading, which matters because this route is opened mostly by scanning a QR on a phone. It runs **once**; a looping wiggle would be the forbidden decorative loop.
 - **Hover lean:** `rotateY(-9deg)`, 220ms, on a separate wrapper from the flip so the lean never inherits the 560ms duration.
+- **Lanyard settle:** one shot, 1100ms, 650ms delay - the card swings `rotateZ(3.2deg -> 0)` about the clip and settles. Deliberately shares the peek's timing and runs _alongside_ it rather than before it: two axes moving together read as the card having just been let go, and sequencing them would push the entrance past 1700ms. It replaces the idle sway the prototype used - a permanent pendulum is exactly the decorative loop this document forbids, and the same rule that keeps the peek to one shot applies here.
+- **Lanyard twist:** the strap's 28 slabs share the flip's 560ms `cubic-bezier(0.2, 0, 0.2, 1)`, with a 3ms per-slab delay that _decreases_ downward so the twist starts at the card and travels up the band (81ms total lag, well inside the flip). It is driven by the flip's state, not by the peek: at the peek's 17 degrees a proportional twist is imperceptible, and wiring both into one value is not worth the complexity.
 
 Constraints that come with the exception:
 

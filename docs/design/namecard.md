@@ -30,6 +30,7 @@ see §8.
 | Corner radius | 10px (card), 6px (Save, corner cue), 3px (QR)                           |
 | Face padding  | `22px 20px 34px`                                                        |
 | Page          | centred, `padding: 24px`, card vertically centred                       |
+| Strap         | 26px band; twist zone `clamp(48px, 100dvh - 620px, 140px)`; clip 30x26  |
 
 The card is fixed-size in the mockups. **In the build it must scale proportionally** — roughly
 `min(308px, calc(100vw - 48px))` with the height derived from the 0.611 ratio — or it overflows a
@@ -166,3 +167,76 @@ there is nothing. Swapping in the official LINE / WhatsApp / GitHub / LinkedIn S
 The illustrated avatar (`/avataaars.svg`) is also the least "technical" element on an otherwise
 mono, minimal card. Kept because it is the established portrait across the site; revisit only as a
 deliberate brand decision.
+
+---
+
+## 11. The lanyard (`/card` only)
+
+The card hangs from a strap that runs up and off the top of the viewport. Added 2026-09-06 after
+`?v=` prototyping; the prototype's findings are the source of everything below.
+
+### Why it does not violate section 3
+
+Section 3's "no ornament" rule is about what is **printed on the face**. The lanyard leaves the
+face untouched and works on the space around it, so the card itself is unchanged. It reinforces
+section 1's premise — _it is not a page that lists contact details; it is the card_ — rather than
+negotiating with it.
+
+### The three things that make it work
+
+1. **The pivot is at the clip, not the card's centre.** `.namecard-swing` carries
+   `transform-origin: 50% 0%`, which is the top of the clip — the point the band actually ends at.
+   With the default `50% 50%`, the same rotation swings the clip sideways off the end of the band
+   and the card reads as a rectangle spinning _next to_ a strap rather than hanging from one. This
+   is not subtle and it is the first thing to check if the strap ever stops looking right.
+
+2. **The band counter-twists on the flip.** 28 slabs, each `rotateY` interpolated `0 → 180deg` down
+   the stack, sharing the flip's 560ms curve, with the delay _decreasing_ downward so the twist
+   starts at the card and travels up. A rigid band above a card showing its back reads instantly as
+   two unrelated objects.
+
+3. **The ribbon has thickness.** Each slab carries a 3px `::after` plane at right angles to the
+   band. Without it the slab passing through 90° is zero-width and the strap **visibly tears in
+   half** at the midpoint of the flip — precisely the moment being looked at. Do not remove it.
+
+### Constraints
+
+- **The strap is a sibling of the card, never a child of a face.** `.namecard-face` carries
+  `backface-visibility: hidden`, which takes the strap with it on every flip.
+- **The taut band is out of flow** (`position: absolute; bottom: 100%`), growing upward. In normal
+  flow it pushed the card down by its own length and off the bottom of the viewport — the card's
+  position must not depend on how long the strap is. The page's `overflow: hidden` then clips it,
+  which _is_ the "runs off the top of the screen" effect. **No neck loop is ever drawn**, and none
+  is wanted: a lanyard goes up to a neck that is not in frame.
+- **The twist zone is the strap's entire cost in vertical space**, and it shrinks on short
+  viewports so the strap can never push Save Contact off a phone — the device this route is opened
+  on (section 6). At the 48px floor the column measures 658px against an iPhone SE's 667px.
+- **Slab count is a resolution dial and it was measured, not guessed.** At 12 the twist is a
+  visible staircase of rectangles. The 1px overlap (`+1px` height, `-1px` margin) matters as much
+  as the count — it fills the notch at each step.
+- **The strap colour is deliberately not themed.** Same reasoning as the QR in section 4: it is a
+  physical object, and inverting it would read as the strap changing material when the page changes
+  theme. `--color-strap`, `--color-strap-shade`, `--color-strap-edge` are defined once in
+  `packages/ui/tokens.css`.
+
+### Deliberately not shipped
+
+- **Idle sway.** A permanent pendulum loop is the decorative loop `motion-guidelines.md` forbids —
+  the same rule that keeps the entrance peek to one shot. It is a one-shot settle instead.
+- **Drag.** Pointer-drag with a spring return works and is roughly 40 lines with no library, but it
+  needs a movement threshold or a slow tap registers as a drag and the card never flips. The flip
+  is already this design's accepted weak point (section 8); adding gesture ambiguity to it is a
+  separate, later decision. Spring/overshoot easing is also currently disallowed by
+  `motion-guidelines.md`.
+
+### Open
+
+- **Safari is unverified.** The 3D chain is `perspective` → `preserve-3d` ×3 →
+  `backface-visibility: hidden`, and Safari flattens more eagerly than Chromium. Verified in
+  Chrome only.
+- **The print card has no punched slot**, so the physical and digital cards now diverge at the top
+  edge. Section 1's premise says they should be the same object. Either the print card gains a
+  slot or this is an accepted, documented divergence.
+- **Section 2's scaling gap is still open and is now tighter.** The card is still a fixed 308x504
+  in the build, not the proportional scale section 2 asks for. The strap does not cause this, but
+  it spends the remaining vertical slack.

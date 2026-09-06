@@ -31,6 +31,19 @@
   --color-on-accent: #ffffff;
   --color-on-accent-strong: #ffffff;
   --color-danger: #be123c;
+
+  /* Lanyard strap on /card. Deliberately NOT themed - the same three values
+     serve light and dark, and they are defined once here rather than in all
+     three blocks below.
+
+     Same reasoning as the QR patch in docs/design/namecard.md section 4: the
+     strap is a physical object photographed onto the page, not a piece of UI
+     painted in the theme's colours. A real lanyard is one colour in a dark
+     room and a bright one; inverting it would read as the strap changing
+     material when the page changes theme. */
+  --color-strap: #14a89c;
+  --color-strap-shade: #0b5f59;
+  --color-strap-edge: #073f3b;
 }
 
 @theme inline {

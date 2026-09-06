@@ -1,13 +1,7 @@
 import { parsePost } from "./parse";
 import { renderPostBody } from "./render";
+import { CONTENTS_API_URL, rawUrl, resolvePostAssetUrl } from "./source";
 import type { Post, RawPost } from "../types/post";
-
-const OWNER = "patorsiang";
-const REPO = "thinking-in-public";
-const BRANCH = "main";
-
-const rawUrl = (path: string) =>
-  `https://raw.githubusercontent.com/${OWNER}/${REPO}/${BRANCH}/${path}`;
 
 /**
  * Exported for testing: ordering is a pure decision, worth asserting directly.
@@ -18,11 +12,19 @@ export function orderPosts<T extends Pick<Post, "date">>(posts: readonly T[]): T
   return [...posts].sort((a, b) => b.date.localeCompare(a.date));
 }
 
-/** Exported for testing. Remote images only - local paths need no vendoring. */
+/**
+ * Exported for testing. Every image a post points at somewhere other than this
+ * site, as an absolute URL - the set the vendoring script downloads.
+ *
+ * Resolution happens before deduplication so that two spellings of the same
+ * file collapse to one key. `render.ts` looks images up by the same resolved
+ * URL; if the two ever disagree, an image is vendored under a key nothing
+ * asks for and silently renders as a link instead.
+ */
 export function selectImageUrls(markdown: string): string[] {
   const found = [...markdown.matchAll(/!\[[^\]]*\]\(([^)]*)\)/g)]
-    .map((match) => match[1].trim().split(/\s+/)[0])
-    .filter((url): url is string => /^https?:\/\//.test(url));
+    .map((match) => resolvePostAssetUrl(match[1].trim().split(/\s+/)[0]))
+    .filter((url): url is string => url !== null);
 
   return [...new Set(found)];
 }
@@ -61,7 +63,7 @@ export function githubApiHeaders(token: string | undefined): Record<string, stri
 
 async function listPostPaths(): Promise<string[]> {
   const response = await fetch(
-    `https://api.github.com/repos/${OWNER}/${REPO}/contents/posts?ref=${BRANCH}`,
+    CONTENTS_API_URL,
     // GH_TOKEN is the gh CLI's variable; accepted so a local run that already
     // has one authenticates without extra setup.
     { headers: githubApiHeaders(process.env.GITHUB_TOKEN ?? process.env.GH_TOKEN) },

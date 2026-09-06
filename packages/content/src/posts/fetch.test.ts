@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 
 import { githubApiHeaders, orderPosts, selectImageUrls, settleFetchedPosts } from "./fetch";
+import { RAW_CONTENT_BASE } from "./source";
 import type { Post } from "../types/post";
 
 const post = (slug: string, date: string): Post => ({
@@ -45,6 +46,24 @@ describe("selectImageUrls", () => {
     const urls = selectImageUrls('![alt](https://example.com/x.webp "a title")');
 
     expect(urls).toEqual(["https://example.com/x.webp"]);
+  });
+
+  // Posts are written to render on GitHub, where an image committed alongside
+  // the post is `../assets/x.jpg`. Skipping those left every such image
+  // unvendored, and so unrendered.
+  test("resolves a repo-relative image to its absolute source URL", () => {
+    const urls = selectImageUrls("![hero](../assets/hero.jpg)");
+
+    expect(urls).toEqual([`${RAW_CONTENT_BASE}assets/hero.jpg`]);
+  });
+
+  // Deduplication has to happen after resolution, not before: two spellings of
+  // the same file must become one download and - more importantly - one key,
+  // so the renderer's lookup cannot miss depending on how it was written.
+  test("collapses two spellings of the same repo-relative file", () => {
+    const urls = selectImageUrls("![a](../assets/hero.jpg) ![b](.././assets/hero.jpg)");
+
+    expect(urls).toEqual([`${RAW_CONTENT_BASE}assets/hero.jpg`]);
   });
 });
 

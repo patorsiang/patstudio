@@ -3,6 +3,8 @@
 import { sanitizeArticleHTML } from "@patorsiang/utils/security";
 import { marked } from "marked";
 
+import { resolvePostAssetUrl } from "./source";
+
 type RenderOptions = {
   /** Original image URL to vendored local path. */
   readonly vendoredImages: ReadonlyMap<string, string>;
@@ -44,15 +46,34 @@ export function renderPostBody(markdown: string, { vendoredImages }: RenderOptio
       return `<img src="${escapeHtml(href)}" alt="${safeAlt}" loading="lazy" />`;
     }
 
-    const vendored = vendoredImages.get(href);
+    // Posts are authored to read on GitHub, so an image committed beside the
+    // post is written `../assets/x.jpg`. `selectImageUrls` keys the vendored
+    // map by the resolved URL, so the lookup has to resolve identically.
+    const source = resolvePostAssetUrl(href) ?? href;
+    const vendored = vendoredImages.get(source);
 
     if (vendored) {
       return `<img src="${escapeHtml(vendored)}" alt="${safeAlt}" loading="lazy" />`;
     }
 
     // Not vendored yet: ISR cannot write to public/, so between deploys a new
-    // image has no local file. A link works; a broken image does not.
-    return `<a href="${escapeHtml(href)}" rel="noreferrer" target="_blank">${safeAlt}</a>`;
+    // image has no local file. A link works; a broken image does not - but
+    // only if the href is absolute. A repo-relative one resolves against
+    // /posts/ here and 404s, which reads as deliberate rather than pending.
+    return `<a href="${escapeHtml(source)}" rel="noreferrer" target="_blank">${safeAlt}</a>`;
+  };
+
+  /**
+   * Overridden for the href only. A post can link a repo file directly - the
+   * video is `[![poster](../assets/poster.jpg)](../assets/clip.mp4)` - and that
+   * href needs the same resolution an image's does. `tokens` is parsed rather
+   * than escaped so a nested image still renders as one; a regular function is
+   * required for `this.parser`.
+   */
+  renderer.link = function ({ href, tokens }) {
+    const target = resolvePostAssetUrl(href) ?? href;
+
+    return `<a href="${escapeHtml(target)}">${this.parser.parseInline(tokens)}</a>`;
   };
 
   const html = marked.parse(markdown, { renderer, async: false });

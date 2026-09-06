@@ -25,6 +25,7 @@ import { fetchRawPosts, selectImageUrls } from "@patorsiang/content/posts";
 
 const publicDir = join(import.meta.dir, "../public/posts");
 const mapPath = join(import.meta.dir, "../src/lib/vendored-images.ts");
+const prettierBin = join(import.meta.dir, "../../../node_modules/.bin/prettier");
 
 const EXTENSION_BY_CONTENT_TYPE: Record<string, string> = {
   "image/png": "png",
@@ -105,6 +106,22 @@ async function main() {
       `export const VENDORED_IMAGES: ReadonlyMap<string, string> = new Map([\n${literal}\n]);\n`,
     "utf8",
   );
+
+  // The output is committed source, so `format:check` gates it - and whether
+  // an entry fits on one line depends on how long a post's image URLs happen
+  // to be. Emitting Prettier's own shape is guesswork; running Prettier is
+  // not. Without this, the first post with long image URLs fails CI on
+  // formatting, which is a confusing way to be told an image was vendored.
+  //
+  // The workspace-root binary directly, not `bunx`: prettier is a root
+  // devDependency with no entry in this app's node_modules/.bin, and bunx
+  // resolving a name it cannot find locally reaches for the network and can
+  // sit there indefinitely. This path either exists or fails immediately.
+  const formatted = Bun.spawnSync([prettierBin, "--write", mapPath], { stdout: "ignore" });
+
+  if (formatted.exitCode !== 0) {
+    throw new Error(`prettier failed on ${mapPath}: ${formatted.stderr.toString()}`);
+  }
 
   console.log(`wrote ${mapPath}`);
 }

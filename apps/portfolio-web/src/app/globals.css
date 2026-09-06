@@ -183,6 +183,150 @@ body {
   perspective: 1700px;
 }
 
+/*
+ * Lanyard strap. See docs/design/namecard.md section 11.
+ *
+ * Column order top-to-bottom: taut band (out of flow, growing upward) ->
+ * twist zone -> clip -> card. The strap is a SIBLING of the card, never a
+ * child of a face: .namecard-face carries backface-visibility: hidden, which
+ * would take the strap with it on every flip.
+ */
+.namecard-rig {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/*
+ * The twist zone's height is the strap's entire cost in vertical space - the
+ * taut band above it is out of flow and costs nothing. It shrinks on short
+ * viewports so the strap never pushes Save Contact off the bottom of a phone,
+ * which is the device this route is opened on (namecard.md section 6).
+ * 620px = card (504) + clip (26) + the page's own vertical padding and slack.
+ */
+.namecard-strap {
+  --namecard-twist-height: clamp(48px, calc(100dvh - 620px), 140px);
+  position: relative;
+  transform-style: preserve-3d;
+}
+
+/*
+ * Out of flow, growing UPWARD from the top of the twist zone, so the card's
+ * position never depends on how long the strap is. In normal flow the band
+ * pushed the card down by its own length and off the bottom of the viewport.
+ * The page's overflow: hidden then clips it - which IS the "runs off the top
+ * of the screen" effect, for free. No neck loop is ever drawn, and none is
+ * wanted: a lanyard goes up to a neck that is not in frame.
+ */
+.namecard-strap::before {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  margin-left: -13px;
+  width: 26px;
+  height: 100vh;
+  background:
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.14) 0 1px, transparent 1px 4px),
+    linear-gradient(
+      90deg,
+      var(--color-strap-shade) 0%,
+      var(--color-strap) 35%,
+      var(--color-strap-shade) 100%
+    );
+}
+
+/*
+ * One slab of the twist. Each rotates about Y, interpolated 0 -> 180deg down
+ * the stack, so the band reads as a ribbon twisting into a card that has
+ * turned over. Angles and the per-slab delay are set inline in
+ * NamecardStrap.tsx, since both are a function of the slab's index.
+ *
+ * The +1px height with -1px margin is a deliberate overlap: without it the
+ * twist reads as a staircase of discrete rectangles, and the notch at each
+ * step is the tell. The overlap matters as much as the slab count.
+ */
+.namecard-seg {
+  position: relative;
+  display: block;
+  width: 26px;
+  height: calc(var(--namecard-twist-height) / 28 + 1px);
+  margin-bottom: -1px;
+  /* Same weave hatch as the taut band above. Without it the slabs render a
+     shade lighter than the band and the join between the two is a visible
+     seam across the strap. */
+  background:
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.14) 0 1px, transparent 1px 4px),
+    linear-gradient(
+      90deg,
+      var(--color-strap-shade) 0%,
+      var(--color-strap) 50%,
+      var(--color-strap-shade) 100%
+    );
+  backface-visibility: visible;
+  transform-style: preserve-3d;
+  transition: transform 560ms cubic-bezier(0.2, 0, 0.2, 1);
+}
+
+/*
+ * Ribbon has thickness. Without this plane the slab passing through 90deg is
+ * zero-width and the strap visibly TEARS IN HALF at the midpoint of the flip -
+ * exactly the moment being looked at. 3px at right angles to the band, so it
+ * turns face-on precisely when the band turns edge-on.
+ */
+.namecard-seg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: 0 auto;
+  width: 3px;
+  background: var(--color-strap-edge);
+  transform: rotateY(90deg);
+  backface-visibility: visible;
+}
+
+.namecard-clip {
+  width: 30px;
+  height: 26px;
+  border-radius: 3px 3px 6px 6px;
+  background: linear-gradient(180deg, #d4d4d8 0%, #a1a1aa 55%, #71717a 100%);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
+  transform-style: preserve-3d;
+}
+
+/*
+ * The pivot, and the reason the strap works at all. transform-origin: 50% 0%
+ * is the TOP of the clip - the point the band actually ends at - so the card
+ * hangs from it. With the default 50% 50% the same rotation swings the clip
+ * sideways off the end of the band and the card reads as a rectangle spinning
+ * next to a strap rather than hanging from one.
+ *
+ * The settle runs ONCE, alongside the entrance peek and on the same timing,
+ * not as an idle loop: a permanent sway is the decorative loop that
+ * motion-guidelines.md forbids. Both axes moving together read as the card
+ * having just been let go.
+ */
+.namecard-swing {
+  transform-origin: 50% 0%;
+  transform-style: preserve-3d;
+  animation: namecard-settle 1100ms cubic-bezier(0.3, 0, 0.2, 1) 650ms 1;
+}
+
+@keyframes namecard-settle {
+  0% {
+    transform: rotateZ(3.2deg);
+  }
+  45% {
+    transform: rotateZ(-1.4deg);
+  }
+  75% {
+    transform: rotateZ(0.5deg);
+  }
+  100% {
+    transform: rotateZ(0deg);
+  }
+}
+
 .namecard-tilt {
   transform-style: preserve-3d;
   transition: transform 220ms cubic-bezier(0, 0, 0.2, 1);

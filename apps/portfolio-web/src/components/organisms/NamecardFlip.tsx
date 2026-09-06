@@ -6,6 +6,7 @@ import Image from "next/image";
 import { profile } from "@patorsiang/content";
 import { sanitizeUrl } from "@patorsiang/utils";
 
+import { NamecardStrap } from "@/components/atoms/NamecardStrap";
 import { SiteMark } from "@/components/atoms/SiteMark";
 import {
   FlipIcon,
@@ -91,6 +92,12 @@ const contactChannels = [
  * actions. Full spec, including the accepted cost of gating contacts behind
  * one flip, is docs/design/namecard.md.
  *
+ * The card hangs from a lanyard (docs/design/namecard.md section 11). The
+ * strap is a SIBLING of the card, never a child of a face - .namecard-face
+ * carries backface-visibility: hidden, which would take the strap with it on
+ * every flip - and it counter-twists with the flip so a card showing its back
+ * is not hanging from a visibly untwisted band.
+ *
  * Both faces flip on a tap anywhere, not just their corner cue - the cue is
  * the discoverability affordance (see docs/design/namecard.md section 7), not
  * the only way to reach it. On the back, every real link stops the click from
@@ -150,40 +157,48 @@ export function NamecardFlip() {
   }, [flipped]);
 
   return (
-    <div className="namecard-stage mx-auto w-[308px]">
-      <div className="namecard-tilt">
-        <div className="namecard-inner relative h-[504px] w-full" data-flipped={flipped}>
-          {/* FRONT - identity. The whole face is the flip control: there are
+    <div className="namecard-stage namecard-rig mx-auto w-[308px]">
+      <NamecardStrap flipped={flipped} />
+      {/* The clip is inside .namecard-swing, whose transform-origin is its own
+          top edge - the point the band ends at - so the card hangs from the
+          clip rather than pivoting about its own middle. */}
+      <div className="namecard-swing w-full">
+        <div className="namecard-clip mx-auto" aria-hidden="true" />
+        <div className="namecard-tilt">
+          <div className="namecard-inner relative h-[504px] w-full" data-flipped={flipped}>
+            {/* FRONT - identity. The whole face is the flip control: there are
               no links here, so any tap can only turn the card. */}
-          <button
-            type="button"
-            onClick={toggle}
-            aria-label="Turn card over to see contact channels"
-            aria-hidden={flipped}
-            inert={flipped ? true : undefined}
-            ref={frontRef}
-            className="namecard-face absolute inset-0 flex cursor-pointer flex-col items-center rounded-[10px] border border-(--color-border) bg-(--color-surface) px-5 pt-[22px] pb-[34px] text-left shadow-[0_18px_40px_rgba(0,0,0,0.45)] focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-(--color-focus)"
-          >
-            <span className={cueClassName} aria-hidden="true">
-              <FlipIcon />
-              contacts
-            </span>
+            <button
+              type="button"
+              onClick={toggle}
+              aria-label="Turn card over to see contact channels"
+              aria-hidden={flipped}
+              inert={flipped ? true : undefined}
+              ref={frontRef}
+              className="namecard-face absolute inset-0 flex cursor-pointer flex-col items-center rounded-[10px] border border-(--color-border) bg-(--color-surface) px-5 pt-[22px] pb-[34px] text-left shadow-[0_18px_40px_rgba(0,0,0,0.45)] focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-(--color-focus)"
+            >
+              <span className={cueClassName} aria-hidden="true">
+                <FlipIcon />
+                contacts
+              </span>
 
-            <SiteMark size={21} className="self-start text-(--color-accent)" />
+              <SiteMark size={21} className="self-start text-(--color-accent)" />
 
-            <div className="mt-6 text-center">
-              <p className="text-[21px] leading-[1.15] font-bold tracking-[-0.02em] text-(--color-text)">
-                {profile.name.en}
-              </p>
-              <p className="mt-2.5 font-mono text-[10.5px] lowercase text-(--color-text-subtle)">
-                {profile.role.en}
-              </p>
-              <p className="mt-1 font-mono text-[11px] text-(--color-accent)">@{profile.handle}</p>
-            </div>
+              <div className="mt-6 text-center">
+                <p className="text-[21px] leading-[1.15] font-bold tracking-[-0.02em] text-(--color-text)">
+                  {profile.name.en}
+                </p>
+                <p className="mt-2.5 font-mono text-[10.5px] lowercase text-(--color-text-subtle)">
+                  {profile.role.en}
+                </p>
+                <p className="mt-1 font-mono text-[11px] text-(--color-accent)">
+                  @{profile.handle}
+                </p>
+              </div>
 
-            <div className="flex-1" />
+              <div className="flex-1" />
 
-            {/* A real link, not just a decorative image inside the flip
+              {/* A real link, not just a decorative image inside the flip
                 button - onClick={stopFlip} keeps a tap here from also
                 turning the card, same pattern as every real link on the back
                 face. Points at the portfolio home page rather than at the URL
@@ -192,37 +207,37 @@ export function NamecardFlip() {
                 true for a screen reader regardless of where the visible
                 click target goes. target="_blank" since this is a different
                 page, not the one already open. */}
-            <a
-              href={homeUrl}
-              target="_blank"
-              rel="noreferrer"
-              onClick={stopFlip}
-              tabIndex={flipped ? -1 : undefined}
-              className="rounded-[3px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-focus)"
-            >
-              <Image
-                src={qrSrc}
-                alt={`QR code linking to ${cardDisplayUrl}`}
-                width={112}
-                height={112}
-                unoptimized
-                priority
-                className="rounded-[3px]"
-              />
-            </a>
-            <a
-              href={homeUrl}
-              target="_blank"
-              rel="noreferrer"
-              onClick={stopFlip}
-              tabIndex={flipped ? -1 : undefined}
-              className="tap-reach mt-3 font-mono text-[9px] tracking-[0.02em] text-(--color-text-subtle) underline-offset-2 hover:text-(--color-accent) hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-focus)"
-            >
-              {displayUrl}
-            </a>
-          </button>
+              <a
+                href={homeUrl}
+                target="_blank"
+                rel="noreferrer"
+                onClick={stopFlip}
+                tabIndex={flipped ? -1 : undefined}
+                className="rounded-[3px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-focus)"
+              >
+                <Image
+                  src={qrSrc}
+                  alt={`QR code linking to ${cardDisplayUrl}`}
+                  width={112}
+                  height={112}
+                  unoptimized
+                  priority
+                  className="rounded-[3px]"
+                />
+              </a>
+              <a
+                href={homeUrl}
+                target="_blank"
+                rel="noreferrer"
+                onClick={stopFlip}
+                tabIndex={flipped ? -1 : undefined}
+                className="tap-reach mt-3 font-mono text-[9px] tracking-[0.02em] text-(--color-text-subtle) underline-offset-2 hover:text-(--color-accent) hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-focus)"
+              >
+                {displayUrl}
+              </a>
+            </button>
 
-          {/* BACK - contact. Adapted from the printed card's back face (same
+            {/* BACK - contact. Adapted from the printed card's back face (same
               portrait/email/rule/icon-row composition). The whole face flips
               on click, same as the front; every real link below stops that
               click from bubbling here first, via stopFlip.
@@ -239,85 +254,86 @@ export function NamecardFlip() {
               the card underneath a link a keyboard user only meant to
               activate. There is no fix that adds real keyboard coverage
               without introducing one of those two bugs. */}
-          <div
-            onClick={toggle}
-            aria-hidden={!flipped}
-            inert={!flipped ? true : undefined}
-            className={classNames(
-              "namecard-face namecard-face--back absolute inset-0 flex cursor-pointer flex-col items-center rounded-[10px] border border-(--color-border) bg-(--color-surface) px-5 pt-[22px] pb-[34px] shadow-[0_18px_40px_rgba(0,0,0,0.45)]",
-            )}
-          >
-            {/* No onClick of its own - a click here bubbles to the face's
+            <div
+              onClick={toggle}
+              aria-hidden={!flipped}
+              inert={!flipped ? true : undefined}
+              className={classNames(
+                "namecard-face namecard-face--back absolute inset-0 flex cursor-pointer flex-col items-center rounded-[10px] border border-(--color-border) bg-(--color-surface) px-5 pt-[22px] pb-[34px] shadow-[0_18px_40px_rgba(0,0,0,0.45)]",
+              )}
+            >
+              {/* No onClick of its own - a click here bubbles to the face's
                 onClick above, same as a click on any other non-link part of
                 this face. Kept as a real <button> purely so it stays
                 independently keyboard-operable (Enter/Space still dispatch a
                 bubbling click) and remains the visible flip-back cue. */}
-            <button type="button" ref={backCueRef} className={cueClassName}>
-              <FlipIcon />
-              front
-            </button>
+              <button type="button" ref={backCueRef} className={cueClassName}>
+                <FlipIcon />
+                front
+              </button>
 
-            <div className="flex-1" />
+              <div className="flex-1" />
 
-            <Image
-              src="/avataaars.svg"
-              alt={`Illustrated portrait of ${profile.name.en}`}
-              width={112}
-              height={112}
-              unoptimized
-              className="h-28 w-28 shrink-0 rounded-full border-2 border-(--color-accent) bg-(--color-surface-muted)"
-            />
+              <Image
+                src="/avataaars.svg"
+                alt={`Illustrated portrait of ${profile.name.en}`}
+                width={112}
+                height={112}
+                unoptimized
+                className="h-28 w-28 shrink-0 rounded-full border-2 border-(--color-accent) bg-(--color-surface-muted)"
+              />
 
-            <p className="mt-3.5 font-mono text-[10.5px] text-(--color-text-muted)">
-              {profile.contact.email.label.en}
-            </p>
-            <p className="mt-1 font-mono text-[9px] lowercase text-(--color-text-subtle)">
-              {profile.location.en}
-            </p>
+              <p className="mt-3.5 font-mono text-[10.5px] text-(--color-text-muted)">
+                {profile.contact.email.label.en}
+              </p>
+              <p className="mt-1 font-mono text-[9px] lowercase text-(--color-text-subtle)">
+                {profile.location.en}
+              </p>
 
-            <div className="mt-3.5 h-px w-11 bg-(--color-border)" />
+              <div className="mt-3.5 h-px w-11 bg-(--color-border)" />
 
-            {/* title gives sighted mouse users a native hover tooltip
+              {/* title gives sighted mouse users a native hover tooltip
                 without changing what screen readers announce - aria-label
                 still wins as the accessible name, title is purely the
                 on-hover label. GitHub/LinkedIn's title is the real handle
                 (profile.contact.*.label.en), not just a repeat of the
                 icon's channel name. */}
-            <div className="mt-3.5 grid w-full grid-cols-4 place-items-center">
-              {contactChannels.map(({ href, ariaLabel, title, Icon }) => (
-                <a
-                  key={ariaLabel}
-                  href={href}
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label={ariaLabel}
-                  title={title}
-                  onClick={stopFlip}
-                  tabIndex={flipped ? undefined : -1}
-                  className={iconLinkClassName}
-                >
-                  <Icon size={22} />
-                </a>
-              ))}
-            </div>
+              <div className="mt-3.5 grid w-full grid-cols-4 place-items-center">
+                {contactChannels.map(({ href, ariaLabel, title, Icon }) => (
+                  <a
+                    key={ariaLabel}
+                    href={href}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={ariaLabel}
+                    title={title}
+                    onClick={stopFlip}
+                    tabIndex={flipped ? undefined : -1}
+                    className={iconLinkClassName}
+                  >
+                    <Icon size={22} />
+                  </a>
+                ))}
+              </div>
 
-            <div className="flex-1" />
+              <div className="flex-1" />
 
-            {/* "C+": a resting accent wash, not a solid fill. Hover/press/
+              {/* "C+": a resting accent wash, not a solid fill. Hover/press/
                 focus are desktop states, and this route is opened mostly by
                 scanning the QR on a phone - a fully transparent rest would
                 leave the card's one real action looking like a line of text
                 on every visit that matters. See namecard.md section 6. */}
-            <a
-              href={vcardHref}
-              download="napatchol-thaipanich.vcf"
-              onClick={stopFlip}
-              tabIndex={flipped ? undefined : -1}
-              className="flex h-11 w-full items-center justify-center gap-1.5 rounded-md bg-(--color-accent-soft) font-mono text-[11.5px] font-semibold tracking-[0.045em] text-(--color-accent) transition-[background-color,transform] hover:bg-(--color-surface-muted) active:scale-[0.985] active:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-focus)"
-            >
-              <PlusIcon />
-              save contact
-            </a>
+              <a
+                href={vcardHref}
+                download="napatchol-thaipanich.vcf"
+                onClick={stopFlip}
+                tabIndex={flipped ? undefined : -1}
+                className="flex h-11 w-full items-center justify-center gap-1.5 rounded-md bg-(--color-accent-soft) font-mono text-[11.5px] font-semibold tracking-[0.045em] text-(--color-accent) transition-[background-color,transform] hover:bg-(--color-surface-muted) active:scale-[0.985] active:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-focus)"
+              >
+                <PlusIcon />
+                save contact
+              </a>
+            </div>
           </div>
         </div>
       </div>

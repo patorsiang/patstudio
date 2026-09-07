@@ -66,19 +66,27 @@ async function stableScreenshot(
   const STABLE_FRAMES = 5;
   const INTERVAL_MS = 150;
 
-  let previous = await page.screenshot({ clip });
+  let previous: Buffer | undefined;
+  let latest = Buffer.alloc(0);
   let matches = 0;
 
-  for (let attempt = 0; attempt < 60; attempt += 1) {
-    await page.waitForTimeout(INTERVAL_MS);
-    const current = await page.screenshot({ clip });
+  await expect
+    .poll(
+      async () => {
+        latest = await page.screenshot({ clip });
+        matches = previous?.equals(latest) ? matches + 1 : 0;
+        previous = latest;
+        return matches;
+      },
+      {
+        message: "The card never stopped repainting, so no stable frame could be captured.",
+        timeout: 60 * INTERVAL_MS,
+        intervals: [INTERVAL_MS],
+      },
+    )
+    .toBeGreaterThanOrEqual(STABLE_FRAMES);
 
-    matches = current.equals(previous) ? matches + 1 : 0;
-    previous = current;
-    if (matches >= STABLE_FRAMES) return current;
-  }
-
-  throw new Error("The card never stopped repainting, so no stable frame could be captured.");
+  return latest;
 }
 
 /**

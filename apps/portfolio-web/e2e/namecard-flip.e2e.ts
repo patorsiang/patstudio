@@ -150,7 +150,7 @@ async function onCard<T>(
  * reports what the faces actually are, which is far more useful than a bare
  * "waitForFunction timed out".
  */
-async function faceVisibility(page: Page) {
+async function awaitFaceSwap(page: Page) {
   await page
     .waitForFunction(
       ([front, back]) =>
@@ -163,6 +163,10 @@ async function faceVisibility(page: Page) {
       { timeout: 2000 },
     )
     .catch(() => {});
+}
+
+async function faceVisibility(page: Page) {
+  await awaitFaceSwap(page);
 
   return page.evaluate(
     ([front, back]) => ({
@@ -171,6 +175,135 @@ async function faceVisibility(page: Page) {
     }),
     [FRONT_FACE, BACK_FACE],
   );
+}
+
+/**
+ * The card's own hover lean, pinned so it cannot vary between runs.
+ *
+ * `.namecard-stage:hover .namecard-tilt` rotates the card 9deg about Y, and
+ * that state is not a corner case: it is what a mouse user is looking at for
+ * the whole time they are reaching for a control, since the pointer has to be
+ * over the card to click anything on it. The entrance peek (`namecard-peek`)
+ * swings through the same axis to 17deg on every visit.
+ *
+ * Injected rather than driven by a real `page.mouse.move`, because the mobile
+ * project emulates a touch device where hover does not engage, and the
+ * geometry - not the input that produced it - is what breaks. `!important`
+ * beats both the :hover rule and the keyframes.
+ */
+const LEAN = `.namecard-tilt { transform: rotateY(-9deg) !important; }`;
+
+/**
+ * What the pointer actually reaches at a point, as the page itself sees it.
+ *
+ * Driven by a real mouse move and read back off `:hover` rather than through
+ * `document.elementFromPoint`, because on this element that API is not telling
+ * the truth: inside the card's 3D subtree WebKit answers `.namecard-stage` for
+ * every point on the card, including points a real click demonstrably lands
+ * on. Measuring the broken API instead of the behaviour reported a WebKit-only
+ * failure that does not exist. `:hover` shares its hit-testing with clicks,
+ * costs no side effects (unlike a click, which flips the card out from under
+ * the next sample), and is half of the actual complaint - the dead half of the
+ * card takes no hover, no focus and no clicks.
+ */
+async function pointerReaches(page: Page, x: number, y: number) {
+  await page.mouse.move(x, y);
+  return page.evaluate(async () => {
+    // WebKit applies the new :hover during a style recalc, not synchronously
+    // with the move, so a read in the same turn can still describe where the
+    // pointer WAS. Two frames is past the recalc. Without this the first probe
+    // after the pointer parks at (0, 0) reports a miss under parallel load -
+    // intermittently, and only on WebKit.
+    await new Promise((settled) => requestAnimationFrame(() => requestAnimationFrame(settled)));
+
+    const deepest = [...document.querySelectorAll(":hover")].at(-1) ?? null;
+    const link = deepest?.closest?.("a");
+    return {
+      link: link ? (link.getAttribute("aria-label") ?? link.textContent!.trim()) : null,
+      face: deepest?.closest?.(".namecard-face") ? true : false,
+    };
+  });
+}
+
+/**
+ * Parks the pointer in the middle of the face before any measured probe.
+ *
+ * `onCard` leaves the mouse at (0, 0), well off the card, and the first probe
+ * after the pointer arrives is the one that absorbs the cost of arriving:
+ * under parallel load WebKit still reported the previous :hover for it, which
+ * reads as a miss at whatever point happened to be sampled first. The middle
+ * of a face is on the card at every lean - it is the axis the card turns about
+ * - so this settles the hover somewhere known, and somewhere that failing
+ * would itself be worth knowing about.
+ */
+async function primePointer(page: Page, face: string) {
+  const { x, y } = await page.evaluate((selector) => {
+    const box = document.querySelector<HTMLElement>(selector)!.getBoundingClientRect();
+    return { x: box.left + box.width / 2, y: box.top + box.height / 2 };
+  }, face);
+
+  await expect
+    .poll(async () => (await pointerReaches(page, x, y)).face, {
+      message: "The pointer never reached the middle of the card.",
+      timeout: 2000,
+    })
+    .toBe(true);
+}
+
+/**
+ * Sweeps the pointer along the icon row and reports how many pixels wide each
+ * contact link's reachable run is.
+ *
+ * A sweep rather than one probe at each link's own centre, because inside the
+ * flipped face `getBoundingClientRect` is a few pixels out from where WebKit
+ * actually paints the link - close enough to look right, far enough to drop a
+ * single probe into the gap between two icons. The sweep does not care where
+ * the boxes claim to be: it asks the page what is under the pointer, all the
+ * way across, and every icon has to answer somewhere.
+ */
+async function reachableContactRuns(page: Page) {
+  await awaitFaceSwap(page);
+  await primePointer(page, BACK_FACE);
+
+  const STEP = 4;
+  const { left, right, y } = await page.evaluate((selector) => {
+    const face = document.querySelector<HTMLElement>(selector)!.getBoundingClientRect();
+    const icon = document
+      .querySelector<HTMLElement>(`${selector} .grid a`)!
+      .getBoundingClientRect();
+    return { left: face.left, right: face.right, y: icon.top + icon.height / 2 };
+  }, BACK_FACE);
+
+  const runs = new Map<string, number>();
+  for (let x = left; x <= right; x += STEP) {
+    const { link } = await pointerReaches(page, x, y);
+    if (link) runs.set(link, (runs.get(link) ?? 0) + STEP);
+  }
+  return runs;
+}
+
+/**
+ * Points spread across the face in view, inset from its edges.
+ *
+ * A leaning card projects as a trapezoid, not a rectangle: the edge turning
+ * away is both shorter and pulled inward, so the corners of the face's
+ * bounding box are genuinely not on the card - measured at 8px on WebKit. That
+ * is the geometry working, not the bug, and sampling into it would fail for
+ * the wrong reason. The inset clears it by a wide margin while still landing
+ * well inside the half that used to be dead.
+ */
+async function pointsAcross(page: Page, face: string) {
+  await awaitFaceSwap(page);
+  return page.evaluate((selector) => {
+    const box = document.querySelector<HTMLElement>(selector)!.getBoundingClientRect();
+    return [0.15, 0.3, 0.42, 0.5, 0.58, 0.7, 0.85].flatMap((fx) =>
+      [0.25, 0.5, 0.75].map((fy) => ({
+        x: box.left + box.width * fx,
+        y: box.top + box.height * fy,
+        label: `${Math.round(fx * 100)}% across, ${Math.round(fy * 100)}% down`,
+      })),
+    );
+  }, face);
 }
 
 async function cardScreenshot(page: Page) {
@@ -199,6 +332,91 @@ test.describe("namecard flip", () => {
       "On a flipped card the front face must be hidden by something other than " +
         "backface-visibility.",
     ).toEqual({ front: "hidden", back: "visible" });
+  });
+
+  /**
+   * `.namecard-swing`, `.namecard-tilt` and `.namecard-inner` are `preserve-3d`
+   * containers, so their OWN boxes sit in the card's 3D space as full-width
+   * planes at z = 0, coplanar with the faces. Lean the card and the half
+   * turning away from the viewer crosses behind those planes; hit-testing then
+   * hands that half to the container instead of to the face. Nothing looks
+   * different - the containers paint nothing - so the card reads as normal
+   * while half of it silently takes no hover, no focus and no clicks.
+   *
+   * Swept across the icon row at the 9deg hover lean before the pointer-events
+   * fix in globals.css, on both engines, where L/W/G/L are the four contact
+   * links and x is a point that reaches nothing on the card at all:
+   *
+   *   xxxxxxxxxxxxxxxxxxx.GGGGGGx.LLLLxLLxx..
+   *
+   * LINE and WhatsApp, the two leftmost icons, are the whole dead half. The
+   * rest of this file pins the mouse at (0, 0) precisely to keep the lean out
+   * of its screenshots, which is why nothing here could see it.
+   */
+  test("every contact link on a leaning card can be reached by the pointer", async ({
+    browser,
+  }) => {
+    // Well under the 52px icon, so this measures "reachable at all" rather than
+    // re-testing the hit area's size, which tap-targets.e2e.ts already owns.
+    const ENOUGH = 24;
+
+    const runs = await onCard(browser, { flip: true, css: LEAN }, reachableContactRuns);
+
+    expect(
+      Object.fromEntries(
+        ["LINE", "WhatsApp", "GitHub", "LinkedIn"].map((label) => [
+          label,
+          (runs.get(label) ?? 0) >= ENOUGH,
+        ]),
+      ),
+      `A contact link on the leaning back face cannot be reached by the pointer. Widths ` +
+        `found, in px: ${JSON.stringify(Object.fromEntries(runs))}. See the pointer-events ` +
+        `rule on the namecard rig in globals.css.`,
+    ).toEqual({ LINE: true, WhatsApp: true, GitHub: true, LinkedIn: true });
+  });
+
+  test("a leaning card is reachable across its whole width, not just half of it", async ({
+    browser,
+  }) => {
+    const dead: Record<string, string[]> = {};
+    for (const [name, face, flip] of [
+      ["front", FRONT_FACE, false],
+      ["back", BACK_FACE, true],
+    ] as const) {
+      dead[name] = await onCard(browser, { flip, css: LEAN }, async (page) => {
+        const missed: string[] = [];
+        const points = await pointsAcross(page, face);
+        await primePointer(page, face);
+        for (const { label, x, y } of points) {
+          if (!(await pointerReaches(page, x, y)).face) missed.push(label);
+        }
+        return missed;
+      });
+    }
+
+    expect(
+      dead,
+      "Points on a leaning face reach nothing on the card at all, so a tap there neither " +
+        "flips it nor hits whatever is painted under the pointer.",
+    ).toEqual({ front: [], back: [] });
+  });
+
+  // The front face is the flip control, so "reachable" there has to mean the
+  // card actually turns - not just that hit-testing lands somewhere plausible.
+  test("a tap on the far side of a leaning card still flips it", async ({ browser }) => {
+    const flipped = await onCard(browser, { flip: false, css: LEAN }, async (page) => {
+      const [{ x, y }] = await pointsAcross(page, FRONT_FACE);
+      await page.mouse.click(x, y);
+      return page
+        .locator(".namecard-inner")
+        .getAttribute("data-flipped")
+        .then((value) => value === "true");
+    });
+
+    expect(
+      flipped,
+      "Clicking the leaning front face near its left edge did not flip the card.",
+    ).toBe(true);
   });
 
   // Serial: these compare two page loads byte for byte, and rasterisation under

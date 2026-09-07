@@ -361,7 +361,42 @@ body {
   transform: rotateY(180deg);
 }
 
+/*
+ * The rig carries no interaction; only the two faces do.
+ *
+ * .namecard-swing, .namecard-tilt and .namecard-inner are transform-style:
+ * preserve-3d containers, which means their OWN boxes live in the card's 3D
+ * space too - as full-width planes at z = 0, coplanar with the faces. The
+ * moment anything rotates the card about Y, the half turning away from the
+ * viewer passes BEHIND those planes, and hit-testing then hands every point
+ * on that half to the container rather than to the face in front of it.
+ *
+ * Nothing is painted differently, because the containers paint nothing: the
+ * card looks entirely normal while half of it silently stops responding to
+ * hover, focus and clicks. And this is not an edge case - the hover lean
+ * above rotates the card 9deg for as long as the pointer is over it, which is
+ * the whole time a mouse user is reaching for a control, and the entrance
+ * peek swings through 17deg on every visit. Measured at the 9deg lean: 32% of
+ * the back face reachable and 53% of the front, with LINE and WhatsApp (the
+ * two leftmost icons) unreachable at every point on them.
+ *
+ * Taking the rig out of hit-testing costs nothing - it is pure transform
+ * scaffolding, and the strap and clip are decorative - and it puts every
+ * point back on whichever face is painted there. .namecard-stage keeps its
+ * own hit area, so the :hover lean still engages across the whole rig.
+ *
+ * Guarded by the two "leaning card" tests in e2e/namecard-flip.e2e.ts.
+ */
+.namecard-strap,
+.namecard-swing,
+.namecard-clip,
+.namecard-tilt,
+.namecard-inner {
+  pointer-events: none;
+}
+
 .namecard-face {
+  pointer-events: auto;
   backface-visibility: hidden;
   /* Duration stays 0 - this carries the swap below, and adds no motion of its
      own, so the reduced-motion sweep in e2e/reduced-motion.e2e.ts stays green. */

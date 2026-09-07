@@ -7,10 +7,8 @@
 name: CI
 
 on:
-  # Every branch, because work here is pushed straight to feature branches as
-  # often as through a PR, and main itself is only built - never tested - by the
-  # deploy workflow.
-  push:
+  # A PR update already includes the pushed commit, so also running on `push`
+  # duplicated the full checks and left a confusing skipped preview job.
   pull_request:
     branches:
       - main
@@ -116,7 +114,12 @@ jobs:
       # static checks they see a control with no height class at all, and a
       # colour pair nobody thought to list in the token table.
       #
-      # Chromium only; the config pins both viewports to it.
+      # Chromium for the sweeps, plus WebKit for one file: the namecard flip is
+      # the only thing in the app whose correctness rests on CSS 3D compositing,
+      # and Safari renders /card's back face mirror-reversed on a card nobody
+      # has flipped. Chromium never reproduces it. See the webkit project in
+      # playwright.config.ts.
+      #
       # `bunx playwright` ignores the lockfile and fetches whatever npm calls
       # latest, so it installed browsers for a different Playwright than the one
       # that then runs the tests. The day 1.63.0 shipped, CI installed 1.63.0's
@@ -126,13 +129,13 @@ jobs:
       #
       # This script runs the workspace's own playwright, so the browser and the
       # runner are always the same version bun.lock resolved.
-      - name: Install Playwright browser
+      - name: Install Playwright browsers
         run: bun run test:e2e:install
 
       # Builds the app again rather than reusing the step above, so the config
       # stays runnable from a cold checkout and does not silently depend on CI
       # step order.
-      - name: Test accessibility (tap targets, contrast)
+      - name: Test accessibility (tap targets, contrast) and the namecard flip
         run: bun run test:e2e
 
       # Storybook imports the components directly, so a rename or a changed prop
@@ -155,17 +158,6 @@ jobs:
     name: Deploy portfolio-web to Vercel Preview
     runs-on: ubuntu-latest
     needs: checks
-    # Any PR into main, or a manual run. Pushes to other branches get checks
-    # only.
-    #
-    # This used to carry a third arm for pushes to feat/portfolio-platform-2026,
-    # the branch the 2026 rebuild happened on. That branch was merged and has
-    # been deleted, so the condition could never be true again - a ref
-    # comparison against a branch that does not exist is silent dead code,
-    # which is why it outlived the branch by three weeks.
-    if: >-
-      github.event_name == 'pull_request' ||
-      github.event_name == 'workflow_dispatch'
 
     env:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}

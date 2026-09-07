@@ -168,7 +168,61 @@ The illustrated avatar (`/avataaars.svg`) is also the least "technical" element 
 mono, minimal card. Kept because it is the established portrait across the site; revisit only as a
 deliberate brand decision.
 
+## 10b. Cross-browser constraint: both faces are hidden twice
+
+`backface-visibility: hidden` on `.namecard-face` is **not** sufficient on its own. WebKit ignores
+it on first paint and renders the **back face, mirror-reversed** — backwards email, backwards "save
+contact" — on a card nobody has flipped, so the identity face never appears until a Safari visitor
+turns the card over. Every other state renders correctly, which makes it a first-paint layerisation
+bug rather than backface-visibility being ignored outright; it just happens to land on the one state
+every visitor sees first. Chromium never reproduces it.
+
+So the face turned away is hidden a **second** time, from the flip state rather than from its
+backface: a `visibility: hidden` rule keyed off `.namecard-inner[data-flipped]` in `globals.css`.
+That does not depend on the engine getting 3D backfaces right. The swap waits for the midpoint of
+the 560ms flip, when the face is edge-on and contributes nothing anyway — hiding it at `t=0` would
+blank the card for the first half of every flip, because the incoming face's own backface is still
+turned away at that point. Under reduced motion that delay collapses to zero, which needs its own
+rule: the sitewide reduced-motion block resets `transition-duration`, not `transition-delay`.
+
+Guarded by `apps/portfolio-web/e2e/namecard-flip.e2e.ts`, which is the only reason
+`playwright.config.ts` carries a WebKit project at all. If you change anything about the faces,
+their stacking, or the 3D chain above them, run that file — the rest of the suite is Chromium-only
+and cannot see this class of bug.
+
 ---
+
+## 10c. Cross-browser constraint: the rig must stay out of hit-testing
+
+`.namecard-swing`, `.namecard-tilt` and `.namecard-inner` are `transform-style: preserve-3d`, which
+means their own boxes live in the card's 3D space too — as full-width planes at z = 0, coplanar
+with the faces. Lean the card and the half turning away from the viewer passes _behind_ those
+planes, and hit-testing hands that half to the container rather than to the face painted in front
+of it.
+
+Nothing looks wrong, because the containers paint nothing. The card reads as normal while half of
+it takes no hover, no focus and no clicks — and this is not a corner case: the hover lean holds the
+card at 9° for as long as the pointer is over it, which is the whole time a mouse user is reaching
+for a control, and the entrance peek swings through 17° on every visit. Swept across the icon row
+at the 9° lean, where `L`/`W`/`G`/`L` are the four contact links and `x` reaches nothing at all:
+
+```
+xxxxxxxxxxxxxxxxxxx.GGGGGGx.LLLLxLLxx..
+```
+
+LINE and WhatsApp — the two leftmost icons — were the entire dead half, on Chromium and WebKit
+alike.
+
+So the rig carries `pointer-events: none` and `.namecard-face` puts it back. The rig is pure
+transform scaffolding and the strap and clip are decorative, so none of them lose anything;
+`.namecard-stage` keeps its own hit area, so the `:hover` lean still engages across the whole rig.
+
+**If you add a rotation anywhere in the rig, or a new element to it, that element must not be
+hit-testable.** Three tests in `e2e/namecard-flip.e2e.ts` hold this on all three engine projects.
+They probe with a real pointer and read `:hover` back, because `document.elementFromPoint` answers
+`.namecard-stage` for every point on this subtree in WebKit, including points a real click
+demonstrably lands on — measuring that API instead of the behaviour invents a WebKit-only failure
+that does not exist.
 
 ## 11. The lanyard (`/card` only)
 
@@ -231,9 +285,10 @@ negotiating with it.
 
 ### Open
 
-- **Safari is unverified.** The 3D chain is `perspective` → `preserve-3d` ×3 →
-  `backface-visibility: hidden`, and Safari flattens more eagerly than Chromium. Verified in
-  Chrome only.
+- ~~**Safari is unverified.**~~ Closed. The 3D chain is `perspective` → `preserve-3d` ×3 →
+  `backface-visibility: hidden`, and Safari does flatten more eagerly than Chromium — it cost one
+  paint bug (section 10b) and contributed to one hit-testing bug (section 10c). WebKit now runs the
+  `namecard-flip` spec as its own Playwright project.
 - **The print card has no punched slot**, so the physical and digital cards now diverge at the top
   edge. Section 1's premise says they should be the same object. Either the print card gains a
   slot or this is an accepted, documented divergence.

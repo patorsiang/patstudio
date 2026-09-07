@@ -353,6 +353,7 @@ body {
 }
 
 .namecard-inner {
+  --namecard-face-swap: 280ms;
   transform-style: preserve-3d;
   transition: transform 560ms cubic-bezier(0.2, 0, 0.2, 1);
 }
@@ -361,12 +362,92 @@ body {
   transform: rotateY(180deg);
 }
 
+/*
+ * The rig carries no interaction; only the two faces do.
+ *
+ * .namecard-swing, .namecard-tilt and .namecard-inner are transform-style:
+ * preserve-3d containers, which means their OWN boxes live in the card's 3D
+ * space too - as full-width planes at z = 0, coplanar with the faces. The
+ * moment anything rotates the card about Y, the half turning away from the
+ * viewer passes BEHIND those planes, and hit-testing then hands every point
+ * on that half to the container rather than to the face in front of it.
+ *
+ * Nothing is painted differently, because the containers paint nothing: the
+ * card looks entirely normal while half of it silently stops responding to
+ * hover, focus and clicks. And this is not an edge case - the hover lean
+ * above rotates the card 9deg for as long as the pointer is over it, which is
+ * the whole time a mouse user is reaching for a control, and the entrance
+ * peek swings through 17deg on every visit. Measured at the 9deg lean: 32% of
+ * the back face reachable and 53% of the front, with LINE and WhatsApp (the
+ * two leftmost icons) unreachable at every point on them.
+ *
+ * Taking the rig out of hit-testing costs nothing - it is pure transform
+ * scaffolding, and the strap and clip are decorative - and it puts every
+ * point back on whichever face is painted there. .namecard-stage keeps its
+ * own hit area, so the :hover lean still engages across the whole rig.
+ *
+ * Guarded by the two "leaning card" tests in e2e/namecard-flip.e2e.ts.
+ */
+.namecard-strap,
+.namecard-swing,
+.namecard-clip,
+.namecard-tilt,
+.namecard-inner {
+  pointer-events: none;
+}
+
 .namecard-face {
+  pointer-events: auto;
   backface-visibility: hidden;
+  /* Duration stays 0 - this carries the swap below, and adds no motion of its
+     own, so the reduced-motion sweep in e2e/reduced-motion.e2e.ts stays green. */
+  transition: visibility 0s;
 }
 
 .namecard-face--back {
   transform: rotateY(180deg);
+}
+
+/*
+ * The away-facing face is hidden a second time, from the flip state rather
+ * than from its backface.
+ *
+ * backface-visibility alone is not enough on WebKit. On first paint it shows
+ * the BACK face, mirror-reversed - backwards email, backwards "save contact" -
+ * on a card nobody has flipped yet, and the identity face never appears until
+ * the visitor turns the card over. Every other state renders correctly, so
+ * this is a first-paint layerisation bug rather than backface-visibility being
+ * ignored outright, but it lands on the one state every visitor sees first.
+ * Chromium never reproduces it. Guarded by e2e/namecard-flip.e2e.ts.
+ *
+ * This rule does not care whether the engine gets 3D backfaces right: the face
+ * turned away is the one `data-flipped` says is turned away. It also tightens
+ * the a11y story, since `visibility: hidden` drops the away face out of the
+ * accessibility tree, matching the aria-hidden and inert the component already
+ * sets on it.
+ *
+ * The swap waits for the midpoint of the 560ms flip, when the face is edge-on
+ * and contributes nothing anyway. Hiding it at t=0 would blank the card for
+ * the first half of every flip: the incoming face's own backface is still
+ * turned away at that point, so neither face would paint.
+ */
+.namecard-inner:not([data-flipped="true"]) .namecard-face--back,
+.namecard-inner[data-flipped="true"] .namecard-face:not(.namecard-face--back) {
+  visibility: hidden;
+  /* Only the hidden side carries the delay, so a face coming back into view
+     appears at once while the one leaving waits for the halfway point. */
+  transition-delay: var(--namecard-face-swap);
+}
+
+/*
+ * The one bespoke reduced-motion rule on the namecard. The sitewide block
+ * below collapses transition-DURATION, not transition-delay, so without this
+ * an instant flip would still sit on a blank card for 280ms.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .namecard-inner {
+    --namecard-face-swap: 0s;
+  }
 }
 
 /*

@@ -47,7 +47,7 @@ Standardized security utilities are provided in `@patorsiang/utils`:
 
 ### 4. Dependency Auditing
 
-`bun run security:audit` fails on any **high**-severity advisory in the dependency tree, and CI runs it on every push (`Audit dependencies`, in the `checks` job). Treat a red audit as a build failure like any other — do not merge past it.
+`bun run security:audit` fails on any **high**-severity advisory in the dependency tree, and CI runs it for every pull request into `main` and every manual CI run (`Audit dependencies`, in the `checks` job). Treat a red audit as a build failure like any other — do not merge past it.
 
 Transitive versions are pinned through the `overrides` block in the root `package.json`. Reach for an override only when a dependent pins a vulnerable version it will not update on its own; prefer `bun update` first.
 

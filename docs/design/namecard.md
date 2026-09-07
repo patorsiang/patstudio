@@ -168,6 +168,28 @@ The illustrated avatar (`/avataaars.svg`) is also the least "technical" element 
 mono, minimal card. Kept because it is the established portrait across the site; revisit only as a
 deliberate brand decision.
 
+## 10b. Cross-browser constraint: both faces are hidden twice
+
+`backface-visibility: hidden` on `.namecard-face` is **not** sufficient on its own. WebKit ignores
+it on first paint and renders the **back face, mirror-reversed** — backwards email, backwards "save
+contact" — on a card nobody has flipped, so the identity face never appears until a Safari visitor
+turns the card over. Every other state renders correctly, which makes it a first-paint layerisation
+bug rather than backface-visibility being ignored outright; it just happens to land on the one state
+every visitor sees first. Chromium never reproduces it.
+
+So the face turned away is hidden a **second** time, from the flip state rather than from its
+backface: a `visibility: hidden` rule keyed off `.namecard-inner[data-flipped]` in `globals.css`.
+That does not depend on the engine getting 3D backfaces right. The swap waits for the midpoint of
+the 560ms flip, when the face is edge-on and contributes nothing anyway — hiding it at `t=0` would
+blank the card for the first half of every flip, because the incoming face's own backface is still
+turned away at that point. Under reduced motion that delay collapses to zero, which needs its own
+rule: the sitewide reduced-motion block resets `transition-duration`, not `transition-delay`.
+
+Guarded by `apps/portfolio-web/e2e/namecard-flip.e2e.ts`, which is the only reason
+`playwright.config.ts` carries a WebKit project at all. If you change anything about the faces,
+their stacking, or the 3D chain above them, run that file — the rest of the suite is Chromium-only
+and cannot see this class of bug.
+
 ---
 
 ## 11. The lanyard (`/card` only)

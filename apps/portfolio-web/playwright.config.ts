@@ -28,7 +28,8 @@ export default defineConfig({
     // 375px is the narrowest width the design system targets, and the width at
     // which the nav wraps - so it is where tap targets are tightest. Pinned to
     // Chromium rather than devices["iPhone SE"] (which is WebKit) so CI only
-    // downloads one browser; this measures layout, not engine differences.
+    // downloads one browser for the sweeps; they measure layout, not engine
+    // differences. The `webkit` project below is the deliberate exception.
     {
       name: "mobile",
       use: {
@@ -39,6 +40,19 @@ export default defineConfig({
       },
     },
     { name: "desktop", use: { ...devices["Desktop Chrome"] } },
+    // Everything above measures layout, where one engine is enough. The
+    // namecard's flip does not: it is the only thing in the app whose
+    // correctness rests on CSS 3D compositing, and WebKit gets it wrong in a
+    // way Chromium never reproduces - /card renders its BACK face, mirror
+    // reversed, on a card nobody has flipped, so the first thing a Safari
+    // visitor sees is backwards text. Nothing else in the suite could catch
+    // that. Scoped by testMatch to just that file, so the second browser
+    // download buys exactly the coverage that needs it and nothing else.
+    {
+      name: "webkit",
+      testMatch: "**/namecard-flip.e2e.ts",
+      use: { ...devices["Desktop Safari"] },
+    },
   ],
   webServer: {
     command: `bun run build && bun run start --port ${port}`,

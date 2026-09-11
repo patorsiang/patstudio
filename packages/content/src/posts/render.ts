@@ -134,8 +134,15 @@ export function renderPostBody(markdown: string, { imageSizes }: RenderOptions):
     // and makes the layout worse than leaving it to the CSS.
     const dimensions = size ? ` width="${size[0]}" height="${size[1]}"` : "";
 
+    // The src is the fallback for a browser that ignores srcset, so it wants the
+    // largest candidate. CANDIDATE_WIDTHS is ascending and filter preserves
+    // order, so that is the last element - but Math.max says which one it is
+    // rather than where it sits, and types as number, where .at(-1) would widen
+    // to number | undefined and fail optimizedSrc's signature.
+    const largest = Math.max(...widths);
+
     return (
-      `<img src="${escapeHtml(optimizedSrc(source, widths[widths.length - 1]))}"` +
+      `<img src="${escapeHtml(optimizedSrc(source, largest))}"` +
       ` srcset="${escapeHtml(srcset)}" sizes="${escapeHtml(SIZES)}"${dimensions}` +
       ` alt="${safeAlt}" loading="lazy" decoding="async" />`
     );

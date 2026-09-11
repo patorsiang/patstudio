@@ -35,6 +35,16 @@ const contentSecurityPolicy = [
 ].join("; ");
 
 const nextConfig: NextConfig = {
+  /**
+   * Next allows only one `next dev` per dist directory - it takes a lock
+   * there. The e2e suite runs its own dev server (playwright.config.ts's
+   * `devPort` comment explains why the hydration spec cannot use the
+   * production build), so without an override, having `bun dev` running would
+   * stop the entire e2e suite from starting. The test server sets
+   * NEXT_DIST_DIR to a directory inside the already-gitignored .next/, which
+   * gives it its own lock and leaves a developer's dev server alone.
+   */
+  distDir: process.env.NEXT_DIST_DIR ?? ".next",
   transpilePackages: ["@patorsiang/content", "@patorsiang/cv-engine"],
   async headers() {
     return [

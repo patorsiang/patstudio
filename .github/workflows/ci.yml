@@ -135,7 +135,7 @@ jobs:
       # Builds the app again rather than reusing the step above, so the config
       # stays runnable from a cold checkout and does not silently depend on CI
       # step order.
-      - name: Test accessibility (tap targets, contrast) and the namecard flip
+      - name: Test accessibility, hydration and the namecard flip
         run: bun run test:e2e
 
       # Storybook imports the components directly, so a rename or a changed prop

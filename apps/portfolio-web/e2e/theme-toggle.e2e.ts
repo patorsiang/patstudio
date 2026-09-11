@@ -199,7 +199,46 @@ test("an explicit choice outranks the system flipping underneath it", async ({ p
   await themeButton(page, "light").click();
   await expect.poll(() => appliedTheme(page)).toBe("light");
 
+  // A witness for the event itself, registered after GlobalNav's own listener
+  // and before the flip. This is what makes the negative assertion below mean
+  // anything: it is not enough that the theme stayed light, the browser has to
+  // have actually delivered the change that the page then declined to follow.
+  // The coalescing failure described above is invisible without it, and a
+  // fixed sleep here goes green against a browser that fired nothing at all.
+  await page.evaluate(() => {
+    const w = window as typeof window & { __systemFlip?: boolean };
+    w.__systemFlip = false;
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener(
+      "change",
+      () => {
+        w.__systemFlip = true;
+      },
+      { once: true },
+    );
+  });
+
   await page.emulateMedia({ colorScheme: "dark" });
+
+  await expect
+    .poll(
+      () =>
+        page.evaluate(
+          () => (window as typeof window & { __systemFlip?: boolean }).__systemFlip === true,
+        ),
+      { message: "the browser never delivered the prefers-color-scheme change" },
+    )
+    .toBe(true);
+
+  // Dispatch order across distinct MediaQueryList objects is unspecified, so
+  // the witness firing does not on its own prove GlobalNav's handler has run.
+  // Two frames is the settle point for a React state update and its commit,
+  // and unlike a duration it is anchored to an event that demonstrably fired.
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+      ),
+  );
 
   // Protected twice over: handleChange skips the recompute when anything is
   // stored (GlobalNav.tsx:52-56), and applyPreferredTheme prefers the stored
@@ -207,7 +246,6 @@ test("an explicit choice outranks the system flipping underneath it", async ({ p
   // this up, so this assertion only goes red when both are gone - which is
   // the right sensitivity. It guards the property a reader cares about, not
   // whichever line currently happens to deliver it.
-  await page.waitForTimeout(300);
   expect(await appliedTheme(page), "the system override beat an explicit choice").toBe("light");
 });
 

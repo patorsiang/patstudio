@@ -126,16 +126,33 @@ test.describe("the namecard flip", () => {
     // deferred retarget in NamecardFlip's layout effect a keyboard user is
     // left on <body> - tabbing from the top of the document again, with no
     // indication the card even turned.
+    // That retarget is deliberately one requestAnimationFrame behind the
+    // attribute (NamecardFlip.tsx:148-157): `inert` has to be gone from the DOM
+    // *and* painted before the new target will accept focus at all. So
+    // data-flipped turning true does not mean focus has moved yet, and reading
+    // activeElement once, right after that attribute, races the frame - green
+    // on a quiet machine, red on a loaded CI runner under the full suite, which
+    // is exactly how this first failed. Poll until focus settles off <body>,
+    // then ask where it actually went.
+    await expect
+      .poll(
+        () =>
+          page.evaluate(() => {
+            const active = document.activeElement;
+            return active !== null && active !== document.body;
+          }),
+        { message: "focus was dropped on the body after the flip" },
+      )
+      .toBe(true);
+
     const landedOn = await page.evaluate(() => {
       const active = document.activeElement as HTMLElement | null;
       return {
         tag: active?.tagName.toLowerCase() ?? "none",
-        onBody: active === document.body || active === null,
         insideVisibleFace: Boolean(active?.closest(".namecard-face--back")),
       };
     });
 
-    expect(landedOn.onBody, "focus was dropped on the body after the flip").toBe(false);
     expect(
       landedOn.insideVisibleFace,
       `focus landed on a <${landedOn.tag}> off the visible face`,

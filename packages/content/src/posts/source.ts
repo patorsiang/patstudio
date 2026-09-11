@@ -5,8 +5,9 @@
  * Separate from `fetch.ts` because `render.ts` needs the same resolution and
  * `fetch.ts` already imports `render.ts` - putting the base URL in `fetch.ts`
  * would make that a cycle. Both sides must agree on the answer: `fetch.ts`
- * uses it to decide what to vendor, `render.ts` to look the result up. A
- * disagreement here silently un-vendors an image.
+ * uses it to decide which images to measure, `render.ts` to look those
+ * measurements up. A disagreement here silently costs an image its
+ * dimensions.
  */
 const OWNER = "patorsiang";
 const REPO = "thinking-in-public";

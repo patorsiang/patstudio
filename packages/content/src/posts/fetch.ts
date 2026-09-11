@@ -14,12 +14,12 @@ export function orderPosts<T extends Pick<Post, "date">>(posts: readonly T[]): T
 
 /**
  * Exported for testing. Every image a post points at somewhere other than this
- * site, as an absolute URL - the set the vendoring script downloads.
+ * site, as an absolute URL - the set `scripts/post-image-manifest.ts` measures.
  *
  * Resolution happens before deduplication so that two spellings of the same
  * file collapse to one key. `render.ts` looks images up by the same resolved
- * URL; if the two ever disagree, an image is vendored under a key nothing
- * asks for and silently renders as a link instead.
+ * URL; if the two ever disagree, a size is recorded under a key nothing asks
+ * for and the image silently renders without its dimensions.
  */
 export function selectImageUrls(markdown: string): string[] {
   const found = [...markdown.matchAll(/!\[[^\]]*\]\(([^)]*)\)/g)]
@@ -84,7 +84,7 @@ async function listPostPaths(): Promise<string[]> {
  * Every post, newest first, with `body` still raw markdown - not rendered to
  * HTML.
  *
- * Exported separately from `fetchPosts` because the vendoring script needs
+ * Exported separately from `fetchPosts` because the manifest script needs
  * markdown link syntax (`![alt](url)`) to find image URLs with
  * `selectImageUrls`, and `renderPostBody` has already turned that into `<img>`
  * tags by the time `fetchPosts` returns. This is the single place that lists
@@ -162,17 +162,18 @@ export function settleFetchedPosts(
  * back to the committed summaries — the decision to degrade belongs there,
  * not here, so this stays honest about what it could not do.
  *
- * `vendoredImages` is supplied by the caller because vendoring writes to
- * public/ and only the build can do that; ISR passes an empty map, which makes
- * a not-yet-vendored image render as a link.
+ * `imageSizes` is supplied by the caller because it is generated at rest by
+ * `scripts/post-image-manifest.ts` and lives in the app, not here. The default
+ * empty map is the honest degradation: images still render and are still
+ * optimized, they just have no reserved height and reflow on load.
  */
 export async function fetchPosts(
-  vendoredImages: ReadonlyMap<string, string> = new Map(),
+  imageSizes: ReadonlyMap<string, readonly [number, number]> = new Map(),
 ): Promise<Post[]> {
   const posts = await fetchRawPosts();
 
   return posts.map((post) => ({
     ...post,
-    body: renderPostBody(post.body, { vendoredImages }),
+    body: renderPostBody(post.body, { imageSizes }),
   }));
 }

@@ -168,7 +168,14 @@ async function awaitFaceSwap(page: Page) {
             "hidden",
         ).length === 1,
       [FRONT_FACE, BACK_FACE],
-      { timeout: 2000 },
+      // 2000ms here was enough when this file ran alongside sixteen specs and
+      // too tight once the suite grew past thirty: under a full parallel run
+      // the page can still be settling when the budget expires, the wait falls
+      // through by design, and the assertion then reports a mid-swap state as
+      // a product failure. Raising it changes nothing about a passing run -
+      // the poll returns as soon as exactly one face is hidden - and only
+      // costs the extra seconds on a run that was going to fail anyway.
+      { timeout: 15_000 },
     )
     .catch(() => {});
 }

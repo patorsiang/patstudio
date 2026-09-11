@@ -1,3 +1,4 @@
+import { POST_IMAGE_SOURCES } from "@patorsiang/content/posts/image-hosts";
 import type { NextConfig } from "next";
 
 const isDevelopment = process.env.NODE_ENV === "development";
@@ -46,6 +47,28 @@ const nextConfig: NextConfig = {
    */
   distDir: process.env.NEXT_DIST_DIR ?? ".next",
   transpilePackages: ["@patorsiang/content", "@patorsiang/cv-engine"],
+  /*
+   * Post images are not committed to this repo - they stay in
+   * `thinking-in-public` and reach the reader through /_next/image, which
+   * resizes them, re-encodes to AVIF/WebP, and serves the result from this
+   * origin. That last part is why img-src can stay 'self': whatever the source
+   * host, the URL in the page is same-origin, and `remotePatterns` below is
+   * the allowlist doing the work CSP would otherwise have to.
+   *
+   * The pattern list is shared with `render.ts` so the two cannot drift; see
+   * packages/content/src/posts/image-hosts.ts.
+   */
+  images: {
+    remotePatterns: POST_IMAGE_SOURCES.map(({ protocol, hostname, pathname }) => ({
+      protocol,
+      hostname,
+      pathname,
+    })),
+    formats: ["image/avif", "image/webp"],
+    // A published post's images never change, and the origin is a repo host
+    // with no CDN contract - there is nothing to gain from re-fetching them.
+    minimumCacheTTL: 2_592_000,
+  },
   async headers() {
     return [
       {

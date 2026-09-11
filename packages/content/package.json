@@ -5,7 +5,8 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./posts": "./src/posts/index.ts"
+    "./posts": "./src/posts/index.ts",
+    "./posts/image-hosts": "./src/posts/image-hosts.ts"
   },
   "types": "./src/index.ts",
   "scripts": {

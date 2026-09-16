@@ -628,7 +628,29 @@ body {
   .cv-print-article {
     color: #18181b;
     font-size: 9.75px;
-    line-height: 1.2;
+  }
+
+  /*
+   * Leading is a readability lever, not a cosmetic one: a recruiter scans a CV in
+   * seconds and cramped lines are what makes them skim past the numbers. 1.45 is the
+   * comfortable value and it is expensive - it costs ~100px on the fullest CV, paid
+   * for by the role limits in `cv-engine`'s config rather than by tightening this back.
+   *
+   * The element selectors are load-bearing. Most text carries a Tailwind `leading-*`
+   * utility, so `line-height` on `.cv-print-article` alone loses the cascade and does
+   * nothing; and a blanket `*` is wrong in the other direction, because it would drag
+   * the summary (which sets its own, looser leading) back down.
+   *
+   * Re-run `bun run test:e2e cv-page-fit` after changing this.
+   */
+  .cv-print-article {
+    line-height: 1.45;
+  }
+
+  .cv-print-article p,
+  .cv-print-article li,
+  .cv-print-article h3 {
+    line-height: 1.45;
   }
 
   .cv-print-article header {
@@ -663,7 +685,10 @@ body {
 
   .cv-print-stack {
     margin-top: 5px;
-    row-gap: 5px;
+  }
+
+  .cv-print-stack > * + * {
+    margin-top: 5px;
   }
 
   .cv-print-compact-list {

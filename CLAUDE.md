@@ -25,8 +25,25 @@ bun test && bun run typecheck && bun run lint && bun run format:check
 ## Hard-won conventions not written elsewhere
 
 - **Tailwind custom-property syntax**: use `bg-(--color-x)`, not `bg-[var(--color-x)]`. That's the project convention for referencing the `--color-*` tokens defined in `apps/portfolio-web/src/app/globals.css` (see `docs/design/design-system.md` for the token table).
-- **CV print CSS**: whenever you touch anything under `apps/portfolio-web/src/app/cv/` or its print rules in `globals.css`, manually verify (a) dark-mode print contrast and (b) that content still fits the page. Printed output breaks silently and there's no automated check for it.
+- **CV pages must be full pages.** A generated CV should fill whatever sheets it uses — the
+  target is roughly 90-98% of the last sheet, which is where `security_engineer` sits.
+  Never ship a CV that spills a few pixels past a page: the extra A4 arrives holding one
+  line of Languages, which reads worse than a dense single page. This applies to the second
+  sheet as much as the first — if a CV ever justifies two pages, page two has to earn it.
+  `apps/portfolio-web/e2e/cv-page-fit.e2e.ts` enforces both halves (within budget, and no
+  sheet under 25% full); run `bun run test:e2e cv-page-fit` after touching role limits,
+  content, or print CSS. Fill is tuned through `roleConfigs[role].limits` and the content
+  itself, not by tightening print CSS — print leading is set to 1.45 for readability and
+  is not the place to claw back space; a recruiter scans in seconds and cramped lines are
+  what makes them skim past the numbers. Leave ~30px of headroom — at under ~15px a font
+  fallback tips it onto a second sheet. One A4 print box is 726x1070px (A4 less the
+  `@page { margin: 7mm 9mm }` in `globals.css`).
+  `apple_specialist` is the deliberate exception at 68%: it drops skills and projects
+  because an engineering wall works against a retail application, and padding it back would
+  undo that.
+
+- **CV print CSS**: whenever you touch anything under `apps/portfolio-web/src/app/cv/` or its print rules in `globals.css`, manually verify dark-mode print contrast — printed output breaks silently and nothing checks colour. Page fit _is_ checked now (see the bullet above), but contrast still isn't.
 - **CV content is a real document, not fixture data.** `packages/content/src/data/experiences.ts` and `projects.ts` feed the user's actual job-search CVs. Never add a number, stat, or claim that isn't sourced from something verifiable — the user directly, a linked repo/README, or an official source. A fabricated metric on a real CV is a correctness bug with real-world consequences, not a style nit. Mark AI-authored Thai translations `status: "ai_draft"`, not `"reviewed"` or `"approved"`.
-- **`cv-engine` experience selection** (`packages/cv-engine/src/experience-selection.ts`): each CV role filters experience by tag relevance (`selectExperiencesForRole`), which can silently drop a real job and leave what reads as an unexplained multi-year employment gap. `selectBridgingExperiences` backfills the minimum needed to keep the timeline continuous, rendered as a compact "Additional Experience" section. If you add a role or change tag filters, check the resulting timeline for gaps — not just relevance scores.
+- **`cv-engine` experience selection** (`packages/cv-engine/src/experience-selection.ts`): tag relevance can silently drop a real job and leave what reads as an unexplained employment gap; `selectBridgingExperiences` backfills the minimum needed to close it. If you add a role or change tag filters, check the resulting timeline for gaps — not just relevance scores. Full reasoning, verified behaviour and known limitations: `docs/decisions/0002-cv-timeline-gap-bridging.md`.
 - **Local QA on `apps/portfolio-web` can lie to you.** It registers a service worker (`ServiceWorkerRegistration`) that precaches pages and chunks. Rebuilding and restarting `bun run start` does not guarantee the browser fetches the new build — the already-open tab stays controlled by whatever service worker it loaded with, and unregistering it plus clearing `caches` from that tab still isn't enough, since the app re-registers a worker on the very next page load and browsers can hand control back before you've verified anything. The only way to be sure you're testing the current build is a **fresh origin with no prior visit history** (a new port is the easy way) — otherwise you can spend a long time debugging a fix that already works, against a page that was never actually running it.
 - **Satori (`next/og`'s `ImageResponse`, used by every `opengraph-image.tsx`) requires an explicit `display` on any `<div>` with more than one child.** `{a} · {b}` compiles to three JSX children — two expressions plus the literal `" · "` string — not one, and fails the production build with `Expected <div> to have explicit "display"...`. Use a single template-literal child instead: ``{`${a} · ${b}`}``.

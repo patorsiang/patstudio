@@ -97,7 +97,7 @@ describe("filterProjectsForRole", () => {
     expect(result).toEqual([]);
   });
 
-  test("excludes private, other locale, and archived projects", () => {
+  test("excludes private and other-locale projects", () => {
     const privateProject = makeProject({
       slug: "private",
       tags: ["required-tag"],
@@ -108,19 +108,53 @@ describe("filterProjectsForRole", () => {
       tags: ["required-tag"],
       locale: "th",
     });
+
+    const result = filterProjectsForRole([privateProject, otherLocale], baseRoleConfig, "en");
+
+    expect(result).toEqual([]);
+  });
+
+  test("excludes playground and hidden placements", () => {
+    const playground = makeProject({
+      slug: "playground",
+      tags: ["required-tag"],
+      placement: "playground",
+    });
+    const hidden = makeProject({
+      slug: "hidden",
+      tags: ["required-tag"],
+      placement: "hidden",
+    });
+
+    const result = filterProjectsForRole([playground, hidden], baseRoleConfig, "en");
+
+    expect(result).toEqual([]);
+  });
+
+  test("keeps both project-list placements", () => {
+    const featured = makeProject({
+      slug: "featured",
+      tags: ["required-tag"],
+      placement: "featured-project",
+    });
+    const listed = makeProject({ slug: "listed", tags: ["required-tag"], placement: "project" });
+
+    const result = filterProjectsForRole([featured, listed], baseRoleConfig, "en");
+
+    expect(result.map((project) => project.slug)).toEqual(["featured", "listed"]);
+  });
+
+  test("keeps an archived project that is still placed on a project list", () => {
     const archived = makeProject({
       slug: "archived",
       tags: ["required-tag"],
       status: "archived",
+      placement: "project",
     });
 
-    const result = filterProjectsForRole(
-      [privateProject, otherLocale, archived],
-      baseRoleConfig,
-      "en",
-    );
+    const result = filterProjectsForRole([archived], baseRoleConfig, "en");
 
-    expect(result).toEqual([]);
+    expect(result.map((project) => project.slug)).toEqual(["archived"]);
   });
 
   test("normalizes tag forms consistently", () => {
@@ -145,19 +179,33 @@ describe("generateCV project filtering", () => {
   test("ai_ml_engineer only keeps eligible projects before ranking and limiting", () => {
     const cv = generateCV("ai_ml_engineer", "en");
 
+    // Both are ML work and the dissertation leads. CHI is eligible but ranks third and
+    // is cut by the limit, which is the intent: a cultural-heritage PWA is not evidence
+    // for an AI/ML role.
     expect(cv.projects.map((project) => project.id)).toEqual([
       "project.rugpull-detection",
-      "project.chi-cultural-heritage-pwa",
+      "project.food101-classification",
     ]);
   });
 
-  test("security_engineer does not reintroduce archived projects", () => {
+  test("security_engineer does not reintroduce playground or hidden projects", () => {
     const cv = generateCV("security_engineer", "en");
-    const archivedIds = new Set(
-      projects.filter((project) => project.status === "archived").map((project) => project.id),
+    const offCvIds = new Set(
+      projects
+        .filter((project) => project.placement === "playground" || project.placement === "hidden")
+        .map((project) => project.id),
     );
 
     expect(cv.projects.length).toBeGreaterThan(0);
-    expect(cv.projects.every((project) => !archivedIds.has(project.id))).toBe(true);
+    expect(cv.projects.every((project) => !offCvIds.has(project.id))).toBe(true);
+  });
+
+  test("an archived status does not by itself keep a project off a CV", () => {
+    const cv = generateCV("security_engineer", "en");
+    const archivedOnCv = cv.projects.filter((generated) =>
+      projects.some((project) => project.id === generated.id && project.status === "archived"),
+    );
+
+    expect(archivedOnCv.length).toBeGreaterThan(0);
   });
 });

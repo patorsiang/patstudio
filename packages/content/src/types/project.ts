@@ -13,9 +13,15 @@ export type ProjectCategory =
   | "tutorial-learning"
   | "iot";
 
+/** Where a project is in its development lifecycle. Says nothing about who sees it. */
 export type ProjectStatus =
   "idea" | "prototype" | "in-progress" | "launched" | "paused" | "archived";
 
+/**
+ * Who sees a project, and where. This — not `status` — decides CV inclusion:
+ * `featured-project` and `project` reach a CV, `playground` and `hidden` do not.
+ * See `cv-engine`'s `filterProjectsForRole`.
+ */
 export type ProjectPlacement = "featured-project" | "project" | "playground" | "hidden";
 
 export type ContributionType = "solo" | "team" | "open-source" | "academic" | "tutorial";

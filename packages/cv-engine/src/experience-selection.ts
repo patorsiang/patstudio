@@ -73,11 +73,16 @@ export function selectBridgingExperiences(
       experience.visibility === "public" && isContentAvailableForLanguage(experience.locale, lang),
   );
 
+  const employmentIntervals = selected.map((item) =>
+    experienceInterval(item.experience, referenceMonthIndex),
+  );
+
   const explainedIntervals = [
-    ...selected.map((item) => experienceInterval(item.experience, referenceMonthIndex)),
+    ...employmentIntervals,
     ...visible
       .filter((experience) => experience.type === "education")
-      .map((experience) => experienceInterval(experience, referenceMonthIndex)),
+      .map((experience) => experienceInterval(experience, referenceMonthIndex))
+      .filter((interval) => !isConcurrentWithEmployment(interval, employmentIntervals)),
   ];
 
   const excludedTags = normalizedTagSet(roleConfig.excludedTags ?? []);
@@ -119,23 +124,57 @@ export function selectBridgingExperiences(
     );
 }
 
-function toMonthIndex(value: string): number | null {
-  const match = value.match(/^(\d{4})-(\d{2})$/);
+const JANUARY = 0;
+const DECEMBER = 11;
+
+/**
+ * Content dates are `YYYY-MM`, or `YYYY` when only the year is known. A year-only date
+ * stands for the whole year, so `yearOnlyMonth` widens it to whichever end of the year
+ * the caller needs: January to open an interval, December to close one.
+ */
+function toMonthIndex(value: string, yearOnlyMonth: number): number | null {
+  const match = value.match(/^(\d{4})(?:-(\d{2}))?$/);
 
   if (!match) {
     return null;
   }
 
-  return Number.parseInt(match[1], 10) * 12 + (Number.parseInt(match[2], 10) - 1);
+  const month = match[2] === undefined ? yearOnlyMonth : Number.parseInt(match[2], 10) - 1;
+
+  return Number.parseInt(match[1], 10) * 12 + month;
 }
 
 function experienceInterval(experience: Experience, referenceMonthIndex: number): DateInterval {
-  const start = toMonthIndex(experience.startDate) ?? referenceMonthIndex;
+  const start = toMonthIndex(experience.startDate, JANUARY) ?? referenceMonthIndex;
   const end = experience.current
     ? referenceMonthIndex
-    : ((experience.endDate ? toMonthIndex(experience.endDate) : null) ?? referenceMonthIndex);
+    : ((experience.endDate ? toMonthIndex(experience.endDate, DECEMBER) : null) ??
+      referenceMonthIndex);
 
   return { start, end };
+}
+
+/**
+ * A degree taken alongside a job explains no time away from work, so it must not suppress
+ * bridging — treating it as explained time would hide a real employment gap behind study
+ * the person was doing *while* employed. Overlap up to the gap threshold is ordinary
+ * (a placement or summer internship during a full-time degree), so only a longer overlap
+ * counts as concurrent study.
+ *
+ * Compared against the roles already on the CV, not every role in the content set: if the
+ * reader can see a job running through the degree, the degree plainly isn't explaining
+ * absence from work. Comparing against unselected roles instead would be circular — the
+ * very candidate that could bridge a gap would disqualify the education covering it.
+ */
+function isConcurrentWithEmployment(
+  interval: DateInterval,
+  employmentIntervals: readonly DateInterval[],
+): boolean {
+  return employmentIntervals.some(
+    (employment) =>
+      Math.min(interval.end, employment.end) - Math.max(interval.start, employment.start) >
+      EMPLOYMENT_GAP_THRESHOLD_MONTHS,
+  );
 }
 
 function mergeCoverage(intervals: readonly DateInterval[]): DateInterval[] {

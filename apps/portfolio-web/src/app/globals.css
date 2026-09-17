@@ -628,6 +628,7 @@ body {
   .cv-print-article {
     color: #18181b;
     font-size: 9.75px;
+    line-height: 1.45;
   }
 
   /*
@@ -643,9 +644,6 @@ body {
    *
    * Re-run `bun run test:e2e cv-page-fit` after changing this.
    */
-  .cv-print-article {
-    line-height: 1.45;
-  }
 
   .cv-print-article p,
   .cv-print-article li,

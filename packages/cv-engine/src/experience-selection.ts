@@ -133,7 +133,7 @@ const DECEMBER = 11;
  * the caller needs: January to open an interval, December to close one.
  */
 function toMonthIndex(value: string, yearOnlyMonth: number): number | null {
-  const match = value.match(/^(\d{4})(?:-(\d{2}))?$/);
+  const match = /^(\d{4})(?:-(\d{2}))?$/.exec(value);
 
   if (!match) {
     return null;
@@ -146,12 +146,14 @@ function toMonthIndex(value: string, yearOnlyMonth: number): number | null {
 
 function experienceInterval(experience: Experience, referenceMonthIndex: number): DateInterval {
   const start = toMonthIndex(experience.startDate, JANUARY) ?? referenceMonthIndex;
-  const end = experience.current
-    ? referenceMonthIndex
-    : ((experience.endDate ? toMonthIndex(experience.endDate, DECEMBER) : null) ??
-      referenceMonthIndex);
 
-  return { start, end };
+  if (experience.current) {
+    return { start, end: referenceMonthIndex };
+  }
+
+  const end = experience.endDate ? toMonthIndex(experience.endDate, DECEMBER) : null;
+
+  return { start, end: end ?? referenceMonthIndex };
 }
 
 /**

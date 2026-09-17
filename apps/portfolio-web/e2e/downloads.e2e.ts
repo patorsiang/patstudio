@@ -112,15 +112,13 @@ test.describe("the vCard", () => {
     for (const route of routes) {
       await page.goto(route);
 
-      // One exception, and it is structural rather than an oversight: the
-      // WhatsApp channel on /card is a wa.me deep link, and a wa.me URL *is*
-      // the number - there is no form of that link that does not carry it.
-      // docs/requirements/namecard.md section 5 states the rule without the
-      // exception ("appears only in the .vcf, never in rendered HTML"), so
-      // the doc and the card disagree. Rather than weaken this to nothing,
-      // the wa.me href is subtracted and everything else still has to be
-      // clean - so a second place publishing the number would still fail.
-      const html = (await page.content()).replace(/https:\/\/wa\.me\/[0-9]+/g, "");
+      // This used to subtract the wa.me href before checking, on the reasoning
+      // that a wa.me URL *is* the number and "there is no form of that link
+      // that does not carry it". There is: /card/whatsapp redirects
+      // server-side, so the card keeps the one-tap affordance and the number
+      // stays off the page. The exception is gone and the rule in
+      // docs/requirements/namecard.md section 5 now holds as written.
+      const html = await page.content();
       if (html.replace(/\D/g, "").includes(digits)) leaked.push(route);
 
       // Nothing should print it on the page either, WhatsApp included: the

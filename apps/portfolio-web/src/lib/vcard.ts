@@ -1,4 +1,5 @@
 import type { Profile } from "@patorsiang/content";
+import { getContactPhoneE164 } from "@/lib/contact-phone";
 
 /**
  * Builds a vCard for the /card namecard's "Save Contact" download.
@@ -120,8 +121,10 @@ export function buildVCard(profile: Profile): string {
     `EMAIL;TYPE=INTERNET:${escapeValue(email)}`,
   ];
 
-  if (profile.contact.phone) {
-    lines.push(`TEL;TYPE=CELL:${escapeValue(profile.contact.phone.url.replace(/^tel:/i, ""))}`);
+  const phone = getContactPhoneE164();
+
+  if (phone) {
+    lines.push(`TEL;TYPE=CELL:${escapeValue(phone)}`);
   }
 
   lines.push(`ADR;TYPE=WORK:;;;${escapeValue(locality)};;;${escapeValue(country)}`);

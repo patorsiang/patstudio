@@ -110,176 +110,95 @@ const roleExperienceBullets: Partial<
   apple_specialist: appleExperienceBullets,
 };
 
+/**
+ * A string with its machine-translated Thai counterpart.
+ *
+ * CLAUDE.md requires AI-authored Thai to be marked `ai_draft` rather than reviewed or
+ * approved. Writing that wrapper out by hand repeated six lines per entry and made the
+ * flag easy to set wrong on a copy-paste; there is one place to get it right now.
+ */
+/** A string whose Thai counterpart has been reviewed and approved, not machine-drafted. */
+function approved(en: string, th: string): TranslatableText {
+  return { en, translated: { th: { value: th, status: "approved" } } };
+}
+
+function aiDraft(en: string, th: string): TranslatableText {
+  return { en, translated: { th: { value: th, status: "ai_draft" } } };
+}
+
 const roleText = {
   fullstack_engineer: {
-    targetTitle: {
-      en: "Full-Stack Developer",
-      translated: {
-        th: {
-          value: "Full-Stack Developer",
-          status: "approved",
-        },
-      },
-    },
-    summaryIntent: {
-      en: "Full-stack developer at SEC Playground, building cybersecurity, gamified learning, and AI features in Vue.js, Nuxt.js, Node.js, and TypeScript.",
-      translated: {
-        th: {
-          value:
-            "นักพัฒนา Full-Stack ที่พัฒนาฟีเจอร์ด้านความปลอดภัยไซเบอร์ gamified learning และ AI ที่ SEC Playground ทำงานประจำวันด้วย Vue.js, Nuxt.js, Node.js และ TypeScript",
-          status: "ai_draft",
-        },
-      },
-    },
+    targetTitle: approved("Full-Stack Developer", "Full-Stack Developer"),
+    summaryIntent: aiDraft(
+      "Full-stack developer at SEC Playground, building cybersecurity, gamified learning, and AI features in Vue.js, Nuxt.js, Node.js, and TypeScript.",
+      "นักพัฒนา Full-Stack ที่พัฒนาฟีเจอร์ด้านความปลอดภัยไซเบอร์ gamified learning และ AI ที่ SEC Playground ทำงานประจำวันด้วย Vue.js, Nuxt.js, Node.js และ TypeScript",
+    ),
     summaryBody: [
-      {
-        en: "Five years across startup, central-bank and client work: consent platforms that have since scaled to 9,000+ websites, and a blockchain government bond platform that cut bond delivery from 15 days to 2.",
-        translated: {
-          th: {
-            value:
-              "ประสบการณ์ 5 ปีในสตาร์ทอัพ ธนาคารกลาง และงานกับลูกค้าโดยตรง ทั้งแพลตฟอร์มความยินยอมด้านความเป็นส่วนตัวที่ปัจจุบันขยายไปกว่า 9,000 เว็บไซต์ และแพลตฟอร์มพันธบัตรรัฐบาลบน blockchain ที่ลดเวลาส่งมอบพันธบัตรจาก 15 วันเหลือ 2 วัน",
-            status: "ai_draft",
-          },
-        },
-      },
-      {
-        en: "MSc Advanced Computer Science with distinction, University of Kent, 2025.",
-        translated: {
-          th: {
-            value:
-              "ปริญญาโท MSc Advanced Computer Science ระดับ distinction จาก University of Kent ปี 2025",
-            status: "ai_draft",
-          },
-        },
-      },
+      aiDraft(
+        "Five years across startup, central-bank and client work: consent platforms that have since scaled to 9,000+ websites, and a blockchain government bond platform that cut bond delivery from 15 days to 2.",
+        "ประสบการณ์ 5 ปีในสตาร์ทอัพ ธนาคารกลาง และงานกับลูกค้าโดยตรง ทั้งแพลตฟอร์มความยินยอมด้านความเป็นส่วนตัวที่ปัจจุบันขยายไปกว่า 9,000 เว็บไซต์ และแพลตฟอร์มพันธบัตรรัฐบาลบน blockchain ที่ลดเวลาส่งมอบพันธบัตรจาก 15 วันเหลือ 2 วัน",
+      ),
+      aiDraft(
+        "MSc Advanced Computer Science with distinction, University of Kent, 2025.",
+        "ปริญญาโท MSc Advanced Computer Science ระดับ distinction จาก University of Kent ปี 2025",
+      ),
     ],
   },
   ai_ml_engineer: {
-    targetTitle: {
-      en: "AI / Machine Learning Engineer",
-      translated: {
-        th: {
-          value: "วิศวกร AI / Machine Learning",
-          status: "approved",
-        },
-      },
-    },
-    summaryIntent: {
-      en: "Software engineer with hands-on experience in machine learning, applied AI projects, data pipelines, and model evaluation.",
-      translated: {
-        th: {
-          value:
-            "วิศวกรซอฟต์แวร์ที่มีประสบการณ์ตรงด้าน machine learning, โปรเจกต์ AI เชิงประยุกต์, data pipelines และการประเมินโมเดล",
-          status: "ai_draft",
-        },
-      },
-    },
+    targetTitle: approved("AI / Machine Learning Engineer", "วิศวกร AI / Machine Learning"),
+    summaryIntent: aiDraft(
+      "Software engineer with hands-on experience in machine learning, applied AI projects, data pipelines, and model evaluation.",
+      "วิศวกรซอฟต์แวร์ที่มีประสบการณ์ตรงด้าน machine learning, โปรเจกต์ AI เชิงประยุกต์, data pipelines และการประเมินโมเดล",
+    ),
     summaryBody: [
-      {
-        en: "MSc Advanced Computer Science with distinction, University of Kent, 2025; the dissertation built a machine-learning pipeline over blockchain forensics features, reaching 0.94 macro F1 on an 843-contract benchmark.",
-        translated: {
-          th: {
-            value:
-              "ปริญญาโท MSc Advanced Computer Science ระดับ distinction จาก University of Kent ปี 2025 วิทยานิพนธ์พัฒนา machine-learning pipeline บนคุณลักษณะจากการตรวจสอบ blockchain ได้ค่า macro F1 0.94 บนชุดทดสอบ 843 สัญญา",
-            status: "ai_draft",
-          },
-        },
-      },
-      {
-        en: "Combines recent, project-based applied ML with five years of production software engineering: React, Vue, Node, Go and SQL-backed systems across a startup, a central bank, and direct client work.",
-        translated: {
-          th: {
-            value:
-              "ผสมผสานงาน ML เชิงประยุกต์ระดับโปรเจกต์ในช่วงหลัง เข้ากับประสบการณ์วิศวกรรมซอฟต์แวร์ที่ใช้งานจริง 5 ปี ทั้ง React, Vue, Node, Go และระบบที่ใช้ SQL ในสตาร์ทอัพ ธนาคารกลาง และงานกับลูกค้าโดยตรง",
-            status: "ai_draft",
-          },
-        },
-      },
+      aiDraft(
+        "MSc Advanced Computer Science with distinction, University of Kent, 2025; the dissertation built a machine-learning pipeline over blockchain forensics features, reaching 0.94 macro F1 on an 843-contract benchmark.",
+        "ปริญญาโท MSc Advanced Computer Science ระดับ distinction จาก University of Kent ปี 2025 วิทยานิพนธ์พัฒนา machine-learning pipeline บนคุณลักษณะจากการตรวจสอบ blockchain ได้ค่า macro F1 0.94 บนชุดทดสอบ 843 สัญญา",
+      ),
+      aiDraft(
+        "Combines recent, project-based applied ML with five years of production software engineering: React, Vue, Node, Go and SQL-backed systems across a startup, a central bank, and direct client work.",
+        "ผสมผสานงาน ML เชิงประยุกต์ระดับโปรเจกต์ในช่วงหลัง เข้ากับประสบการณ์วิศวกรรมซอฟต์แวร์ที่ใช้งานจริง 5 ปี ทั้ง React, Vue, Node, Go และระบบที่ใช้ SQL ในสตาร์ทอัพ ธนาคารกลาง และงานกับลูกค้าโดยตรง",
+      ),
     ],
   },
   security_engineer: {
-    targetTitle: {
-      en: "Security-Focused Software Engineer",
-      translated: {
-        th: {
-          value: "Software Engineer ที่เน้นด้านความปลอดภัย",
-          status: "approved",
-        },
-      },
-    },
-    summaryIntent: {
-      en: "Software engineer working on security-focused products, with blockchain and privacy-engineering experience behind it.",
-      translated: {
-        th: {
-          value:
-            "วิศวกรซอฟต์แวร์ที่ทำงานกับผลิตภัณฑ์ด้านความปลอดภัย โดยมีพื้นฐานจากงานบล็อกเชนและวิศวกรรมด้านความเป็นส่วนตัว",
-          status: "ai_draft",
-        },
-      },
-    },
+    targetTitle: approved(
+      "Security-Focused Software Engineer",
+      "Software Engineer ที่เน้นด้านความปลอดภัย",
+    ),
+    summaryIntent: aiDraft(
+      "Software engineer working on security-focused products, with blockchain and privacy-engineering experience behind it.",
+      "วิศวกรซอฟต์แวร์ที่ทำงานกับผลิตภัณฑ์ด้านความปลอดภัย โดยมีพื้นฐานจากงานบล็อกเชนและวิศวกรรมด้านความเป็นส่วนตัว",
+    ),
     summaryBody: [
-      {
-        en: "Currently building a hands-on cybersecurity training platform at SEC Playground. Earlier work included DLTBond, a Hyperledger Fabric government bond platform at the Bank of Thailand, and PDPA/GDPR consent systems that have since handled 600M+ consent records.",
-        translated: {
-          th: {
-            value:
-              "ปัจจุบันพัฒนาแพลตฟอร์มฝึกอบรมด้านความปลอดภัยไซเบอร์แบบลงมือทำที่ SEC Playground งานก่อนหน้ารวมถึง DLTBond แพลตฟอร์มพันธบัตรรัฐบาลบน Hyperledger Fabric ที่ธนาคารแห่งประเทศไทย และระบบความยินยอมตาม PDPA/GDPR ที่ปัจจุบันรองรับบันทึกความยินยอมกว่า 600 ล้านรายการ",
-            status: "ai_draft",
-          },
-        },
-      },
-      {
-        en: "MSc Advanced Computer Science with distinction, University of Kent, 2025, covering computer security, artificial intelligence, IoT and quantum computing.",
-        translated: {
-          th: {
-            value:
-              "ปริญญาโท MSc Advanced Computer Science ระดับ distinction จาก University of Kent ปี 2025 ครอบคลุมความปลอดภัยคอมพิวเตอร์ ปัญญาประดิษฐ์ IoT และควอนตัมคอมพิวติง",
-            status: "ai_draft",
-          },
-        },
-      },
+      aiDraft(
+        "Currently building a hands-on cybersecurity training platform at SEC Playground. Earlier work included DLTBond, a Hyperledger Fabric government bond platform at the Bank of Thailand, and PDPA/GDPR consent systems that have since handled 600M+ consent records.",
+        "ปัจจุบันพัฒนาแพลตฟอร์มฝึกอบรมด้านความปลอดภัยไซเบอร์แบบลงมือทำที่ SEC Playground งานก่อนหน้ารวมถึง DLTBond แพลตฟอร์มพันธบัตรรัฐบาลบน Hyperledger Fabric ที่ธนาคารแห่งประเทศไทย และระบบความยินยอมตาม PDPA/GDPR ที่ปัจจุบันรองรับบันทึกความยินยอมกว่า 600 ล้านรายการ",
+      ),
+      aiDraft(
+        "MSc Advanced Computer Science with distinction, University of Kent, 2025, covering computer security, artificial intelligence, IoT and quantum computing.",
+        "ปริญญาโท MSc Advanced Computer Science ระดับ distinction จาก University of Kent ปี 2025 ครอบคลุมความปลอดภัยคอมพิวเตอร์ ปัญญาประดิษฐ์ IoT และควอนตัมคอมพิวติง",
+      ),
     ],
   },
   apple_specialist: {
-    targetTitle: {
-      en: "Apple Specialist (Retail, Part-Time)",
-      translated: {
-        th: {
-          value: "Apple Specialist (Retail, Part-Time)",
-          status: "ai_draft",
-        },
-      },
-    },
-    summaryIntent: {
-      en: "Software developer with five years of software and technical product experience, including direct client-facing freelance work, applying for a part-time Specialist role: understanding what people need, explaining technology clearly, and following a problem through to a solution. Uses MacBook, iPad, iPhone, Apple Watch, Apple TV and AirPods daily.",
-      translated: {
-        th: {
-          value:
-            "นักพัฒนาซอฟต์แวร์ที่มีประสบการณ์ด้านซอฟต์แวร์และผลิตภัณฑ์เชิงเทคนิค 5 ปี รวมถึงงานฟรีแลนซ์ที่ทำงานกับลูกค้าโดยตรง สมัครตำแหน่ง Specialist แบบพาร์ทไทม์ ถนัดการทำความเข้าใจความต้องการของผู้ใช้ อธิบายเรื่องเทคนิคให้เข้าใจง่าย และติดตามปัญหาจนแก้ไขได้ ใช้งาน MacBook, iPad, iPhone, Apple Watch, Apple TV และ AirPods เป็นประจำทุกวัน",
-          status: "ai_draft",
-        },
-      },
-    },
+    targetTitle: aiDraft(
+      "Apple Specialist (Retail, Part-Time)",
+      "Apple Specialist (Retail, Part-Time)",
+    ),
+    summaryIntent: aiDraft(
+      "Software developer with five years of software and technical product experience, including direct client-facing freelance work, applying for a part-time Specialist role: understanding what people need, explaining technology clearly, and following a problem through to a solution. Uses MacBook, iPad, iPhone, Apple Watch, Apple TV and AirPods daily.",
+      "นักพัฒนาซอฟต์แวร์ที่มีประสบการณ์ด้านซอฟต์แวร์และผลิตภัณฑ์เชิงเทคนิค 5 ปี รวมถึงงานฟรีแลนซ์ที่ทำงานกับลูกค้าโดยตรง สมัครตำแหน่ง Specialist แบบพาร์ทไทม์ ถนัดการทำความเข้าใจความต้องการของผู้ใช้ อธิบายเรื่องเทคนิคให้เข้าใจง่าย และติดตามปัญหาจนแก้ไขได้ ใช้งาน MacBook, iPad, iPhone, Apple Watch, Apple TV และ AirPods เป็นประจำทุกวัน",
+    ),
     summaryBody: [
-      {
-        en: "A year of that was freelance, working with clients directly: establishing what they needed, agreeing the scope, and providing support after launch.",
-        translated: {
-          th: {
-            value:
-              "หนึ่งปีในจำนวนนั้นเป็นงานฟรีแลนซ์ที่ทำงานกับลูกค้าโดยตรง ตั้งแต่ทำความเข้าใจความต้องการ ตกลงขอบเขตงาน และดูแลหลังเปิดใช้งาน",
-            status: "ai_draft",
-          },
-        },
-      },
-      {
-        en: "Thai and English day to day, with elementary Korean and Chinese.",
-        translated: {
-          th: {
-            value: "ใช้ภาษาไทยและอังกฤษเป็นประจำ และมีภาษาเกาหลีกับจีนในระดับเบื้องต้น",
-            status: "ai_draft",
-          },
-        },
-      },
+      aiDraft(
+        "A year of that was freelance, working with clients directly: establishing what they needed, agreeing the scope, and providing support after launch.",
+        "หนึ่งปีในจำนวนนั้นเป็นงานฟรีแลนซ์ที่ทำงานกับลูกค้าโดยตรง ตั้งแต่ทำความเข้าใจความต้องการ ตกลงขอบเขตงาน และดูแลหลังเปิดใช้งาน",
+      ),
+      aiDraft(
+        "Thai and English day to day, with elementary Korean and Chinese.",
+        "ใช้ภาษาไทยและอังกฤษเป็นประจำ และมีภาษาเกาหลีกับจีนในระดับเบื้องต้น",
+      ),
     ],
   },
 } as const satisfies Record<

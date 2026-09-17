@@ -400,7 +400,7 @@ describe("rankProjectsForRole integration", () => {
       status: "archived",
       links: githubLinks(),
       category: "web",
-      placement: "featured-project",
+      placement: "hidden",
       timeframe: t("2025"),
     });
     const publicProject = makeProject({

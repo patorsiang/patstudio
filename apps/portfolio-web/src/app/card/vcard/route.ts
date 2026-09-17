@@ -9,10 +9,14 @@ import { buildVCard } from "@/lib/vcard";
  * payload from per-request query parameters, whereas this one has no inputs at
  * all - the profile is fixed at build time, so the file can be generated once.
  *
- * This is the only place the phone number is published. It is deliberately
- * absent from /card's rendered HTML and this route is disallowed in robots.ts,
- * which keeps the number off the crawl surface without pretending it is
- * private - see docs/requirements/namecard.md section 5.
+ * This is where the phone number is published. It is absent from /card's rendered
+ * HTML and this route is disallowed in robots.ts, which keeps the number off the
+ * crawl surface without pretending it is private - see
+ * docs/requirements/namecard.md section 5.
+ *
+ * The number comes from CONTACT_PHONE_E164, not from the content package. With the
+ * variable unset - locally, and in previews - the vCard is generated without a TEL
+ * line rather than failing.
  */
 export const dynamic = "force-static";
 

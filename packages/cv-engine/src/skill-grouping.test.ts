@@ -295,4 +295,29 @@ describe("generateCV skill grouping", () => {
     expect(first.skills).toEqual(second.skills);
     expect(first.languages).toEqual(second.languages);
   });
+  test("a one-character skill does not match unrelated keywords by substring", () => {
+    // normalizeTag("C++") is "c", and the substring test then finds it inside
+    // "machinelearning", "scikitlearn", "computervision" and "dataprocessing" - so C++
+    // was ranked as an AI/ML priority skill and printed ahead of Python. Short terms
+    // have to match a whole token, not appear anywhere inside one.
+    const group = generateCV("ai_ml_engineer", "en").skills.find(
+      (item) => item.category === "programming-fundamentals",
+    );
+
+    expect(group?.items[0]).toBe("Python");
+    expect(group?.items.indexOf("Python")).toBeLessThan(group?.items.indexOf("C++") ?? -1);
+  });
+  test("a shorter language name does not inherit a longer keyword's priority", () => {
+    // "javascript".includes("java") is true, so Java was matching the JavaScript ATS
+    // keyword and printing ahead of JavaScript/TypeScript on the full-stack CV. The
+    // legitimate version of this - React matching "React.js" - differs by a two-letter
+    // suffix, not by a whole word.
+    const group = generateCV("fullstack_engineer", "en").skills.find(
+      (item) => item.category === "programming-fundamentals",
+    );
+    const items = group?.items ?? [];
+
+    expect(items[0]).toBe("JavaScript/TypeScript");
+    expect(items.indexOf("JavaScript/TypeScript")).toBeLessThan(items.indexOf("Java"));
+  });
 });

@@ -54,7 +54,7 @@ export const experiences = [
         },
       },
       {
-        en: "Collaborated across implementation, testing, and deployment cycles to ship features into production.",
+        en: "Shipped features through the team's Git and CI/CD workflow, covering testing and Linux deployment alongside implementation.",
         translated: {
           th: {
             value:
@@ -113,12 +113,11 @@ export const experiences = [
     startDate: "2023-06",
     endDate: "2024-05",
     summary: {
-      en: "Hired for freelance work: maintained a corporate WordPress site and built responsive websites and dashboard interfaces for clients, from requirements gathering to deployment support.",
+      en: "Independent client work for small businesses, run solo from first conversation to launch.",
       translated: {
         th: {
-          value:
-            "รับงานฟรีแลนซ์: ดูแลเว็บไซต์ WordPress ขององค์กร และสร้างเว็บไซต์แบบ responsive พร้อมอินเทอร์เฟซแดชบอร์ดสำหรับลูกค้า ตั้งแต่เก็บความต้องการจนถึงสนับสนุนการนำขึ้นใช้งาน",
-          status: "reviewed",
+          value: "งานอิสระให้ลูกค้าธุรกิจขนาดเล็ก ดูแลเองตั้งแต่พูดคุยครั้งแรกจนถึงเปิดใช้งานจริง",
+          status: "ai_draft",
         },
       },
     },

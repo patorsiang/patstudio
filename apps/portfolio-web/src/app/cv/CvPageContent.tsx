@@ -1,6 +1,7 @@
 import type { CvLanguage, CvRoleId, GeneratedCV } from "@patorsiang/cv-engine";
 import { sanitizeUrl } from "@patorsiang/utils";
 import Image from "next/image";
+import { Fragment, type ReactNode } from "react";
 
 import { TextLink } from "@/components/atoms/TextLink";
 import { ExperienceCard } from "@/components/molecules/ExperienceCard";
@@ -11,6 +12,7 @@ import { PageShell } from "@/components/templates/PageShell";
 import { siteUrl } from "@/lib/seo";
 
 import { CvToolbar } from "./CvToolbar";
+import { orderedBodySections, type CvBodySection } from "./cv-sections";
 
 const sectionLabels = {
   en: {
@@ -35,6 +37,8 @@ const sectionLabels = {
   },
 } as const satisfies Record<CvLanguage, Record<string, string>>;
 
+type CvLabels = (typeof sectionLabels)[CvLanguage];
+
 const portfolioQrCodeSrc = "/portfolio-qr.svg";
 const fallbackPortfolioUrl = `${siteUrl}/`;
 
@@ -50,7 +54,7 @@ export function CvPageContent({ cv, selection }: CvPageContentProps) {
   const portfolioLink =
     cv.header.links.find((link) => link.label.toLowerCase() === "portfolio") ??
     ({ label: "Portfolio", url: fallbackPortfolioUrl } as const);
-  const portfolioDisplayUrl = stripUrlProtocol(portfolioLink.url);
+  const sections = renderSections(cv, labels);
 
   return (
     <PageShell
@@ -98,6 +102,15 @@ export function CvPageContent({ cv, selection }: CvPageContentProps) {
                   {link.label}
                 </TextLink>
               ))}
+              {/*
+                On screen these are labelled links; on paper an ATS parser only sees the
+                text, so print renders the bare URL. Without this the PDF carried no
+                GitHub or LinkedIn address at all - the QR code is not machine-readable
+                text, and only the portfolio URL survived, in the QR caption.
+              */}
+              <span className="hidden print:block">
+                {cv.header.links.map((link) => stripUrlProtocol(link.url)).join("  ·  ")}
+              </span>
               <div className="mt-3 hidden flex-col items-end gap-1 print:flex">
                 <Image
                   src={portfolioQrCodeSrc}
@@ -115,130 +128,152 @@ export function CvPageContent({ cv, selection }: CvPageContentProps) {
                   priority
                   className="h-20 w-20"
                 />
-                <span className="text-[8.5px] leading-tight text-(--color-text-muted)">
-                  Portfolio: {portfolioDisplayUrl}
-                </span>
               </div>
             </address>
           </div>
         </header>
 
         <div className="cv-print-stack mt-8 space-y-8 print:space-y-0">
-          <CVSection title={labels.summary}>
-            <p className="text-sm leading-7 text-(--color-text-muted) print:leading-6">
-              {cv.summary.text}
-            </p>
-          </CVSection>
-
-          <CVSection title={labels.skills} className="cv-print-skills">
-            <div className="cv-print-compact-list grid gap-4 sm:grid-cols-2 print:grid-cols-2">
-              {cv.skills.map((group) => (
-                <SkillGroup
-                  key={group.id}
-                  title={group.group}
-                  items={group.items}
-                  variant="inline"
-                />
-              ))}
-            </div>
-          </CVSection>
-
-          <CVSection title={labels.experience}>
-            <div className="cv-print-compact-list space-y-6 print:space-y-0">
-              {cv.experience.map((experience) => (
-                <div key={experience.id} className="cv-print-experience">
-                  <ExperienceCard
-                    title={experience.title}
-                    organization={experience.organization}
-                    location={experience.location}
-                    dateRange={formatDateRange(experience.startDate, experience.endDate)}
-                    summary={experience.summary}
-                    bullets={experience.bullets}
-                    skills={experience.skills}
-                    variant="plain"
-                  />
-                </div>
-              ))}
-            </div>
-          </CVSection>
-
-          {cv.additionalExperience.length > 0 ? (
-            <CVSection title={labels.additionalExperience}>
-              <ul className="space-y-2 text-sm leading-6 text-(--color-text-muted)">
-                {cv.additionalExperience.map((item) => (
-                  <li key={item.id}>
-                    <span className="font-semibold text-foreground">{item.title}</span>
-                    {" · "}
-                    {item.organization}
-                    {" · "}
-                    {item.dateRange}
-                  </li>
-                ))}
-              </ul>
-            </CVSection>
-          ) : null}
-
-          <CVSection title={labels.projects}>
-            <div className="cv-print-compact-list space-y-5 print:space-y-0">
-              {cv.projects.map((project) => (
-                <div key={project.id} className="cv-print-project">
-                  <ProjectCard
-                    title={project.title}
-                    subtitle={project.subtitle}
-                    summary={project.summary}
-                    technologies={project.technologies}
-                    links={project.links.map((link) => ({
-                      label: link.label,
-                      href: sanitizeUrl(link.url),
-                    }))}
-                    variant="plain"
-                  />
-                </div>
-              ))}
-            </div>
-          </CVSection>
-
-          <CVSection title={labels.education}>
-            <div className="cv-print-compact-list space-y-4 print:space-y-0">
-              {cv.education.map((education) => (
-                <div key={education.id} className="cv-print-education">
-                  <ExperienceCard
-                    title={education.degree}
-                    organization={education.organization}
-                    location={education.location}
-                    dateRange={formatDateRange(education.startDate, education.endDate)}
-                    summary={education.summary}
-                    bullets={education.bullets}
-                    variant="plain"
-                  />
-                </div>
-              ))}
-            </div>
-          </CVSection>
-
-          {cv.awards.length > 0 ? (
-            <CVSection title={labels.awards}>
-              <ul className="space-y-2 text-sm leading-6 text-(--color-text-muted)">
-                {cv.awards.map((award) => (
-                  <li key={award.id}>
-                    <span className="font-semibold text-foreground">{award.title}</span>
-                    {" · "}
-                    {award.organization}
-                  </li>
-                ))}
-              </ul>
-            </CVSection>
-          ) : null}
-
-          <CVSection title={labels.languages}>
-            <p className="cv-print-languages text-sm leading-6 text-(--color-text-muted)">
-              {cv.languages.map((language) => `${language.name}: ${language.level}`).join(" · ")}
-            </p>
-          </CVSection>
+          {orderedBodySections(cv.meta.sectionOrder, {
+            summary: Boolean(cv.summary.text),
+            skills: cv.skills.length > 0,
+            experience: cv.experience.length > 0,
+            projects: cv.projects.length > 0,
+            education: cv.education.length > 0,
+            awards: cv.awards.length > 0,
+            languages: cv.languages.length > 0,
+          }).map((section) => (
+            <Fragment key={section}>{sections[section]}</Fragment>
+          ))}
         </div>
       </article>
     </PageShell>
   );
+}
+
+function renderSections(cv: GeneratedCV, labels: CvLabels): Record<CvBodySection, ReactNode> {
+  return {
+    summary: (
+      <CVSection title={labels.summary}>
+        <p className="text-sm leading-7 text-(--color-text-muted) print:leading-6">
+          {cv.summary.text}
+        </p>
+      </CVSection>
+    ),
+
+    skills: (
+      <CVSection title={labels.skills} className="cv-print-skills">
+        <div className="cv-print-compact-list grid gap-4 sm:grid-cols-2 print:grid-cols-2">
+          {cv.skills.map((group) => (
+            <SkillGroup key={group.id} title={group.group} items={group.items} variant="inline" />
+          ))}
+        </div>
+      </CVSection>
+    ),
+
+    experience: (
+      <>
+        <CVSection title={labels.experience}>
+          <div className="cv-print-compact-list space-y-6 print:space-y-0">
+            {cv.experience.map((experience) => (
+              <div key={experience.id} className="cv-print-experience">
+                <ExperienceCard
+                  title={experience.title}
+                  organization={experience.organization}
+                  location={experience.location}
+                  dateRange={formatDateRange(experience.startDate, experience.endDate)}
+                  summary={experience.summary}
+                  bullets={experience.bullets}
+                  skills={experience.skills}
+                  variant="plain"
+                />
+              </div>
+            ))}
+          </div>
+        </CVSection>
+
+        {cv.additionalExperience.length > 0 ? (
+          <CVSection title={labels.additionalExperience}>
+            <ul className="space-y-2 text-sm leading-6 text-(--color-text-muted)">
+              {cv.additionalExperience.map((item) => (
+                <li key={item.id}>
+                  <span className="font-semibold text-foreground">{item.title}</span>
+                  {" · "}
+                  {item.organization}
+                  {" · "}
+                  {item.dateRange}
+                </li>
+              ))}
+            </ul>
+          </CVSection>
+        ) : null}
+      </>
+    ),
+
+    projects: (
+      <CVSection title={labels.projects}>
+        <div className="cv-print-compact-list space-y-5 print:space-y-0">
+          {cv.projects.map((project) => (
+            <div key={project.id} className="cv-print-project">
+              <ProjectCard
+                title={project.title}
+                subtitle={project.subtitle}
+                summary={project.summary}
+                technologies={project.technologies}
+                links={project.links.map((link) => ({
+                  label: link.label,
+                  href: sanitizeUrl(link.url),
+                }))}
+                variant="plain"
+              />
+            </div>
+          ))}
+        </div>
+      </CVSection>
+    ),
+
+    education: (
+      <CVSection title={labels.education}>
+        <div className="cv-print-compact-list space-y-4 print:space-y-0">
+          {cv.education.map((education) => (
+            <div key={education.id} className="cv-print-education">
+              <ExperienceCard
+                title={education.degree}
+                organization={education.organization}
+                location={education.location}
+                dateRange={formatDateRange(education.startDate, education.endDate)}
+                summary={education.summary}
+                bullets={education.bullets}
+                variant="plain"
+              />
+            </div>
+          ))}
+        </div>
+      </CVSection>
+    ),
+
+    awards: (
+      <CVSection title={labels.awards}>
+        <ul className="space-y-2 text-sm leading-6 text-(--color-text-muted)">
+          {cv.awards.map((award) => (
+            <li key={award.id}>
+              <span className="font-semibold text-foreground">{award.title}</span>
+              {" · "}
+              {award.organization}
+            </li>
+          ))}
+        </ul>
+      </CVSection>
+    ),
+
+    languages: (
+      <CVSection title={labels.languages}>
+        <p className="cv-print-languages text-sm leading-6 text-(--color-text-muted)">
+          {cv.languages.map((language) => `${language.name}: ${language.level}`).join(" · ")}
+        </p>
+      </CVSection>
+    ),
+  };
 }
 
 function formatDateRange(startDate: string, endDate?: string) {

@@ -16,7 +16,7 @@ export const projects = [
     },
     slug: "cryptocurrency-rug-pull-detection",
     category: "ai-ml",
-    status: "prototype",
+    status: "archived",
     summary: {
       en: "Research prototype that analyzes smart contracts, blockchain activity, and anomaly signals to flag possible DeFi rug-pull risk, reaching 0.94 macro F1 on an 843-contract benchmark.",
       translated: {
@@ -35,6 +35,11 @@ export const projects = [
     tags: [
       "ai",
       "machine-learning",
+      // Both are true of this project and were simply missing: TensorFlow is in its
+      // own techStack, and its summary calls it a research prototype. Without them it
+      // ranked below a coursework classifier on the AI/ML CV.
+      "tensorflow",
+      "research",
       "python",
       "backend",
       "frontend",
@@ -149,7 +154,7 @@ export const projects = [
     },
     slug: "smart-shoe-prototype",
     category: "iot",
-    status: "prototype",
+    status: "archived",
     summary: {
       en: "IoT smart shoe prototype that collects force and motion data from an ESP32 device and visualizes live step, balance, and fall-risk signals.",
       translated: {
@@ -511,7 +516,7 @@ export const projects = [
     },
     slug: "chi-cultural-heritage-pwa",
     category: "web",
-    status: "launched",
+    status: "archived",
     summary: {
       en: "Progressive web app for cultural knowledge exchange about Indian heritage.",
       translated: {

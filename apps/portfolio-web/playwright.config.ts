@@ -96,6 +96,11 @@ export default defineConfig({
     {
       command: `bun run build && bun run start --port ${port}`,
       url: `http://127.0.0.1:${port}`,
+      // A stand-in number, so downloads.e2e.ts can assert both halves of the rule -
+      // that the vCard carries a TEL line, and that the digits appear in no rendered
+      // HTML. With the variable unset the first half cannot be tested at all, and
+      // /card/whatsapp 404s, which links.e2e.ts reports as a broken internal link.
+      env: { CONTACT_PHONE_E164: "+66000000000" },
       reuseExistingServer: !process.env.CI,
       timeout: 180_000,
     },
@@ -103,6 +108,7 @@ export default defineConfig({
       // Its own dist dir, so this server's lock never collides with a
       // developer's `bun dev` - see the distDir comment in next.config.ts.
       command: `NEXT_DIST_DIR=.next/e2e-dev bun run dev --port ${devPort}`,
+      env: { CONTACT_PHONE_E164: "+66000000000" },
       url: `http://localhost:${devPort}`,
       reuseExistingServer: !process.env.CI,
       timeout: 180_000,

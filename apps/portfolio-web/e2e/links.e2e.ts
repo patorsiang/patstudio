@@ -32,7 +32,10 @@ import { routes } from "./support/routes";
  * `isCvRoute` predicate under it). Anything else that starts redirecting is a
  * mistake - a moved page nobody updated the links for - and should surface.
  */
-const expectedRedirects = new Set(["/cv"]);
+// "/card/whatsapp" redirects by design: it exists so the card can offer WhatsApp
+// without the wa.me deep link putting the phone number into /card's HTML and the
+// client bundle. The number is read server-side - see src/lib/contact-phone.ts.
+const expectedRedirects = new Set(["/cv", "/card/whatsapp"]);
 
 type CollectedLink = {
   readonly href: string;

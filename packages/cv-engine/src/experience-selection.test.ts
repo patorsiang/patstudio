@@ -359,8 +359,23 @@ describe("selectExperiencesForRole", () => {
 describe("selectBridgingExperiences", () => {
   const referenceDate = new Date(2025, 0, 1);
 
+  /**
+   * Every case below selects from one set of experiences, bridges over another, and
+   * asserts on the ids that came back. Only those two sets and the role config vary.
+   */
+  function bridgedIds(
+    selectedFrom: readonly Experience[],
+    all: readonly Experience[],
+    roleConfig = makeRoleConfig({ requiredTags: ["required-a"] }),
+  ): readonly string[] {
+    const selected = selectExperiencesForRole(selectedFrom, roleConfig, "en", 2025);
+
+    return selectBridgingExperiences(all, selected, roleConfig, "en", referenceDate).map(
+      (item) => item.experience.id,
+    );
+  }
+
   test("backfills a work experience that closes a gap wider than the threshold", () => {
-    const roleConfig = makeRoleConfig({ requiredTags: ["required-a"] });
     const early = makeExperience({
       id: "fixture.early",
       startDate: "2018-01",
@@ -379,20 +394,10 @@ describe("selectBridgingExperiences", () => {
       tags: ["unrelated"],
     });
 
-    const selected = selectExperiencesForRole([early, recent], roleConfig, "en", 2025);
-    const bridged = selectBridgingExperiences(
-      [early, recent, bridge],
-      selected,
-      roleConfig,
-      "en",
-      referenceDate,
-    );
-
-    expect(bridged.map((item) => item.experience.id)).toEqual(["fixture.bridge"]);
+    expect(bridgedIds([early, recent], [early, recent, bridge])).toEqual(["fixture.bridge"]);
   });
 
   test("adds nothing when the selected timeline has no gap over the threshold", () => {
-    const roleConfig = makeRoleConfig({ requiredTags: ["required-a"] });
     const early = makeExperience({ id: "fixture.early", startDate: "2018-01", endDate: "2019-01" });
     const recent = makeExperience({
       id: "fixture.recent",
@@ -406,20 +411,10 @@ describe("selectBridgingExperiences", () => {
       endDate: "2020-01",
     });
 
-    const selected = selectExperiencesForRole([early, recent], roleConfig, "en", 2025);
-    const bridged = selectBridgingExperiences(
-      [early, recent, unused],
-      selected,
-      roleConfig,
-      "en",
-      referenceDate,
-    );
-
-    expect(bridged).toEqual([]);
+    expect(bridgedIds([early, recent], [early, recent, unused])).toEqual([]);
   });
 
   test("treats an education period as already-explained time", () => {
-    const roleConfig = makeRoleConfig({ requiredTags: ["required-a"] });
     const early = makeExperience({ id: "fixture.early", startDate: "2018-01", endDate: "2019-01" });
     const recent = makeExperience({
       id: "fixture.recent",
@@ -439,20 +434,10 @@ describe("selectBridgingExperiences", () => {
       endDate: "2020-12",
     });
 
-    const selected = selectExperiencesForRole([early, recent], roleConfig, "en", 2025);
-    const bridged = selectBridgingExperiences(
-      [early, recent, masters, wouldOtherwiseBridge],
-      selected,
-      roleConfig,
-      "en",
-      referenceDate,
-    );
-
-    expect(bridged).toEqual([]);
+    expect(bridgedIds([early, recent], [early, recent, masters, wouldOtherwiseBridge])).toEqual([]);
   });
 
   test("reads a year-only start date as January of that year", () => {
-    const roleConfig = makeRoleConfig({ requiredTags: ["required-a"] });
     const early = makeExperience({ id: "fixture.early", startDate: "2018-01", endDate: "2018-12" });
     const recent = makeExperience({
       id: "fixture.recent",
@@ -472,20 +457,12 @@ describe("selectBridgingExperiences", () => {
       endDate: "2020-12",
     });
 
-    const selected = selectExperiencesForRole([early, recent], roleConfig, "en", 2025);
-    const bridged = selectBridgingExperiences(
-      [early, recent, yearOnlyStudy, wouldOtherwiseBridge],
-      selected,
-      roleConfig,
-      "en",
-      referenceDate,
-    );
-
-    expect(bridged).toEqual([]);
+    expect(
+      bridgedIds([early, recent], [early, recent, yearOnlyStudy, wouldOtherwiseBridge]),
+    ).toEqual([]);
   });
 
   test("stops explaining time at December of a year-only end date", () => {
-    const roleConfig = makeRoleConfig({ requiredTags: ["required-a"] });
     const early = makeExperience({ id: "fixture.early", startDate: "2018-01", endDate: "2018-12" });
     const recent = makeExperience({
       id: "fixture.recent",
@@ -505,20 +482,12 @@ describe("selectBridgingExperiences", () => {
       endDate: "2023-12",
     });
 
-    const selected = selectExperiencesForRole([early, recent], roleConfig, "en", 2025);
-    const bridged = selectBridgingExperiences(
-      [early, recent, yearOnlyStudy, bridge],
-      selected,
-      roleConfig,
-      "en",
-      referenceDate,
-    );
-
-    expect(bridged.map((item) => item.experience.id)).toEqual(["fixture.bridge"]);
+    expect(bridgedIds([early, recent], [early, recent, yearOnlyStudy, bridge])).toEqual([
+      "fixture.bridge",
+    ]);
   });
 
   test("ignores an education period that ran concurrently with a job", () => {
-    const roleConfig = makeRoleConfig({ requiredTags: ["required-a"] });
     const early = makeExperience({ id: "fixture.early", startDate: "2018-01", endDate: "2018-12" });
     const recent = makeExperience({
       id: "fixture.recent",
@@ -539,20 +508,12 @@ describe("selectBridgingExperiences", () => {
       tags: ["unrelated"],
     });
 
-    const selected = selectExperiencesForRole([early, recent], roleConfig, "en", 2025);
-    const bridged = selectBridgingExperiences(
-      [early, recent, partTimeDegree, bridge],
-      selected,
-      roleConfig,
-      "en",
-      referenceDate,
-    );
-
-    expect(bridged.map((item) => item.experience.id)).toEqual(["fixture.bridge"]);
+    expect(bridgedIds([early, recent], [early, recent, partTimeDegree, bridge])).toEqual([
+      "fixture.bridge",
+    ]);
   });
 
   test("still counts an education period that only briefly overlaps an internship", () => {
-    const roleConfig = makeRoleConfig({ requiredTags: ["required-a"] });
     const early = makeExperience({ id: "fixture.early", startDate: "2018-01", endDate: "2018-03" });
     const recent = makeExperience({
       id: "fixture.recent",
@@ -580,20 +541,15 @@ describe("selectBridgingExperiences", () => {
       tags: ["unrelated"],
     });
 
-    const selected = selectExperiencesForRole([early, recent], roleConfig, "en", 2025);
-    const bridged = selectBridgingExperiences(
-      [early, recent, summerInternship, fullTimeDegree, wouldOtherwiseBridge],
-      selected,
-      roleConfig,
-      "en",
-      referenceDate,
-    );
-
-    expect(bridged).toEqual([]);
+    expect(
+      bridgedIds(
+        [early, recent],
+        [early, recent, summerInternship, fullTimeDegree, wouldOtherwiseBridge],
+      ),
+    ).toEqual([]);
   });
 
   test("does not re-offer an experience that is already selected", () => {
-    const roleConfig = makeRoleConfig({ requiredTags: ["required-a"] });
     const early = makeExperience({ id: "fixture.early", startDate: "2018-01", endDate: "2019-01" });
     const recent = makeExperience({
       id: "fixture.recent",
@@ -602,16 +558,7 @@ describe("selectBridgingExperiences", () => {
       endDate: undefined,
     });
 
-    const selected = selectExperiencesForRole([early, recent], roleConfig, "en", 2025);
-    const bridged = selectBridgingExperiences(
-      [early, recent],
-      selected,
-      roleConfig,
-      "en",
-      referenceDate,
-    );
-
-    expect(bridged).toEqual([]);
+    expect(bridgedIds([early, recent], [early, recent])).toEqual([]);
   });
 
   test("skips a candidate whose tags are excluded by the role", () => {
@@ -633,16 +580,7 @@ describe("selectBridgingExperiences", () => {
       tags: ["excluded-a"],
     });
 
-    const selected = selectExperiencesForRole([early, recent], roleConfig, "en", 2025);
-    const bridged = selectBridgingExperiences(
-      [early, recent, excludedBridge],
-      selected,
-      roleConfig,
-      "en",
-      referenceDate,
-    );
-
-    expect(bridged).toEqual([]);
+    expect(bridgedIds([early, recent], [early, recent, excludedBridge])).toEqual([]);
   });
 });
 

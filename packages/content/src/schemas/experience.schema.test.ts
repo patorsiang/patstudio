@@ -23,57 +23,25 @@ function makeRawExperience(overrides: Record<string, unknown> = {}) {
 }
 
 describe("experienceSchema date format", () => {
-  test("accepts a YYYY-MM start date", () => {
-    expect(experienceSchema.safeParse(makeRawExperience({ startDate: "2024-01" })).success).toBe(
-      true,
-    );
-  });
+  // One assertion repeated eleven ways is a table, not eleven tests. Each row is still
+  // its own case in the report, so a failure names the exact format that broke.
+  const cases: ReadonlyArray<readonly [string, Record<string, unknown>, boolean]> = [
+    ["a YYYY-MM start date", { startDate: "2024-01" }, true],
+    ["a year-only start date", { startDate: "2015" }, true],
+    ["a year-only end date", { startDate: "2015", endDate: "2023" }, true],
+    ["an omitted end date", { endDate: undefined }, true],
+    ["a single-digit month", { startDate: "2015-7" }, false],
+    ["a month outside 01-12", { startDate: "2015-13" }, false],
+    ["a day-precision date", { startDate: "2015-07-01" }, false],
+    ["free text", { startDate: "March 2015" }, false],
+    ["a malformed end date", { endDate: "present" }, false],
+  ];
 
-  test("accepts a year-only start date", () => {
-    expect(experienceSchema.safeParse(makeRawExperience({ startDate: "2015" })).success).toBe(true);
-  });
-
-  test("accepts a year-only end date", () => {
-    expect(
-      experienceSchema.safeParse(makeRawExperience({ startDate: "2015", endDate: "2023" })).success,
-    ).toBe(true);
-  });
-
-  test("accepts an omitted end date", () => {
-    expect(experienceSchema.safeParse(makeRawExperience({ endDate: undefined })).success).toBe(
-      true,
-    );
-  });
-
-  test("rejects a start date with a single-digit month", () => {
-    expect(experienceSchema.safeParse(makeRawExperience({ startDate: "2015-7" })).success).toBe(
-      false,
-    );
-  });
-
-  test("rejects a start date with a month outside 01-12", () => {
-    expect(experienceSchema.safeParse(makeRawExperience({ startDate: "2015-13" })).success).toBe(
-      false,
-    );
-  });
-
-  test("rejects a day-precision start date", () => {
-    expect(experienceSchema.safeParse(makeRawExperience({ startDate: "2015-07-01" })).success).toBe(
-      false,
-    );
-  });
-
-  test("rejects a free-text start date", () => {
-    expect(experienceSchema.safeParse(makeRawExperience({ startDate: "March 2015" })).success).toBe(
-      false,
-    );
-  });
-
-  test("rejects a malformed end date", () => {
-    expect(experienceSchema.safeParse(makeRawExperience({ endDate: "present" })).success).toBe(
-      false,
-    );
-  });
+  for (const [description, overrides, accepted] of cases) {
+    test(`${accepted ? "accepts" : "rejects"} ${description}`, () => {
+      expect(experienceSchema.safeParse(makeRawExperience(overrides)).success).toBe(accepted);
+    });
+  }
 
   test("explains the accepted format when a date is rejected", () => {
     const result = experienceSchema.safeParse(makeRawExperience({ startDate: "March 2015" }));

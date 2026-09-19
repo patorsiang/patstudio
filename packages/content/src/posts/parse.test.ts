@@ -70,3 +70,52 @@ describe("parsePost", () => {
     expect(() => parsePost("bkkjs-summer-2026", missingLang)).toThrow(/lang/i);
   });
 });
+
+describe("parsePost — syndication fields", () => {
+  // The four posts that predate these fields must keep parsing unchanged.
+  // This is the regression that matters: an optional field added with the
+  // wrong zod shape turns every existing post into a build failure.
+  test("defaults elsewhere to an empty list and leaves canonical unset", () => {
+    const post = parsePost("bkkjs-summer-2026", valid);
+
+    expect(post.elsewhere).toEqual([]);
+    expect(post.canonical).toBeUndefined();
+  });
+
+  test("reads canonical when the post originated somewhere else", () => {
+    const syndicated = valid.replace(
+      "lang: [en, th]",
+      "lang: [en, th]\ncanonical: https://medium.com/@napatcholthaipanich_6231/overall-of-css-meetup-16-08-2023-1289d8b615f2",
+    );
+
+    expect(parsePost("css-meetup-2023", syndicated).canonical).toBe(
+      "https://medium.com/@napatcholthaipanich_6231/overall-of-css-meetup-16-08-2023-1289d8b615f2",
+    );
+  });
+
+  test("reads elsewhere as a list of URLs", () => {
+    const crossPosted = valid.replace(
+      "lang: [en, th]",
+      "lang: [en, th]\nelsewhere: [https://medium.com/@x/a-1, https://dev.to/x/a-1]",
+    );
+
+    expect(parsePost("bkkjs-summer-2026", crossPosted).elsewhere).toEqual([
+      "https://medium.com/@x/a-1",
+      "https://dev.to/x/a-1",
+    ]);
+  });
+
+  // A typo'd URL that reaches the page becomes a dead "Also on Medium" link
+  // on a portfolio a recruiter is reading. Fail the build instead.
+  test("rejects a canonical that is not a URL", () => {
+    const bad = valid.replace("lang: [en, th]", "lang: [en, th]\ncanonical: medium.com/@x/a-1");
+
+    expect(() => parsePost("x", bad)).toThrow(/canonical/i);
+  });
+
+  test("rejects an elsewhere entry that is not a URL", () => {
+    const bad = valid.replace("lang: [en, th]", "lang: [en, th]\nelsewhere: [not a url]");
+
+    expect(() => parsePost("x", bad)).toThrow(/elsewhere/i);
+  });
+});

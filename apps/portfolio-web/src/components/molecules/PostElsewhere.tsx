@@ -35,7 +35,17 @@ export function PostElsewhere({
       {links.map((link) => (
         <span key={link.href}>
           {`${PREFIX[link.kind]} `}
-          <TextLink href={link.href} target="_blank" rel="noreferrer">
+          {/* tap-reach, not a real h-10 box: this row sits under a card's
+              tags, and 40px of real height would open a gap there for one
+              line of metadata. `inline-block` because ::after anchors to the
+              link's own box, and an inline box that wrapped would give it
+              only one line fragment to sit over - see PostCard's title. */}
+          <TextLink
+            href={link.href}
+            target="_blank"
+            rel="noreferrer"
+            className="tap-reach inline-block"
+          >
             {link.label}
           </TextLink>
         </span>

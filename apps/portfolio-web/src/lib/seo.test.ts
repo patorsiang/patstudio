@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { normalizeSiteUrl } from "./seo";
+import { buildPageMetadata, normalizeSiteUrl } from "./seo";
 
 const seoSourcePath = join(import.meta.dir, "seo.ts");
 
@@ -37,5 +37,34 @@ describe("siteUrl fallback", () => {
 
     expect(source).toContain('"https://patstudio.vercel.app"');
     expect(source).not.toContain("patorsiang.github.io");
+  });
+});
+
+describe("buildPageMetadata — off-site canonical", () => {
+  test("defaults canonical to the page's own path", () => {
+    const metadata = buildPageMetadata({
+      title: "Posts",
+      description: "Learning in public.",
+      path: "/posts",
+    });
+
+    expect(metadata.alternates?.canonical).toBe("/posts");
+  });
+
+  // A post backfilled from Medium is a copy. Pointing canonical at the
+  // original is the whole reason the field exists; OpenGraph still names
+  // this page, because that is the URL being shared.
+  test("hands canonical to the original while og:url stays on this page", () => {
+    const metadata = buildPageMetadata({
+      title: "Overall of CSS Meetup",
+      description: "Notes from the meetup.",
+      path: "/posts/css-meetup-2023",
+      canonical: "https://medium.com/@x/overall-of-css-meetup-16-08-2023-1289d8b615f2",
+    });
+
+    expect(metadata.alternates?.canonical).toBe(
+      "https://medium.com/@x/overall-of-css-meetup-16-08-2023-1289d8b615f2",
+    );
+    expect(metadata.openGraph?.url).toBe("/posts/css-meetup-2023");
   });
 });

@@ -30,6 +30,12 @@ type PageMetadataInput = {
   readonly path: string;
   /** "profile" for pages about the person, "website" for indexes. */
   readonly type?: "website" | "profile";
+  /**
+   * Absolute URL of the original, for a page that is a copy of something
+   * first published elsewhere. Defaults to `path`, which is the right answer
+   * everywhere except the backfilled Medium posts.
+   */
+  readonly canonical?: string;
 };
 
 /**
@@ -46,6 +52,7 @@ export function buildPageMetadata({
   description,
   path,
   type = "website",
+  canonical,
 }: PageMetadataInput): Metadata {
   const fullTitle = `${title} | ${ownerName}`;
 
@@ -53,7 +60,7 @@ export function buildPageMetadata({
     title,
     description,
     alternates: {
-      canonical: path,
+      canonical: canonical ?? path,
     },
     openGraph: {
       title: fullTitle,

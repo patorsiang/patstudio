@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { Breadcrumbs } from "@/components/molecules/Breadcrumbs";
+import { PostElsewhere } from "@/components/molecules/PostElsewhere";
 import { PageShell } from "@/components/templates/PageShell";
 import { postDateFormat } from "@/lib/dates";
 import { buildBlogPostingJsonLd, buildBreadcrumbJsonLd, toJsonLdScript } from "@/lib/json-ld";
@@ -31,6 +32,9 @@ export async function generateMetadata({
     title: post.title,
     description: post.summary,
     path: `/posts/${slug}`,
+    // A backfilled archive post is a copy; the Medium original keeps the
+    // search result rather than competing with a page that has no history.
+    canonical: post.canonical,
   });
 }
 
@@ -68,6 +72,11 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
           {post.title}
         </h1>
         <p className="mt-4 text-lg leading-8 text-(--color-text-muted)">{post.summary}</p>
+
+        {/* Above the body, not below it: for an archive post the reader
+            should learn the original lives elsewhere before reading a
+            summary of it, not after. */}
+        <PostElsewhere post={post} className="mt-6" />
 
         {/* Sanitised in packages/content/src/posts/render.ts. */}
         <div className="post-body mt-10" dangerouslySetInnerHTML={{ __html: post.body }} />

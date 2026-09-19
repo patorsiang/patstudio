@@ -45,7 +45,21 @@ export const skills = [
       en: "Machine Learning & AI",
       translated: { th: { value: "Machine Learning & AI", status: "reviewed" } },
     },
-    items: ["TensorFlow", "scikit-learn", "Pandas", "NumPy", "Transfer learning"],
+    // Competencies, not just library names: an ML reader wants to know what was done,
+    // and each of these is demonstrated in projects.ts - transfer learning and model
+    // evaluation in food101 (0.8493 accuracy / 0.8488 macro F1 on 25,250 samples),
+    // computer vision in the same, feature engineering and the multi-model pipeline in
+    // rugpull-detection.
+    items: [
+      "Transfer learning",
+      "Model evaluation",
+      "Computer vision",
+      "Feature engineering",
+      "TensorFlow",
+      "scikit-learn",
+      "Pandas",
+      "NumPy",
+    ],
   },
   {
     id: "skills.cloud-infrastructure",
@@ -57,7 +71,14 @@ export const skills = [
       en: "Cloud & Infrastructure",
       translated: { th: { value: "Cloud & Infrastructure", status: "reviewed" } },
     },
-    items: ["AWS", "GCP", "Azure", "Firebase", "IBM Cloud", "RabbitMQ", "Redis"],
+    // Scoped 2026-09-15 to what is evidenced elsewhere in this repo and current enough to
+    // be interviewed on. Vercel: `.github/workflows/deploy-production.yml` drives the Vercel
+    // CLI against a real project, documented in `docs/deployment/vercel.md`. Redis:
+    // `projects.ts` rug-pull detection techStack, with a bullet on coordinating backend
+    // services. Removed: GCP, Azure, Firebase, IBM Cloud, RabbitMQ (no supporting experience
+    // or project anywhere in this data) and AWS (real, but Data Wow only, ended Apr 2023 —
+    // it stays on that role's own `skills` list, which is the honest place for it).
+    items: ["Vercel", "Redis"],
   },
   {
     id: "skills.security-blockchain",

@@ -122,25 +122,35 @@ describe("buildVCard", () => {
     expect(unfold(card)).toContain(thai);
   });
 
-  test("strips the tel: scheme off the phone number", () => {
+  test("emits TEL from the environment, not from the content package", () => {
+    process.env.CONTACT_PHONE_E164 = "+66000000000";
+
     const card = buildVCard(makeProfile());
 
-    expect(card).toContain("TEL;TYPE=CELL:+66959390164\r\n");
+    expect(card).toContain("TEL;TYPE=CELL:+66000000000\r\n");
     expect(card).not.toContain("tel:");
+    delete process.env.CONTACT_PHONE_E164;
   });
 
-  test("omits TEL entirely when the profile carries no phone", () => {
-    const card = buildVCard(
-      makeProfile({
-        contact: {
-          email: profile.contact.email,
-          github: profile.contact.github,
-          linkedin: profile.contact.linkedin,
-        },
-      }),
-    );
+  test("omits TEL entirely when the number is not configured", () => {
+    delete process.env.CONTACT_PHONE_E164;
 
-    expect(card).not.toContain("TEL");
+    expect(buildVCard(makeProfile())).not.toContain("TEL");
+  });
+
+  test("ignores a malformed number rather than publishing it", () => {
+    process.env.CONTACT_PHONE_E164 = "0959390164";
+
+    expect(buildVCard(makeProfile())).not.toContain("TEL");
+    delete process.env.CONTACT_PHONE_E164;
+  });
+
+  test("no phone number is committed to the content source", () => {
+    // The number used to be a literal in profile.ts, which published it to a public
+    // repo, to /card's HTML and to the client bundle. This fails if it comes back.
+    const serialised = JSON.stringify(profile);
+
+    expect(/\+?\d[\d\s-]{8,}/.test(serialised.replace(/\d{4}-\d{2}/g, ""))).toBe(false);
   });
 
   test("emits the portfolio link as URL", () => {

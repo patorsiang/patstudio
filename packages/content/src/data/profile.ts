@@ -91,15 +91,6 @@ export const profile = {
     // Not rendered on any existing page (contact/page.tsx, SiteFooter, etc.
     // all read named fields and ignore these) - added for the /card namecard
     // feature. Phone is deliberately not shown in HTML anywhere; it appears
-    // only inside the /card/vcard download, per
-    // docs/requirements/namecard.md#5.
-    phone: {
-      label: {
-        en: "+66 95 939 0164",
-        translated: { th: { value: "+66 95 939 0164", status: "approved" } },
-      },
-      url: "tel:+66959390164",
-    },
     line: {
       label: {
         en: "LINE",
@@ -112,7 +103,9 @@ export const profile = {
         en: "WhatsApp",
         translated: { th: { value: "WhatsApp", status: "approved" } },
       },
-      url: "https://wa.me/66959390164",
+      // Resolved server-side from CONTACT_PHONE_E164 by /card/whatsapp so the
+      // number never reaches the client bundle or /card's HTML.
+      url: "/card/whatsapp",
     },
   },
   links: [

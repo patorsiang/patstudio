@@ -57,6 +57,31 @@ export function sanitizeArticleHTML(html: string): string {
       "figcaption",
       "del",
     ],
-    ALLOWED_ATTR: ["href", "src", "alt", "loading", "rel", "target", "lang"],
+    /*
+     * srcset/sizes/width/height/decoding are here for post images, which
+     * render.ts emits through /_next/image with a responsive srcset. DOMPurify
+     * drops an unlisted attribute silently, so omitting them does not fail -
+     * it just quietly serves one full-size image and loses the height
+     * reservation that keeps CLS at zero. security.test.ts guards that.
+     *
+     * All five are presentational and non-executable. srcset does carry URLs,
+     * but the only srcset values that exist here are the same-origin
+     * /_next/image ones this codebase generates, and CSP img-src 'self'
+     * remains the backstop either way.
+     */
+    ALLOWED_ATTR: [
+      "href",
+      "src",
+      "srcset",
+      "sizes",
+      "width",
+      "height",
+      "decoding",
+      "alt",
+      "loading",
+      "rel",
+      "target",
+      "lang",
+    ],
   });
 }

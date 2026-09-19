@@ -79,6 +79,22 @@ describe("sanitizeArticleHTML", () => {
     expect(img).toContain('alt="a"');
   });
 
+  test("keeps the responsive-image attributes render.ts emits", () => {
+    // The regression guard for a failure that is entirely silent: DOMPurify
+    // drops an unlisted attribute without complaint, so losing these would
+    // leave every post image working, un-optimized, and shifting the layout -
+    // visible only in a Lighthouse run nobody happened to do that week.
+    const html = sanitizeArticleHTML(
+      '<img src="/_next/image?url=x&w=1200&q=75" ' +
+        'srcset="/_next/image?url=x&w=640&q=75 640w" ' +
+        'sizes="100vw" width="1600" height="900" decoding="async" alt="a">',
+    );
+
+    for (const attribute of ["srcset=", "sizes=", 'width="1600"', 'height="900"', "decoding="]) {
+      expect(html).toContain(attribute);
+    }
+  });
+
   test("strips a javascript: URL from an href", () => {
     const html = sanitizeArticleHTML('<a href="javascript:alert(1)">click</a>');
 

@@ -3,6 +3,16 @@ import type { CvLanguage, CvRoleConfig } from "./config";
 import { isContentAvailableForLanguage } from "./content-language";
 import { normalizeTag } from "./normalize";
 
+/**
+ * Whether a project reaches a CV is an editorial decision, so it keys off `placement` —
+ * the field that already means "where does this show" — and not off `status`, which
+ * describes the development lifecycle. Those are separate concerns: an archived project
+ * can still be the strongest evidence on a CV (a finished dissertation), and an actively
+ * developed one can be a scratch experiment nobody should see. Conflating them meant
+ * editing a project's lifecycle silently removed it from every generated CV.
+ */
+const CV_PLACEMENTS = new Set<Project["placement"]>(["featured-project", "project"]);
+
 export function filterProjectsForRole(
   projects: readonly Project[],
   roleConfig: CvRoleConfig,
@@ -21,7 +31,7 @@ export function filterProjectsForRole(
       return false;
     }
 
-    if (project.status === "archived") {
+    if (!CV_PLACEMENTS.has(project.placement)) {
       return false;
     }
 

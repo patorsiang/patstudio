@@ -31,7 +31,15 @@ export const routes = [
   "/en/cv/ai-ml-engineer",
   "/en/cv/security-engineer",
   "/en/cv/apple-specialist",
+  // All four Thai CVs, not just the default. Thai sets wider and taller than
+  // Latin at the same size, so the routes where a line wraps unexpectedly, a
+  // control outgrows its border, or the printed CV spills onto another page
+  // are these - and for a long time only one of them was swept while all four
+  // English variants were.
   "/th/cv/fullstack-engineer",
+  "/th/cv/ai-ml-engineer",
+  "/th/cv/security-engineer",
+  "/th/cv/apple-specialist",
   "/this-route-does-not-exist",
   "/offline",
 ] as const;

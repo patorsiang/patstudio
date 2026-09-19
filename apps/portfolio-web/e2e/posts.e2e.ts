@@ -52,8 +52,11 @@ test("an unknown slug 404s, and still renders after hydration despite the missin
   await expect(page.getByRole("heading", { level: 1 })).toContainText(/page not found/i);
 });
 
-// img-src is 'self' data: blob:, so a missed vendoring renders as a blocked
-// image that nobody notices until someone opens the console.
+// img-src is 'self' data: blob:. Post images live on other hosts entirely and
+// stay same-origin only because /_next/image serves the optimized copy from
+// here - so this is the test that the whole arrangement still holds. A source
+// URL that leaked into the page unoptimized is a blocked image nobody notices
+// until they open the console.
 test("every image in a post body is same-origin", async ({ page }) => {
   await page.goto("/posts/bkkjs-summer-2026");
 
@@ -66,6 +69,37 @@ test("every image in a post body is same-origin", async ({ page }) => {
     );
 
   expect(foreign, `post images from another origin: ${foreign.join(", ")}`).toEqual([]);
+});
+
+// The reason the bytes are no longer committed: every post image is resized
+// and re-encoded on the way out. Without this, the src could silently go back
+// to a raw full-size original and only a Lighthouse run would ever say so.
+test("a post image is served resized and re-encoded by the optimizer", async ({
+  page,
+  request,
+}) => {
+  await page.goto("/posts/bkkjs-summer-2026");
+
+  const image = page.locator(".post-body img").first();
+  const source = await image.getAttribute("src");
+
+  expect(source, "post image is not going through /_next/image").toContain("/_next/image?url=");
+
+  // width/height come from the generated manifest and are what keep the
+  // article from reflowing as images load.
+  await expect(image).toHaveAttribute("width", /\d+/);
+  await expect(image).toHaveAttribute("height", /\d+/);
+  await expect(image).toHaveAttribute("srcset", /\d+w/);
+
+  // The Accept header is not decoration: /_next/image negotiates the output
+  // format from it, and a request without one gets the source format back
+  // unchanged. Asking the way a browser asks is the only way to see AVIF.
+  const optimized = await request.get(source!, {
+    headers: { accept: "image/avif,image/webp,image/*,*/*;q=0.8" },
+  });
+
+  expect(optimized.status()).toBe(200);
+  expect(optimized.headers()["content-type"]).toMatch(/image\/(avif|webp)/);
 });
 
 test("Thai paragraphs are marked up as Thai", async ({ page }) => {

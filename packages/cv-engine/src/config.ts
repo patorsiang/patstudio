@@ -186,7 +186,6 @@ export const roleConfigs = {
       "PostgreSQL",
       "MongoDB",
       "AWS",
-      "GCP",
       "Docker",
       "Git",
       "Agile",
@@ -212,8 +211,14 @@ export const roleConfigs = {
       "languages",
     ],
     limits: {
-      maxPages: 2,
-      maxProjects: 3,
+      maxPages: 1,
+      // Two projects, not three. With three this CV lands 6px over one A4 page, which
+      // prints a second sheet holding one line of Languages. CHI is the oldest and
+      // least full-stack of the three, so it is the one that goes.
+      // 1, not 2. The wider print leading costs ~55px here and this CV had 4px of
+      // slack. Rug Pull Detection is the more full-stack of the two (React, FastAPI,
+      // Redis, Docker) so Smart Shoe is the one that goes.
+      maxProjects: 1,
       maxExperienceItems: 4,
       maxBulletsPerExperience: 3,
       maxSkillsPerGroup: 7,
@@ -270,11 +275,17 @@ export const roleConfigs = {
       "languages",
     ],
     limits: {
-      maxPages: 2,
-      maxProjects: 4,
+      maxPages: 1,
+      // 2, not 4. Three fit, but only with 26px of slack. CHI is a cultural-heritage
+      // PWA with no ML in it and was the third of the three, so dropping it buys the
+      // headroom back without costing this CV anything on-topic.
+      maxProjects: 2,
       maxExperienceItems: 3,
       maxBulletsPerExperience: 3,
       maxSkillsPerGroup: 7,
+      // 2, not 3. The LL.B. as a third entry puts this CV at 99% of a page - full, but
+      // 11px from spilling a second sheet, which one font fallback would do. It is
+      // also the least relevant of the three degrees here; Security and Apple keep it.
       maxEducationItems: 2,
     },
   },
@@ -285,17 +296,33 @@ export const roleConfigs = {
     summaryIntent:
       "Show secure software development, cybersecurity learning, CTF activity, cryptography, and blockchain-related security exposure.",
     requiredTags: ["security", "software engineering"],
-    preferredTags: ["ctf", "cryptography", "blockchain", "linux", "backend", "cloud", "python"],
+    // "privacy-tech" earns its place: the PDPA/GDPR consent work is the most
+    // security-adjacent employment on the record, and without this tag it scored level
+    // with generic freelance frontend and was demoted to a bare Additional Experience
+    // line - while the summary above it leaned on that very work. "ctf" is gone
+    // because no content entry carries it, so it only diluted the match ratio.
+    preferredTags: [
+      "cryptography",
+      "privacy-tech",
+      "blockchain",
+      "linux",
+      "backend",
+      "cloud",
+      "python",
+    ],
     excludedTags: ["private-only", "tutorial-learning"],
+    // GDPR and PDPA are real terms on this CV and real terms in security/privacy job
+    // descriptions. "CTF", "RSA" and "Secure Backend" appear nowhere in the content, so
+    // they only produced "Missing ATS keyword" warnings and diluted the match ratio -
+    // which is what kept the PDPA/GDPR consent work scoring below generic frontend.
     atsKeywords: [
       "Cybersecurity",
-      "CTF",
+      "GDPR",
+      "PDPA",
       "Linux",
       "Python",
       "Cryptography",
-      "RSA",
       "Blockchain",
-      "Secure Backend",
       "Node.js",
       "Go",
       "Hyperledger Fabric",
@@ -320,10 +347,18 @@ export const roleConfigs = {
       "languages",
     ],
     limits: {
-      maxPages: 2,
-      maxProjects: 3,
+      maxPages: 1,
+      // One strong, on-topic project beats three mixed ones here: Smart Shoe and CHI
+      // are IoT and cultural-heritage work with no security story, and dropping them is
+      // what brings this CV onto a single full page.
+      maxProjects: 1,
       maxExperienceItems: 4,
-      maxBulletsPerExperience: 3,
+      // 2, not 3. This is how the wider print leading is paid for here, and it is the
+      // cheapest way: dropping maxExperienceItems instead would remove the KBTG
+      // internship outright - bridging will not bring it back, because it sits
+      // against Bank of Thailand with no gap to fill - and dropping an education
+      // entry would lose the LL.B. Two bullets a role also scans better than three.
+      maxBulletsPerExperience: 2,
       maxSkillsPerGroup: 7,
       // The law degree (LL.B.) is relevant to this role's IP/compliance
       // angle, so security gets one more education slot than the other
@@ -344,27 +379,29 @@ export const roleConfigs = {
     requiredTags: ["frontend", "web", "software-engineering"],
     preferredTags: ["react", "nextjs", "vue", "nuxt", "dashboard", "cloud", "privacy-tech"],
     excludedTags: ["private-only", "tutorial-learning"],
-    atsKeywords: ["Clients", "Users", "Dashboard", "Requirements", "WordPress", "Cloud", "Agile"],
+    atsKeywords: ["Customers", "Clients", "Team", "Requirements", "Support", "Training", "Agile"],
     prioritySkillGroups: ["frontend", "programming-fundamentals"],
     priorityProjectCategories: ["web"],
     priorityExperienceTypes: ["work"],
-    sectionOrder: [
-      "header",
-      "summary",
-      "skills",
-      "experience",
-      "projects",
-      "education",
-      "awards",
-      "languages",
-    ],
+    // Deliberately omits "skills" and "projects". The reader here is a retail hiring
+    // manager, not an engineer: a wall of frameworks and an ESP32 prototype answer a
+    // question nobody asked and reinforce "overqualified, will leave in six months".
+    // "languages" leads instead - four languages is a direct commercial signal for a
+    // Bangkok store, and it was previously the last line on the page.
+    sectionOrder: ["header", "summary", "languages", "experience", "education", "awards"],
     limits: {
       maxPages: 1,
-      maxProjects: 1,
+      maxProjects: 0,
+      // Stays at 3 so Bank of Thailand drops to the compact "Additional Experience"
+      // line: the timeline stays continuous without a central-bank System Analyst role
+      // headlining a retail application.
       maxExperienceItems: 3,
-      maxBulletsPerExperience: 2,
+      maxBulletsPerExperience: 3,
       maxSkillsPerGroup: 5,
-      maxEducationItems: 2,
+      // 3, not 2: the LL.B. is the third entry and this is the CV with room for it.
+      // A law degree taken part-time alongside full-time work is an unusual thing
+      // to show a retail manager, and it reads as persistence rather than depth.
+      maxEducationItems: 3,
     },
   },
 } as const satisfies Record<CvRoleId, CvRoleConfig>;

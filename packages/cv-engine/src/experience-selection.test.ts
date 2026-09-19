@@ -359,8 +359,23 @@ describe("selectExperiencesForRole", () => {
 describe("selectBridgingExperiences", () => {
   const referenceDate = new Date(2025, 0, 1);
 
+  /**
+   * Every case below selects from one set of experiences, bridges over another, and
+   * asserts on the ids that came back. Only those two sets and the role config vary.
+   */
+  function bridgedIds(
+    selectedFrom: readonly Experience[],
+    all: readonly Experience[],
+    roleConfig = makeRoleConfig({ requiredTags: ["required-a"] }),
+  ): readonly string[] {
+    const selected = selectExperiencesForRole(selectedFrom, roleConfig, "en", 2025);
+
+    return selectBridgingExperiences(all, selected, roleConfig, "en", referenceDate).map(
+      (item) => item.experience.id,
+    );
+  }
+
   test("backfills a work experience that closes a gap wider than the threshold", () => {
-    const roleConfig = makeRoleConfig({ requiredTags: ["required-a"] });
     const early = makeExperience({
       id: "fixture.early",
       startDate: "2018-01",
@@ -379,20 +394,10 @@ describe("selectBridgingExperiences", () => {
       tags: ["unrelated"],
     });
 
-    const selected = selectExperiencesForRole([early, recent], roleConfig, "en", 2025);
-    const bridged = selectBridgingExperiences(
-      [early, recent, bridge],
-      selected,
-      roleConfig,
-      "en",
-      referenceDate,
-    );
-
-    expect(bridged.map((item) => item.experience.id)).toEqual(["fixture.bridge"]);
+    expect(bridgedIds([early, recent], [early, recent, bridge])).toEqual(["fixture.bridge"]);
   });
 
   test("adds nothing when the selected timeline has no gap over the threshold", () => {
-    const roleConfig = makeRoleConfig({ requiredTags: ["required-a"] });
     const early = makeExperience({ id: "fixture.early", startDate: "2018-01", endDate: "2019-01" });
     const recent = makeExperience({
       id: "fixture.recent",
@@ -406,20 +411,10 @@ describe("selectBridgingExperiences", () => {
       endDate: "2020-01",
     });
 
-    const selected = selectExperiencesForRole([early, recent], roleConfig, "en", 2025);
-    const bridged = selectBridgingExperiences(
-      [early, recent, unused],
-      selected,
-      roleConfig,
-      "en",
-      referenceDate,
-    );
-
-    expect(bridged).toEqual([]);
+    expect(bridgedIds([early, recent], [early, recent, unused])).toEqual([]);
   });
 
   test("treats an education period as already-explained time", () => {
-    const roleConfig = makeRoleConfig({ requiredTags: ["required-a"] });
     const early = makeExperience({ id: "fixture.early", startDate: "2018-01", endDate: "2019-01" });
     const recent = makeExperience({
       id: "fixture.recent",
@@ -439,20 +434,122 @@ describe("selectBridgingExperiences", () => {
       endDate: "2020-12",
     });
 
-    const selected = selectExperiencesForRole([early, recent], roleConfig, "en", 2025);
-    const bridged = selectBridgingExperiences(
-      [early, recent, masters, wouldOtherwiseBridge],
-      selected,
-      roleConfig,
-      "en",
-      referenceDate,
-    );
+    expect(bridgedIds([early, recent], [early, recent, masters, wouldOtherwiseBridge])).toEqual([]);
+  });
 
-    expect(bridged).toEqual([]);
+  test("reads a year-only start date as January of that year", () => {
+    const early = makeExperience({ id: "fixture.early", startDate: "2018-01", endDate: "2018-12" });
+    const recent = makeExperience({
+      id: "fixture.recent",
+      startDate: "2021-01",
+      current: true,
+      endDate: undefined,
+    });
+    const yearOnlyStudy = makeExperience({
+      id: "fixture.year-only-study",
+      type: "education",
+      startDate: "2019",
+      endDate: "2020-12",
+    });
+    const wouldOtherwiseBridge = makeExperience({
+      id: "fixture.would-otherwise-bridge",
+      startDate: "2019-02",
+      endDate: "2020-12",
+    });
+
+    expect(
+      bridgedIds([early, recent], [early, recent, yearOnlyStudy, wouldOtherwiseBridge]),
+    ).toEqual([]);
+  });
+
+  test("stops explaining time at December of a year-only end date", () => {
+    const early = makeExperience({ id: "fixture.early", startDate: "2018-01", endDate: "2018-12" });
+    const recent = makeExperience({
+      id: "fixture.recent",
+      startDate: "2024-01",
+      current: true,
+      endDate: undefined,
+    });
+    const yearOnlyStudy = makeExperience({
+      id: "fixture.year-only-study",
+      type: "education",
+      startDate: "2019-01",
+      endDate: "2020",
+    });
+    const bridge = makeExperience({
+      id: "fixture.bridge",
+      startDate: "2021-01",
+      endDate: "2023-12",
+    });
+
+    expect(bridgedIds([early, recent], [early, recent, yearOnlyStudy, bridge])).toEqual([
+      "fixture.bridge",
+    ]);
+  });
+
+  test("ignores an education period that ran concurrently with a job", () => {
+    const early = makeExperience({ id: "fixture.early", startDate: "2018-01", endDate: "2018-12" });
+    const recent = makeExperience({
+      id: "fixture.recent",
+      startDate: "2024-01",
+      current: true,
+      endDate: undefined,
+    });
+    const partTimeDegree = makeExperience({
+      id: "fixture.part-time-degree",
+      type: "education",
+      startDate: "2018-01",
+      endDate: "2023-12",
+    });
+    const bridge = makeExperience({
+      id: "fixture.bridge",
+      startDate: "2019-06",
+      endDate: "2023-12",
+      tags: ["unrelated"],
+    });
+
+    expect(bridgedIds([early, recent], [early, recent, partTimeDegree, bridge])).toEqual([
+      "fixture.bridge",
+    ]);
+  });
+
+  test("still counts an education period that only briefly overlaps an internship", () => {
+    const early = makeExperience({ id: "fixture.early", startDate: "2018-01", endDate: "2018-03" });
+    const recent = makeExperience({
+      id: "fixture.recent",
+      startDate: "2024-01",
+      current: true,
+      endDate: undefined,
+    });
+    const summerInternship = makeExperience({
+      id: "fixture.summer-internship",
+      type: "internship",
+      startDate: "2020-06",
+      endDate: "2020-08",
+      tags: ["unrelated"],
+    });
+    const fullTimeDegree = makeExperience({
+      id: "fixture.full-time-degree",
+      type: "education",
+      startDate: "2018-04",
+      endDate: "2023-12",
+    });
+    const wouldOtherwiseBridge = makeExperience({
+      id: "fixture.would-otherwise-bridge",
+      startDate: "2019-01",
+      endDate: "2023-12",
+      tags: ["unrelated"],
+    });
+
+    expect(
+      bridgedIds(
+        [early, recent],
+        [early, recent, summerInternship, fullTimeDegree, wouldOtherwiseBridge],
+      ),
+    ).toEqual([]);
   });
 
   test("does not re-offer an experience that is already selected", () => {
-    const roleConfig = makeRoleConfig({ requiredTags: ["required-a"] });
     const early = makeExperience({ id: "fixture.early", startDate: "2018-01", endDate: "2019-01" });
     const recent = makeExperience({
       id: "fixture.recent",
@@ -461,16 +558,7 @@ describe("selectBridgingExperiences", () => {
       endDate: undefined,
     });
 
-    const selected = selectExperiencesForRole([early, recent], roleConfig, "en", 2025);
-    const bridged = selectBridgingExperiences(
-      [early, recent],
-      selected,
-      roleConfig,
-      "en",
-      referenceDate,
-    );
-
-    expect(bridged).toEqual([]);
+    expect(bridgedIds([early, recent], [early, recent])).toEqual([]);
   });
 
   test("skips a candidate whose tags are excluded by the role", () => {
@@ -492,16 +580,7 @@ describe("selectBridgingExperiences", () => {
       tags: ["excluded-a"],
     });
 
-    const selected = selectExperiencesForRole([early, recent], roleConfig, "en", 2025);
-    const bridged = selectBridgingExperiences(
-      [early, recent, excludedBridge],
-      selected,
-      roleConfig,
-      "en",
-      referenceDate,
-    );
-
-    expect(bridged).toEqual([]);
+    expect(bridgedIds([early, recent], [early, recent, excludedBridge])).toEqual([]);
   });
 });
 
@@ -563,7 +642,10 @@ describe("generateCV experience integration", () => {
     );
     expect(new Set(orderedIds).has("experience.sec-playground-fullstack-developer")).toBe(true);
     expect(new Set(orderedIds).has("experience.bank-of-thailand-system-analyst")).toBe(true);
-    expect(new Set(orderedIds).has("experience.kbtg-blockchain-developer-internship")).toBe(true);
+    // The PDPA/GDPR consent work is the most security-adjacent employment on the
+    // record, and the summary leans on it, so it has to be visible in the body rather
+    // than demoted to a bare Additional Experience line.
+    expect(new Set(orderedIds).has("experience.datawow-frontend-developer")).toBe(true);
   });
 
   test("ai_ml_engineer backfills the frontend roles as additional experience to close the gap", () => {
@@ -576,12 +658,32 @@ describe("generateCV experience integration", () => {
     expect(cv.additionalExperience.every((item) => item.title && item.organization)).toBe(true);
   });
 
-  test("security_engineer backfills the one omitted role that keeps the timeline continuous", () => {
+  test("security_engineer leaves no unexplained gap in its timeline", () => {
+    // Asserting the invariant rather than naming whichever role happens to be bridged:
+    // which one that is changes whenever ranking changes, but "no unexplained gap" is
+    // the thing the bridging exists to guarantee.
     const cv = generateCV("security_engineer", "en");
+    const months = (value: string) => {
+      const [year, month] = value.split("-");
+      return Number(year) * 12 + (month ? Number(month) - 1 : 0);
+    };
+    const now = new Date().getFullYear() * 12 + new Date().getMonth();
+    const end = (value: string) => (/^\d{4}(-\d{2})?$/.test(value) ? months(value) : now);
 
-    expect(cv.additionalExperience.map((item) => item.id)).toEqual([
-      "experience.datawow-frontend-developer",
-    ]);
+    const covered = [
+      ...cv.experience.map((item) => [months(item.startDate), end(item.endDate)] as const),
+      ...cv.additionalExperience.map((item) => {
+        const [from, to] = item.dateRange.split(" - ");
+        return [months(from), end(to)] as const;
+      }),
+      ...cv.education.map((item) => [months(item.startDate), end(item.endDate)] as const),
+    ].sort((a, b) => a[0] - b[0]);
+
+    let reach = covered[0][1];
+    for (const [start, finish] of covered.slice(1)) {
+      expect(start - reach, `gap before month ${start}`).toBeLessThanOrEqual(6);
+      reach = Math.max(reach, finish);
+    }
   });
 
   test("apple_specialist backfills Bank of Thailand to close the pre-2021 gap", () => {

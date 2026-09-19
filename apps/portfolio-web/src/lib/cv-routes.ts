@@ -71,7 +71,11 @@ export function parseCvSelection(source: SearchParamSource): CvSelection | null 
 }
 
 export function cvRoleSlugToId(slug: string): CvRoleId | null {
-  return roleIdBySlug[slug] ?? null;
+  // Object.hasOwn, not `?? null`: a plain object literal answers `constructor`,
+  // `toString` and friends with an inherited, truthy value, which would slip
+  // past the `notFound()` guard in app/cv/[role]/page.tsx and redirect
+  // /cv/constructor to /en/cv/undefined instead of 404ing.
+  return Object.hasOwn(roleIdBySlug, slug) ? (roleIdBySlug[slug] ?? null) : null;
 }
 
 export function cvRoleIdToSlug(role: CvRoleId): (typeof roleSlugById)[CvRoleId] {

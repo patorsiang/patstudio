@@ -35,9 +35,6 @@ import { normalizeTag } from "./normalize";
 import { groupSkillsForRole } from "./skill-grouping";
 import { rankProjectsForRole, type RankedProject } from "./project-ranking";
 
-const fullstackAtsSummary =
-  "Full-stack developer currently building cybersecurity, gamified learning, and AI-related platform features at SEC Playground Co., Ltd. Experience includes Vue.js, Nuxt.js, React, Next.js, Angular, Node.js, Java, Go, APIs, SQL, PostgreSQL, MongoDB, AWS, GCP, Docker, Git, Linux, and TypeScript across startup, government, freelance, and client-facing environments.";
-
 const atsMaxAwardItems = 3;
 
 const atsEducationPriority = new Map<string, number>([
@@ -80,96 +77,142 @@ const fullstackAtsProjectSummaries: Readonly<Record<string, string>> = {
     "Progressive web app using JavaScript, Node.js, and MongoDB to deliver offline-capable cultural heritage web and mobile experiences.",
 };
 
+const aiMlProjectSummaries: Readonly<Record<string, string>> = {
+  "project.rugpull-detection":
+    "MSc dissertation. Designed and built a fused multi-model classifier over tabular, Solidity source, opcode, and GRU timeline features, trained on 1,550 labelled contracts and reaching 0.94 macro F1 on an 843-contract benchmark across 6 rug-pull categories. Built the React/Vite and FastAPI workflow around it for contract intake, feature extraction, and prediction review.",
+  "project.food101-classification":
+    "Computer-vision experiment on the 101-class Food-101 dataset using EfficientNetV2B2 transfer learning, evaluated on 25,250 samples at 0.8493 accuracy and 0.8488 macro F1. Scoped as the classification stage of a nutrition-estimation pipeline; portion-size estimation and nutrition data are not implemented.",
+};
+
+const appleExperienceBullets: Readonly<Record<string, readonly string[]>> = {
+  "experience.freelance-frontend-developer": [
+    "Ran two client projects alone, from the first conversation through to launch and the support that followed.",
+    "Handled client communication directly, turning what people asked for into changes we had both agreed on.",
+    "Built each project to the client's own requirements rather than to my own preferences.",
+  ],
+  "experience.datawow-frontend-developer": [
+    "Built tools people use daily - consent management, dashboards, a chat-storage system and an online exam platform.",
+    "Worked in a product team to agreed release timelines, alongside designers and other engineers.",
+  ],
+  "experience.sec-playground-fullstack-developer": [
+    "Build and maintain the parts of a hands-on cybersecurity training platform that learners work through directly.",
+    "Work with the team from building a feature through testing it to putting it in front of users.",
+  ],
+  "experience.bank-of-thailand-system-analyst": [
+    "Worked in a central bank team on financial systems where mistakes are expensive and care matters more than speed.",
+  ],
+};
+
+const roleExperienceBullets: Partial<
+  Record<CvRoleId, Readonly<Record<string, readonly string[]>>>
+> = {
+  fullstack_engineer: fullstackAtsExperienceBullets,
+  apple_specialist: appleExperienceBullets,
+};
+
+/**
+ * A string with its machine-translated Thai counterpart.
+ *
+ * CLAUDE.md requires AI-authored Thai to be marked `ai_draft` rather than reviewed or
+ * approved. Writing that wrapper out by hand repeated six lines per entry and made the
+ * flag easy to set wrong on a copy-paste; there is one place to get it right now.
+ */
+/** A string whose Thai counterpart has been reviewed and approved, not machine-drafted. */
+function approved(en: string, th: string): TranslatableText {
+  return { en, translated: { th: { value: th, status: "approved" } } };
+}
+
+function aiDraft(en: string, th: string): TranslatableText {
+  return { en, translated: { th: { value: th, status: "ai_draft" } } };
+}
+
 const roleText = {
   fullstack_engineer: {
-    targetTitle: {
-      en: "Full-Stack Developer",
-      translated: {
-        th: {
-          value: "Full-Stack Developer",
-          status: "approved",
-        },
-      },
-    },
-    summaryIntent: {
-      en: "Full-stack developer with practical product development experience across frontend, backend, cloud, data, and security-aware systems.",
-      translated: {
-        th: {
-          value:
-            "นักพัฒนา Full-Stack ที่มีประสบการณ์พัฒนาผลิตภัณฑ์จริง ครอบคลุม frontend, backend, cloud, data และระบบที่คำนึงถึงความปลอดภัย",
-          status: "ai_draft",
-        },
-      },
-    },
+    targetTitle: approved("Full-Stack Developer", "Full-Stack Developer"),
+    summaryIntent: aiDraft(
+      "Full-stack developer at SEC Playground, building cybersecurity, gamified learning, and AI features in Vue.js, Nuxt.js, Node.js, and TypeScript.",
+      "นักพัฒนา Full-Stack ที่พัฒนาฟีเจอร์ด้านความปลอดภัยไซเบอร์ gamified learning และ AI ที่ SEC Playground ทำงานประจำวันด้วย Vue.js, Nuxt.js, Node.js และ TypeScript",
+    ),
+    summaryBody: [
+      aiDraft(
+        "Five years across startup, central-bank and client work: consent platforms that have since scaled to 9,000+ websites, and a blockchain government bond platform that cut bond delivery from 15 days to 2.",
+        "ประสบการณ์ 5 ปีในสตาร์ทอัพ ธนาคารกลาง และงานกับลูกค้าโดยตรง ทั้งแพลตฟอร์มความยินยอมด้านความเป็นส่วนตัวที่ปัจจุบันขยายไปกว่า 9,000 เว็บไซต์ และแพลตฟอร์มพันธบัตรรัฐบาลบน blockchain ที่ลดเวลาส่งมอบพันธบัตรจาก 15 วันเหลือ 2 วัน",
+      ),
+      aiDraft(
+        "MSc Advanced Computer Science with distinction, University of Kent, 2025.",
+        "ปริญญาโท MSc Advanced Computer Science ระดับ distinction จาก University of Kent ปี 2025",
+      ),
+    ],
   },
   ai_ml_engineer: {
-    targetTitle: {
-      en: "AI / Machine Learning Engineer",
-      translated: {
-        th: {
-          value: "วิศวกร AI / Machine Learning",
-          status: "approved",
-        },
-      },
-    },
-    summaryIntent: {
-      en: "Software engineer with hands-on experience in machine learning, applied AI projects, data pipelines, and model evaluation.",
-      translated: {
-        th: {
-          value:
-            "วิศวกรซอฟต์แวร์ที่มีประสบการณ์ตรงด้าน machine learning, โปรเจกต์ AI เชิงประยุกต์, data pipelines และการประเมินโมเดล",
-          status: "ai_draft",
-        },
-      },
-    },
+    targetTitle: approved("AI / Machine Learning Engineer", "วิศวกร AI / Machine Learning"),
+    summaryIntent: aiDraft(
+      "Software engineer with hands-on experience in machine learning, applied AI projects, data pipelines, and model evaluation.",
+      "วิศวกรซอฟต์แวร์ที่มีประสบการณ์ตรงด้าน machine learning, โปรเจกต์ AI เชิงประยุกต์, data pipelines และการประเมินโมเดล",
+    ),
+    summaryBody: [
+      aiDraft(
+        "MSc Advanced Computer Science with distinction, University of Kent, 2025; the dissertation built a machine-learning pipeline over blockchain forensics features, reaching 0.94 macro F1 on an 843-contract benchmark.",
+        "ปริญญาโท MSc Advanced Computer Science ระดับ distinction จาก University of Kent ปี 2025 วิทยานิพนธ์พัฒนา machine-learning pipeline บนคุณลักษณะจากการตรวจสอบ blockchain ได้ค่า macro F1 0.94 บนชุดทดสอบ 843 สัญญา",
+      ),
+      aiDraft(
+        "Combines recent, project-based applied ML with five years of production software engineering: React, Vue, Node, Go and SQL-backed systems across a startup, a central bank, and direct client work.",
+        "ผสมผสานงาน ML เชิงประยุกต์ระดับโปรเจกต์ในช่วงหลัง เข้ากับประสบการณ์วิศวกรรมซอฟต์แวร์ที่ใช้งานจริง 5 ปี ทั้ง React, Vue, Node, Go และระบบที่ใช้ SQL ในสตาร์ทอัพ ธนาคารกลาง และงานกับลูกค้าโดยตรง",
+      ),
+    ],
   },
   security_engineer: {
-    targetTitle: {
-      en: "Security-Focused Software Engineer",
-      translated: {
-        th: {
-          value: "Software Engineer ที่เน้นด้านความปลอดภัย",
-          status: "approved",
-        },
-      },
-    },
-    summaryIntent: {
-      en: "Security-aware software engineer with cybersecurity learning, CTF activity, cryptography, and blockchain-related experience.",
-      translated: {
-        th: {
-          value:
-            "วิศวกรซอฟต์แวร์ที่คำนึงถึงความปลอดภัย มีประสบการณ์เรียนรู้ cybersecurity กิจกรรม CTF พื้นฐาน cryptography และงานที่เกี่ยวข้องกับ blockchain",
-          status: "ai_draft",
-        },
-      },
-    },
+    targetTitle: approved(
+      "Security-Focused Software Engineer",
+      "Software Engineer ที่เน้นด้านความปลอดภัย",
+    ),
+    summaryIntent: aiDraft(
+      "Software engineer working on security-focused products, with blockchain and privacy-engineering experience behind it.",
+      "วิศวกรซอฟต์แวร์ที่ทำงานกับผลิตภัณฑ์ด้านความปลอดภัย โดยมีพื้นฐานจากงานบล็อกเชนและวิศวกรรมด้านความเป็นส่วนตัว",
+    ),
+    summaryBody: [
+      aiDraft(
+        "Currently building a hands-on cybersecurity training platform at SEC Playground. Earlier work included DLTBond, a Hyperledger Fabric government bond platform at the Bank of Thailand, and PDPA/GDPR consent systems that have since handled 600M+ consent records.",
+        "ปัจจุบันพัฒนาแพลตฟอร์มฝึกอบรมด้านความปลอดภัยไซเบอร์แบบลงมือทำที่ SEC Playground งานก่อนหน้ารวมถึง DLTBond แพลตฟอร์มพันธบัตรรัฐบาลบน Hyperledger Fabric ที่ธนาคารแห่งประเทศไทย และระบบความยินยอมตาม PDPA/GDPR ที่ปัจจุบันรองรับบันทึกความยินยอมกว่า 600 ล้านรายการ",
+      ),
+      aiDraft(
+        "MSc Advanced Computer Science with distinction, University of Kent, 2025, covering computer security, artificial intelligence, IoT and quantum computing.",
+        "ปริญญาโท MSc Advanced Computer Science ระดับ distinction จาก University of Kent ปี 2025 ครอบคลุมความปลอดภัยคอมพิวเตอร์ ปัญญาประดิษฐ์ IoT และควอนตัมคอมพิวติง",
+      ),
+    ],
   },
   apple_specialist: {
-    targetTitle: {
-      en: "Apple Specialist (Retail, Part-Time)",
-      translated: {
-        th: {
-          value: "Apple Specialist (Retail, Part-Time)",
-          status: "ai_draft",
-        },
-      },
-    },
-    summaryIntent: {
-      en: "Customer-facing team member with fast learning across many tools and platforms, reliable teamwork, and genuine day-to-day fluency with Apple's ecosystem - MacBook, iPad, iPhone, Apple Watch, Apple TV, and AirPods.",
-      translated: {
-        th: {
-          value:
-            "พนักงานที่สื่อสารกับลูกค้าได้ดี เรียนรู้เครื่องมือใหม่ได้เร็ว ทำงานเป็นทีมได้อย่างเชื่อถือได้ และคุ้นเคยกับอุปกรณ์ Apple ในชีวิตประจำวันอย่างแท้จริง ทั้ง MacBook, iPad, iPhone, Apple Watch, Apple TV และ AirPods",
-          status: "ai_draft",
-        },
-      },
-    },
+    targetTitle: aiDraft(
+      "Apple Specialist (Retail, Part-Time)",
+      "Apple Specialist (Retail, Part-Time)",
+    ),
+    summaryIntent: aiDraft(
+      "Software developer with five years of software and technical product experience, including direct client-facing freelance work, applying for a part-time Specialist role: understanding what people need, explaining technology clearly, and following a problem through to a solution. Uses MacBook, iPad, iPhone, Apple Watch, Apple TV and AirPods daily.",
+      "นักพัฒนาซอฟต์แวร์ที่มีประสบการณ์ด้านซอฟต์แวร์และผลิตภัณฑ์เชิงเทคนิค 5 ปี รวมถึงงานฟรีแลนซ์ที่ทำงานกับลูกค้าโดยตรง สมัครตำแหน่ง Specialist แบบพาร์ทไทม์ ถนัดการทำความเข้าใจความต้องการของผู้ใช้ อธิบายเรื่องเทคนิคให้เข้าใจง่าย และติดตามปัญหาจนแก้ไขได้ ใช้งาน MacBook, iPad, iPhone, Apple Watch, Apple TV และ AirPods เป็นประจำทุกวัน",
+    ),
+    summaryBody: [
+      aiDraft(
+        "A year of that was freelance, working with clients directly: establishing what they needed, agreeing the scope, and providing support after launch.",
+        "หนึ่งปีในจำนวนนั้นเป็นงานฟรีแลนซ์ที่ทำงานกับลูกค้าโดยตรง ตั้งแต่ทำความเข้าใจความต้องการ ตกลงขอบเขตงาน และดูแลหลังเปิดใช้งาน",
+      ),
+      aiDraft(
+        "Thai and English day to day, with elementary Korean and Chinese.",
+        "ใช้ภาษาไทยและอังกฤษเป็นประจำ และมีภาษาเกาหลีกับจีนในระดับเบื้องต้น",
+      ),
+    ],
   },
 } as const satisfies Record<
   CvRoleId,
   {
     readonly targetTitle: TranslatableText;
     readonly summaryIntent: TranslatableText;
+    /**
+     * Replaces the shared `profile.summary` paragraphs for this role instead of
+     * appending to them. Use it when the shared text argues against the application -
+     * a retail reader meeting Hyperledger and central-bank work reads "overqualified,
+     * will leave", which is the opposite of what the CV needs to say.
+     */
+    readonly summaryBody?: readonly TranslatableText[];
   }
 >;
 
@@ -211,9 +254,12 @@ export function buildCVOutput(role: CvRoleId, lang: CvLanguage): GeneratedCV {
     group: skillGroup.label,
     items: skillGroup.items,
   }));
-  const generatedExperience = rankedExperiences.map((rankedExperience) =>
-    toGeneratedExperience(rankedExperience, roleConfig, lang),
-  );
+  // Relevance chooses *which* roles appear; it must not choose the order they are read
+  // in. Ranked order alone printed 2023 -> 2026 -> 2021 on the Apple CV, which a reader
+  // takes for a mistake. Selection stays score-driven, presentation is chronological.
+  const generatedExperience = [...rankedExperiences]
+    .sort((a, b) => b.experience.startDate.localeCompare(a.experience.startDate))
+    .map((rankedExperience) => toGeneratedExperience(rankedExperience, roleConfig, lang));
   const generatedAdditionalExperience = bridgingExperiences.map((rankedExperience) =>
     toGeneratedAdditionalExperience(rankedExperience, lang),
   );
@@ -278,14 +324,13 @@ function publicExperiencesForLanguage(lang: CvLanguage) {
 }
 
 function buildSummary(roleConfig: CvRoleConfig, lang: CvLanguage): string {
-  if (roleConfig.id === "fullstack_engineer" && lang === "en") {
-    return fullstackAtsSummary;
-  }
+  const role = roleText[roleConfig.id];
+  const body: readonly TranslatableText[] =
+    "summaryBody" in role && role.summaryBody ? role.summaryBody : profile.summary;
 
-  return [
-    text(roleText[roleConfig.id].summaryIntent, lang),
-    ...profile.summary.map((paragraph) => text(paragraph, lang)),
-  ].join(" ");
+  return [text(role.summaryIntent, lang), ...body.map((paragraph) => text(paragraph, lang))].join(
+    " ",
+  );
 }
 
 function buildLanguages(lang: CvLanguage): readonly GeneratedCvLanguage[] {
@@ -325,7 +370,9 @@ function toGeneratedExperience(
     endDate: formatOpenEndedDate(item.current ? undefined : item.endDate, lang),
     summary: text(item.summary, lang),
     bullets: buildExperienceBullets(item, roleConfig, lang),
-    skills: item.skills,
+    // The chip row under each role is the loudest "this is an engineer's CV" signal on
+    // the page, and a retail reader has no use for it.
+    skills: roleConfig.id === "apple_specialist" ? [] : item.skills,
     rankDebug: {
       score: rankedExperience.relevanceScore,
       relevanceScore: rankedExperience.relevanceScore,
@@ -362,20 +409,29 @@ function buildExperienceBullets(
   roleConfig: CvRoleConfig,
   lang: CvLanguage,
 ): readonly string[] {
-  const atsBullets =
-    roleConfig.id === "fullstack_engineer" && lang === "en"
-      ? fullstackAtsExperienceBullets[item.id]
-      : undefined;
+  const roleBullets = lang === "en" ? roleExperienceBullets[roleConfig.id]?.[item.id] : undefined;
 
-  return (atsBullets ?? item.highlights.map((highlight) => text(highlight, lang))).slice(
+  return (roleBullets ?? item.highlights.map((highlight) => text(highlight, lang))).slice(
     0,
     roleConfig.limits.maxBulletsPerExperience,
   );
 }
 
+/**
+ * A project's own summary is written for the portfolio, where one description serves
+ * every reader. A CV has one reader at a time, so a role may restate the same work with
+ * the evidence that reader cares about - the ML pipeline for an ML role, the full-stack
+ * surface for an engineering one. Everything here still comes from the project's own
+ * `highlights`; nothing is added that the source does not already state.
+ */
+const roleProjectSummaries: Partial<Record<CvRoleId, Readonly<Record<string, string>>>> = {
+  fullstack_engineer: fullstackAtsProjectSummaries,
+  ai_ml_engineer: aiMlProjectSummaries,
+};
+
 function buildProjectSummary(item: Project, roleConfig: CvRoleConfig, lang: CvLanguage): string {
-  if (roleConfig.id === "fullstack_engineer" && lang === "en") {
-    return fullstackAtsProjectSummaries[item.id] ?? text(item.summary, lang);
+  if (lang === "en") {
+    return roleProjectSummaries[roleConfig.id]?.[item.id] ?? text(item.summary, lang);
   }
 
   return text(item.summary, lang);

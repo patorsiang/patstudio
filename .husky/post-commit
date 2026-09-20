@@ -1,0 +1,46 @@
+# Bypass counter. post-commit runs even under `git commit --no-verify`, which is what makes
+# this measurable at all: pre-commit can be skipped, this cannot. See
+# life-planning/drafts/design-to-delivery-2026/evidence/tools-trail.md
+#
+# Note: husky runs hooks under `sh -e`, so a bare failing test would abort the script.
+# Every test below is inside an `if`, and nothing here may fail the commit — post-commit's
+# exit code is ignored by git, but a noisy failure would still train me to distrust it.
+
+git_dir=$(git rev-parse --git-dir)
+marker="$git_dir/hook-audit.marker"
+log="$git_dir/hook-audit.log"
+
+# Rebase, cherry-pick and revert replay commits without running pre-commit. Counting those
+# as bypasses would make the number meaningless, so they are skipped entirely.
+if [ -d "$git_dir/rebase-merge" ] || [ -d "$git_dir/rebase-apply" ] ||
+   [ -f "$git_dir/CHERRY_PICK_HEAD" ] || [ -f "$git_dir/REVERT_HEAD" ]; then
+  rm -f "$marker"
+  exit 0
+fi
+
+sha=$(git rev-parse HEAD)
+short=$(git rev-parse --short HEAD)
+branch=$(git rev-parse --abbrev-ref HEAD)
+subject=$(git log -1 --pretty=%s | tr '|' '/' | cut -c1-72)
+when=$(date +%Y-%m-%dT%H:%M:%S)
+parents=$(git rev-list --parents -n 1 HEAD | wc -w | tr -d ' ')
+
+status=bypassed
+if [ "$parents" -gt 2 ]; then
+  # More than one parent: a merge. Git runs pre-merge-commit here, never pre-commit,
+  # so the absence of a marker says nothing about whether I skipped anything.
+  status=merge
+elif [ -f "$marker" ]; then
+  recorded=$(cat "$marker")
+  parent=$(git rev-parse HEAD^ 2>/dev/null || echo ROOT)
+  if [ "$recorded" = "$parent" ]; then
+    status=verified
+  fi
+fi
+
+rm -f "$marker"
+printf '%s|%s|%s|%s|%s\n' "$when" "$status" "$short" "$branch" "$subject" >> "$log"
+
+if [ "$status" = bypassed ]; then
+  echo "hook-audit: recorded a BYPASSED commit ($short on $branch). bun run hooks:audit"
+fi

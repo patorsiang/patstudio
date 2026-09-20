@@ -12,6 +12,8 @@
     "dev": "bun run dev:portfolio",
     "build": "bun run build:portfolio",
     "lint": "bun run --cwd apps/portfolio-web lint",
+    "hooks:audit": "sh scripts/hook-audit.sh",
+    "//hooks:audit": "Reads .git/hook-audit.log, written by .husky/post-commit. Answers whether step 6 can be promoted from trialled to running -- flow.md wants three consecutive units of work with no skips. post-commit runs even under --no-verify, which is the only reason a skip is observable at all. The log is per-clone and never committed.",
     "//typecheck": "--filter '*' runs the typecheck script of EVERY workspace that has one, and exits non-zero if any fails. Do NOT narrow this back to one --cwd: until 2026-09-20 it read '--cwd apps/portfolio-web', which meant a type error anywhere in packages/ passed both the pre-commit hook and this repo's required CI check. A workspace with TypeScript and no typecheck script is still invisible here.",
     "typecheck": "bun run --filter '*' typecheck",
     "test": "bun test",

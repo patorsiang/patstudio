@@ -1,3 +1,9 @@
 bunx lint-staged
 bun run typecheck
 bun test
+
+# Record that the gate actually ran, so post-commit can tell a checked commit from a
+# --no-verify one. The marker holds the HEAD this commit will be built on; post-commit
+# matches it against the new commit's parent and then deletes it. Last line on purpose:
+# it must only be written once every check above has passed.
+printf '%s\n' "$(git rev-parse HEAD 2>/dev/null || echo ROOT)" > "$(git rev-parse --git-dir)/hook-audit.marker"

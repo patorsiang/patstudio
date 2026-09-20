@@ -26,10 +26,13 @@
     "dev:legacy": "bun run --cwd legacy-v1 dev",
     "build:legacy": "bun run --cwd legacy-v1 build",
     "lint:legacy": "bun run --cwd legacy-v1 lint",
-    "typecheck:legacy": "bun run --cwd legacy-v1 typecheck"
+    "typecheck:legacy": "bun run --cwd legacy-v1 typecheck",
+    "prepare": "husky"
   },
   "devDependencies": {
     "eslint-config-prettier": "^10.1.8",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.5.1",
     "prettier": "^3.9.6"
   },
   "dependencies": {

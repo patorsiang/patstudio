@@ -44,7 +44,7 @@ turns over. Full visual spec in `docs/design/namecard.md`.
 - Email (`profile.contact.email`) and location, monospace.
 - Hairline rule, then a bare icon row on four equal columns:
   1. **LINE** — `https://line.me/R/ti/p/@766wwbir` (the `PatOrSiangAssistant` Official Account).
-  2. **WhatsApp** — `https://wa.me/66959390164`.
+  2. **WhatsApp** — `https://wa.me/message/FHMNDGUQGKJNE1`.
   3. **GitHub** and **LinkedIn** — existing `profile.contact` links.
 - **Save Contact** — downloads `/card/vcard` (a `.vcf` file). The primary action; see `docs/design/namecard.md` §6 for its treatment.
 
@@ -79,7 +79,7 @@ Confirmed values (real data, not fixtures — see CLAUDE.md):
 | Field | URL | Source |
 |---|---|---|
 | `phone` | `tel:+66959390164` | Confirmed current by Napatchol, 2026-08-22 |
-| `whatsapp` | `https://wa.me/66959390164` | Same number as `phone` |
+| `whatsapp` | `https://wa.me/message/FHMNDGUQGKJNE1` | Public WhatsApp short link for the same contact |
 | `line` | `https://line.me/R/ti/p/@766wwbir` | LINE Official Account `PatOrSiangAssistant`, channel `2005472166` |
 
 All five existing consumers of `profile.contact` (`contact/page.tsx`, `SiteFooter.tsx`, `CvPageContent.tsx`, `person-json-ld.ts`, `llms.txt/route.ts`) reference fields by fixed name (`.email`, `.github`, `.linkedin`) and never iterate the object generically — adding these optional keys does not change their output. Only the new `/card` page and the vCard builder read the new fields.
@@ -92,7 +92,7 @@ All five existing consumers of `profile.contact` (`contact/page.tsx`, `SiteFoote
 
 - `/card/vcard` is added to the `Disallow` list in `src/app/robots.ts`, exactly as `/cv/export/` already is.
 - This keeps the number off the page's crawl/scrape surface. It does **not** make the number secret — `/card/vcard` is still a publicly fetchable URL for anyone who guesses it, same class of exposure as `/cv/export/json`.
-- WhatsApp is still reachable from the visible page via the `wa.me` link, independent of whether the raw number is shown as text.
+- WhatsApp is still reachable from the visible page via the public short link, independent of whether the raw number is shown as text.
 
 ---
 

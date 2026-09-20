@@ -12,6 +12,7 @@ const post = (slug: string, date: string): Post => ({
   tags: [],
   maturity: "published",
   lang: ["en"],
+  elsewhere: [],
   body: "",
 });
 

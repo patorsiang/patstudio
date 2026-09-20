@@ -8,6 +8,15 @@ export type Post = {
   readonly tags: readonly string[];
   readonly maturity: PostMaturity;
   readonly lang: readonly ("en" | "th")[];
+  /** Original URL, when this post was first published off-site. */
+  readonly canonical?: string;
+  /**
+   * Required rather than optional on purpose: `POST_FALLBACK` carries a
+   * hand-written copy of every post, and a required field makes the compiler
+   * the checklist for keeping the two in step. Parsed posts always get `[]`
+   * from the schema default, so no caller has to guard for undefined.
+   */
+  readonly elsewhere: readonly string[];
   readonly body: string;
 };
 

@@ -50,8 +50,28 @@ describe("buildBlogPostingJsonLd", () => {
     tags: [],
     maturity: "published" as const,
     lang: ["en"] as const,
+    elsewhere: [],
     body: "<p>ignored</p>",
   };
+
+  // A post that originated on Medium must tell Google so. Claiming
+  // mainEntityOfPage for a copy is how you compete with your own original.
+  test("hands mainEntityOfPage to canonical when the post originated elsewhere", () => {
+    const jsonLd = buildBlogPostingJsonLd({
+      ...post,
+      canonical: "https://medium.com/@x/overall-of-css-meetup-16-08-2023-1289d8b615f2",
+    });
+
+    expect(jsonLd.mainEntityOfPage).toBe(
+      "https://medium.com/@x/overall-of-css-meetup-16-08-2023-1289d8b615f2",
+    );
+  });
+
+  test("keeps mainEntityOfPage on this site when there is no canonical", () => {
+    const jsonLd = buildBlogPostingJsonLd(post);
+
+    expect(jsonLd.mainEntityOfPage).toContain("/posts/example-post");
+  });
 
   test("only carries fields real Post data actually has - nothing fabricated", () => {
     const jsonLd = buildBlogPostingJsonLd(post);

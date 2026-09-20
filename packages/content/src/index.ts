@@ -53,3 +53,6 @@ export * from "./schemas";
 // posts runtime (fetchPosts, POST_FALLBACK, renderPostBody) import from the
 // "@patorsiang/content/posts" subpath instead.
 export type { PostSummary } from "./posts/fallback";
+// Safe in the main barrel despite the note above: posts/elsewhere.ts is a
+// pure string helper with no imports at all, so it carries no jsdom.
+export { postLinkLabel } from "./posts/elsewhere";

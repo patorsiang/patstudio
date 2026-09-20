@@ -30,6 +30,10 @@
     "typecheck:legacy": "bun run --cwd legacy-v1 typecheck",
     "prepare": "husky"
   },
+  "//lint-staged": "--check, NOT --write. prettier --write repairs the file, re-stages it and lets the commit through, which makes this tier a fixer -- and R2 in flow.md calls the pre-commit tier a local gate in writing. Chosen 2026-09-20 with the cost accepted: a badly formatted file now fails the commit, and you run 'bun run format' and stage again. That is what it costs for the step to be able to stop you.",
+  "lint-staged": {
+    "*": "prettier --ignore-unknown --check"
+  },
   "devDependencies": {
     "eslint-config-prettier": "^10.1.8",
     "husky": "^9.1.7",

@@ -49,7 +49,10 @@ export function buildBlogPostingJsonLd(post: Post) {
     description: post.summary,
     datePublished: post.date,
     dateModified: post.date,
-    mainEntityOfPage: url,
+    // A post backfilled from the Medium archive points at its original.
+    // Claiming this page as the main entity for a copy competes with the
+    // version that already has the history and the inbound links.
+    mainEntityOfPage: post.canonical ?? url,
     image: new URL(`/posts/${post.slug}/opengraph-image`, siteUrl).href,
     author: {
       "@type": "Person",

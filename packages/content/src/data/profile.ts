@@ -121,5 +121,9 @@ export const profile = {
       label: { en: "LinkedIn", translated: { th: { value: "LinkedIn", status: "approved" } } },
       url: "https://www.linkedin.com/in/napatchol-thaipanich",
     },
+    {
+      label: { en: "Medium", translated: { th: { value: "Medium", status: "approved" } } },
+      url: "https://medium.com/@napatcholthaipanich_6231",
+    },
   ],
 } as const satisfies Profile;

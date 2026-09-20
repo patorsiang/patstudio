@@ -2,7 +2,7 @@ import { postSchema } from "../schemas/post.schema";
 import type { Post } from "../types/post";
 
 /**
- * Front matter is a small, fixed shape - six scalar-or-list keys - so it is
+ * Front matter is a small, fixed shape - eight scalar-or-list keys - so it is
  * read directly rather than adding a YAML dependency for it. The parser is
  * deliberately strict: anything it does not recognise throws, because a post
  * that renders with a silently-empty summary is worse than a build that stops.
@@ -63,6 +63,8 @@ export function parsePost(slug: string, raw: string): Post {
     tags: fields.tags === undefined ? [] : parseList(fields.tags),
     maturity: fields.maturity === undefined ? undefined : parseScalar(fields.maturity),
     lang: fields.lang === undefined ? undefined : parseList(fields.lang),
+    canonical: fields.canonical === undefined ? undefined : parseScalar(fields.canonical),
+    elsewhere: fields.elsewhere === undefined ? [] : parseList(fields.elsewhere),
     body,
   });
 

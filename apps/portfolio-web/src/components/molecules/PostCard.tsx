@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { Card } from "@/components/atoms/Card";
 import { Tag } from "@/components/atoms/Tag";
+import { PostElsewhere } from "@/components/molecules/PostElsewhere";
 
 const dateFormat = new Intl.DateTimeFormat("en-GB", {
   day: "numeric",
@@ -49,6 +50,8 @@ export function PostCard({ post }: { readonly post: PostSummary }) {
           ))}
         </div>
       ) : null}
+
+      <PostElsewhere post={post} className="mt-5" />
     </Card>
   );
 }

@@ -47,6 +47,29 @@ const nextConfig: NextConfig = {
    */
   distDir: process.env.NEXT_DIST_DIR ?? ".next",
   transpilePackages: ["@patorsiang/content", "@patorsiang/cv-engine"],
+  /**
+   * jsdom (pulled in transitively by isomorphic-dompurify, used to sanitise
+   * post bodies in packages/content/src/posts/render.ts) must NOT be bundled
+   * by Turbopack. jsdom's own dependency chain -- html-encoding-sniffer@6/7,
+   * both versions -- does `require("@exodus/bytes/encoding-lite.js")`
+   * against a package that ships `"type": "module"` with no CJS build.
+   * Node 22.12+/24 supports a synchronous require() of an ESM module
+   * natively (html-encoding-sniffer's own `engines` field is gated to
+   * exactly those versions on the assumption Node handles it), and this
+   * project's Vercel Node runtime is 24.x -- but Turbopack's server bundle
+   * routes the call through its own `externalRequire` shim instead of a
+   * real Node require, and that shim throws ERR_REQUIRE_ESM where Node
+   * itself would not.
+   *
+   * `serverExternalPackages` tells Next to skip bundling jsdom and hit a
+   * genuine Node require() at runtime, which is what actually has the
+   * newer interop support. This broke every *new* post silently: every
+   * page already static-generated at the last build before this
+   * regression kept serving from cache, so it only surfaced on-demand,
+   * for a slug added after 2026-09-06 -- see the incident note in
+   * flow.md's gap log for how that was found.
+   */
+  serverExternalPackages: ["jsdom"],
   /*
    * Post images are not committed to this repo - they stay in
    * `thinking-in-public` and reach the reader through /_next/image, which

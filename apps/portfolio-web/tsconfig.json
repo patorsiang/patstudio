@@ -3,13 +3,7 @@
   "compilerOptions": {
     "paths": { "@/*": ["./src/*"] }
   },
-  "include": [
-    "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts",
-    "**/*.mts"
-  ],
-  "exclude": ["node_modules", "scripts/**/*.ts", "src/**/*.test.ts", "src/**/*.test.tsx"]
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "**/*.mts"],
+  "//exclude": ".next is excluded deliberately, and both halves matter. Dropping it from `include` is not enough on its own because `**/*.ts` matches inside it, so it has to be excluded outright. The generated route types in .next/types were never checked by CI anyway -- ci.yml runs typecheck before build, so the directory does not exist at that point and the include matched nothing. Locally the directory does exist, and a copy left over from before a Next upgrade fails against the current route signature, which blocked every commit once the pre-commit hook started running typecheck. `next build` typechecks the app itself and next.config sets no ignoreBuildErrors, so CI still covers these types where it counts.",
+  "exclude": ["node_modules", ".next", "scripts/**/*.ts", "src/**/*.test.ts", "src/**/*.test.tsx"]
 }

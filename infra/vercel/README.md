@@ -12,4 +12,3 @@
 
 - Do not commit Vercel tokens or production environment values.
 - Configure real environment variables in the Vercel project settings.
-- `legacy-v1` is kept for reference; it has no active deployment.

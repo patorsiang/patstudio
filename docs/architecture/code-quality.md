@@ -21,8 +21,6 @@ bun run format
 bun run format:check
 ```
 
-`legacy-v1` is ignored by Prettier to avoid formatting churn in the preserved production app.
-
 ## Security
 
 This project follows a "Security in Depth" approach to prevent HTML injection and XSS.

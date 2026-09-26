@@ -5,8 +5,7 @@
   "packageManager": "bun@1.3.11",
   "workspaces": [
     "apps/*",
-    "packages/*",
-    "legacy-v1"
+    "packages/*"
   ],
   "scripts": {
     "dev": "bun run dev:portfolio",
@@ -26,10 +25,6 @@
     "dev:portfolio": "bun run --cwd apps/portfolio-web dev",
     "build:portfolio": "bun run --cwd apps/portfolio-web build",
     "build:storybook": "bun run --cwd apps/portfolio-web build-storybook",
-    "dev:legacy": "bun run --cwd legacy-v1 dev",
-    "build:legacy": "bun run --cwd legacy-v1 build",
-    "lint:legacy": "bun run --cwd legacy-v1 lint",
-    "typecheck:legacy": "bun run --cwd legacy-v1 typecheck",
     "prepare": "husky"
   },
   "//lint-staged": "--check, NOT --write. prettier --write repairs the file, re-stages it and lets the commit through, which makes this tier a fixer -- and R2 in flow.md calls the pre-commit tier a local gate in writing. Chosen 2026-09-20 with the cost accepted: a badly formatted file now fails the commit, and you run 'bun run format' and stage again. That is what it costs for the step to be able to stop you.",

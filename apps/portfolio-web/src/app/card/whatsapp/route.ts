@@ -1,11 +1,25 @@
+import { getContactPhoneE164 } from "@/lib/contact-phone";
+
 /**
- * Public WhatsApp short link used by the namecard.
+ * Redirect to WhatsApp without putting the number on the page.
  *
- * Keep this value in one place so changing the public WhatsApp destination does not
- * require editing the card component or content data.
+ * The namecard used to link straight to `wa.me/<number>`, which meant the number was
+ * rendered into `/card`'s HTML and inlined into the client bundle - crawlable, and
+ * published to every visitor. The card now links here, and the number is only ever
+ * read server-side.
+ *
+ * `force-dynamic` because the value comes from the environment: pre-rendering this
+ * would bake the number back into the build output, which is the problem it exists to
+ * avoid.
  */
-const WHATSAPP_SHORT_LINK = "https://wa.me/message/FHMNDGUQGKJNE1";
+export const dynamic = "force-dynamic";
 
 export function GET(): Response {
-  return Response.redirect(WHATSAPP_SHORT_LINK, 302);
+  const phone = getContactPhoneE164();
+
+  if (!phone) {
+    return new Response("WhatsApp contact is not configured.", { status: 404 });
+  }
+
+  return Response.redirect(`https://wa.me/${phone.replace(/^\+/, "")}`, 302);
 }

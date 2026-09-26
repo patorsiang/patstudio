@@ -16,9 +16,9 @@ export const dynamic = "force-static";
  * section 5.
  *
  * This comment used to say the vCard was the *only* such place. That was wrong: the
- * namecard once linked to `wa.me/<number>`, which put the number in /card's own HTML and
- * in the client bundle. The card now uses a public WhatsApp short link from
- * /card/whatsapp, while the vCard reads its number server-side.
+ * namecard linked to `wa.me/<number>`, which put the number in /card's own HTML and
+ * in the client bundle. Both now go through /card/whatsapp, which reads it
+ * server-side - see src/lib/contact-phone.ts.
  */
 export default function robots(): MetadataRoute.Robots {
   return {

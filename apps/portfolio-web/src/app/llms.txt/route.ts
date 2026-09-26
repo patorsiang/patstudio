@@ -1,6 +1,6 @@
 import { profile } from "@patorsiang/content";
 
-import { cvRoleSlugs } from "@/lib/cv-routes";
+import { cvRoleSlugs, listedCvRoleSlugs } from "@/lib/cv-routes";
 import { defaultDescription, ownerName, siteUrl } from "@/lib/seo";
 
 export const dynamic = "force-static";
@@ -15,7 +15,7 @@ const cvRoleLabels: Readonly<Record<(typeof cvRoleSlugs)[number], string>> = {
 /**
  * llmstxt.org convention: a plain-text map of the site for LLM-based
  * crawlers/agents, which don't render JS or follow a nav bar the way a
- * browser does. Built from the same siteUrl/cvRoleSlugs the sitemap uses, so
+ * browser does. Built from the same siteUrl/listedCvRoleSlugs the sitemap uses, so
  * it can't drift out of sync with the routes that actually exist.
  */
 export function GET() {
@@ -37,7 +37,7 @@ export function GET() {
     "",
     "## CV",
     "",
-    ...cvRoleSlugs.map((role) => {
+    ...listedCvRoleSlugs.map((role) => {
       const cvPath = `/en/cv/${role}`;
 
       return `- [${cvRoleLabels[role]} CV](${url(cvPath)}): ATS-oriented, role-tailored resume.`;

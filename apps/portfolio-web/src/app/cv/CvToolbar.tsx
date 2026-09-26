@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import { ButtonLink } from "@/components/atoms/ButtonLink";
 import { SegmentedLinks } from "@/components/molecules/SegmentedLinks";
-import { buildCanonicalCvHref, buildCvExportFilename } from "@/lib/cv-routes";
+import { buildCanonicalCvHref, buildCvExportFilename, isCvRoleListed } from "@/lib/cv-routes";
 
 import { PrintButton } from "./PrintButton";
 
@@ -71,13 +71,17 @@ export function CvToolbar({ role, lang }: CvToolbarProps) {
           label={uiLabels[lang].roleSelector}
           className="w-full sm:w-auto"
           collapsible={{ summary: roleLabels[lang][role] }}
-          items={roleIds.map((roleId) => ({
-            id: roleId,
-            href: buildCanonicalCvHref(roleId, lang),
-            label: shortRoleLabels[roleId],
-            fullLabel: roleLabels[lang][roleId],
-            active: roleId === role,
-          }))}
+          // An unlisted role only shows up while you're already on it, so the
+          // control still has an active item there without advertising it elsewhere.
+          items={roleIds
+            .filter((roleId) => roleId === role || isCvRoleListed(roleId))
+            .map((roleId) => ({
+              id: roleId,
+              href: buildCanonicalCvHref(roleId, lang),
+              label: shortRoleLabels[roleId],
+              fullLabel: roleLabels[lang][roleId],
+              active: roleId === role,
+            }))}
         />
       </div>
 

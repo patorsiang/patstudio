@@ -10,6 +10,22 @@ export const cvRoleSlugs = [
 ] as const;
 export const cvLanguages = ["en", "th"] as const satisfies readonly CvLanguage[];
 
+/**
+ * Roles that still build and resolve at their URL but are kept out of every
+ * discovery surface: the CV toolbar, sitemap, llms.txt, and search indexes
+ * (the page emits `noindex`). Use this instead of deleting a role while a link
+ * to it is still out in the world - e.g. on a submitted job application.
+ *
+ * apple_specialist: unlisted 2026-09-26. The application links to it, but next
+ * to the engineering CVs it reads as an unfocused direction. Delete the role
+ * properly once that application is resolved and no reapply is planned.
+ */
+const unlistedCvRoles: ReadonlySet<CvRoleId> = new Set<CvRoleId>(["apple_specialist"]);
+
+export function isCvRoleListed(role: CvRoleId): boolean {
+  return !unlistedCvRoles.has(role);
+}
+
 export type CvSelection = {
   readonly role: CvRoleId;
   readonly lang: CvLanguage;
@@ -77,6 +93,12 @@ export function cvRoleSlugToId(slug: string): CvRoleId | null {
   // /cv/constructor to /en/cv/undefined instead of 404ing.
   return Object.hasOwn(roleIdBySlug, slug) ? (roleIdBySlug[slug] ?? null) : null;
 }
+
+/** Slugs safe to advertise. cvRoleSlugs stays the full set the router builds. */
+export const listedCvRoleSlugs = cvRoleSlugs.filter((slug) => {
+  const role = roleIdBySlug[slug];
+  return role !== undefined && isCvRoleListed(role);
+});
 
 export function cvRoleIdToSlug(role: CvRoleId): (typeof roleSlugById)[CvRoleId] {
   return roleSlugById[role];

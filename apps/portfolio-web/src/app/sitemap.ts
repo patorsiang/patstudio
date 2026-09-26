@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 
 import { POST_FALLBACK } from "@patorsiang/content/posts";
-import { cvLanguages, cvRoleSlugs } from "@/lib/cv-routes";
+import { cvLanguages, listedCvRoleSlugs } from "@/lib/cv-routes";
 import { siteUrl } from "@/lib/seo";
 
 export const dynamic = "force-static";
@@ -13,7 +13,9 @@ export const dynamic = "force-static";
  * `/[lang]/cv/[role]`, and listing a redirect asks a crawler to spend budget
  * discovering a URL that immediately points somewhere else. The CV entries are
  * generated from the same cvLanguages/cvRoleSlugs the router uses, so adding a
- * role or a language cannot leave this file behind.
+ * role or a language cannot leave this file behind. Unlisted roles (see
+ * `isCvRoleListed`) are left out: they still resolve, but advertising a
+ * `noindex` page to crawlers contradicts itself.
  *
  * `/cv/export/*` and `/card/vcard` are also absent - those are download
  * endpoints, not pages. `/card` itself is listed; only its .vcf is not.
@@ -39,7 +41,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/card", priority: 0.6 },
     { path: "/posts", priority: 0.7 },
     ...cvLanguages.flatMap((lang) =>
-      cvRoleSlugs.map((role) => ({ path: `/${lang}/cv/${role}`, priority: 0.7 })),
+      listedCvRoleSlugs.map((role) => ({ path: `/${lang}/cv/${role}`, priority: 0.7 })),
     ),
     ...POST_FALLBACK.map((post) => ({
       path: `/posts/${post.slug}`,

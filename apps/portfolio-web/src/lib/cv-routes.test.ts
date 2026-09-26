@@ -1,6 +1,12 @@
 import { describe, expect, test } from "bun:test";
 
-import { cvRoleIdToSlug, cvRoleSlugToId, cvRoleSlugs } from "./cv-routes";
+import {
+  cvRoleIdToSlug,
+  cvRoleSlugToId,
+  cvRoleSlugs,
+  isCvRoleListed,
+  listedCvRoleSlugs,
+} from "./cv-routes";
 
 describe("cvRoleSlugToId", () => {
   test("resolves every slug the sitemap publishes", () => {
@@ -34,5 +40,24 @@ describe("cvRoleSlugToId", () => {
     for (const key of ["constructor", "toString", "valueOf", "hasOwnProperty", "__proto__"]) {
       expect(cvRoleSlugToId(key)).toBeNull();
     }
+  });
+});
+
+describe("listedCvRoleSlugs", () => {
+  test("leaves apple-specialist out of discovery but keeps it routable", () => {
+    // Unlisted, not removed: a live application links straight to this URL, so
+    // it must still build and resolve - it just stays out of nav/sitemap/llms.
+    expect(listedCvRoleSlugs).not.toContain("apple-specialist");
+    expect(isCvRoleListed("apple_specialist")).toBe(false);
+    expect(cvRoleSlugs).toContain("apple-specialist");
+    expect(cvRoleSlugToId("apple-specialist")).toBe("apple_specialist");
+  });
+
+  test("keeps every engineering role listed", () => {
+    expect(listedCvRoleSlugs).toEqual([
+      "fullstack-engineer",
+      "ai-ml-engineer",
+      "security-engineer",
+    ]);
   });
 });

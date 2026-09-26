@@ -5,7 +5,13 @@ import { notFound } from "next/navigation";
 import { ownerName, siteName } from "@/lib/seo";
 import { CvPageContent } from "../../../cv/CvPageContent";
 import { DocumentLangSync } from "@/components/molecules/DocumentLangSync";
-import { buildCanonicalCvHref, cvLanguages, cvRoleSlugToId, cvRoleSlugs } from "@/lib/cv-routes";
+import {
+  buildCanonicalCvHref,
+  cvLanguages,
+  cvRoleSlugToId,
+  cvRoleSlugs,
+  isCvRoleListed,
+} from "@/lib/cv-routes";
 
 type Params = { lang: string; role: string } | Promise<{ lang: string; role: string }>;
 
@@ -60,6 +66,8 @@ export async function generateMetadata({
       absolute: title,
     },
     description,
+    // Unlisted roles stay reachable by direct link but out of search results.
+    ...(isCvRoleListed(selection.role) ? {} : { robots: { index: false, follow: true } }),
     alternates: {
       canonical,
       languages: {

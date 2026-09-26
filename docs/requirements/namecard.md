@@ -44,7 +44,7 @@ turns over. Full visual spec in `docs/design/namecard.md`.
 - Email (`profile.contact.email`) and location, monospace.
 - Hairline rule, then a bare icon row on four equal columns:
   1. **LINE** — `https://line.me/R/ti/p/@766wwbir` (the `PatOrSiangAssistant` Official Account).
-  2. **WhatsApp** — `https://wa.me/66959390164`.
+  2. **WhatsApp** — `https://wa.me/<CONTACT_PHONE_E164 without +>`.
   3. **GitHub** and **LinkedIn** — existing `profile.contact` links.
 - **Save Contact** — downloads `/card/vcard` (a `.vcf` file). The primary action; see `docs/design/namecard.md` §6 for its treatment.
 
@@ -78,8 +78,8 @@ Confirmed values (real data, not fixtures — see CLAUDE.md):
 
 | Field | URL | Source |
 |---|---|---|
-| `phone` | `tel:+66959390164` | Confirmed current by Napatchol, 2026-08-22 |
-| `whatsapp` | `https://wa.me/66959390164` | Same number as `phone` |
+| `phone` | `tel:<CONTACT_PHONE_E164>` | Confirmed current by Napatchol, 2026-08-22 |
+| `whatsapp` | `https://wa.me/<CONTACT_PHONE_E164 without +>` | Same number as `phone` |
 | `line` | `https://line.me/R/ti/p/@766wwbir` | LINE Official Account `PatOrSiangAssistant`, channel `2005472166` |
 
 All five existing consumers of `profile.contact` (`contact/page.tsx`, `SiteFooter.tsx`, `CvPageContent.tsx`, `person-json-ld.ts`, `llms.txt/route.ts`) reference fields by fixed name (`.email`, `.github`, `.linkedin`) and never iterate the object generically — adding these optional keys does not change their output. Only the new `/card` page and the vCard builder read the new fields.

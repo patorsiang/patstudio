@@ -13,7 +13,7 @@ it off the crawl surface. `robots.ts` still described the vCard as "the one plac
 phone number is published".
 
 That was not true, and had not been true since the WhatsApp affordance was added. The
-namecard linked directly to `wa.me/66959390164`, so the number was:
+namecard linked directly to `wa.me/<CONTACT_PHONE_E164 without +>`, so the number was:
 
 - a literal in `packages/content/src/data/profile.ts`, in a public repository, indexed by
   GitHub code search — no URL to guess;

@@ -139,7 +139,7 @@ describe("buildVCard", () => {
   });
 
   test("ignores a malformed number rather than publishing it", () => {
-    process.env.CONTACT_PHONE_E164 = "0959390164";
+    process.env.CONTACT_PHONE_E164 = "0812345678";
 
     expect(buildVCard(makeProfile())).not.toContain("TEL");
     delete process.env.CONTACT_PHONE_E164;

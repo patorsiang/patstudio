@@ -11,9 +11,7 @@ The platform is built as a high-performance monorepo using **Bun** and **Next.js
 ```text
 .
 ├── apps/
-│   ├── portfolio-web/    # Main Next.js portfolio application (2026 version)
-│   ├── playground/       # Experiments, visual demos, and game ideas
-│   └── admin/            # (Planned) CMS/Admin interface
+│   └── portfolio-web/    # Main Next.js portfolio application (2026 version)
 ├── packages/
 │   ├── content/          # Structured profile, project, and CV data (Zod/JSON)
 │   ├── cv-engine/        # Role-targeted CV logic (filtering, ranking, formatting)

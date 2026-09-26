@@ -5,7 +5,6 @@ dist
 build
 coverage
 bun.lock
-legacy-v1
 docs/requirements
 *.log
 *.tmp

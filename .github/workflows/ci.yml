@@ -143,17 +143,6 @@ jobs:
       - name: Build Storybook
         run: bun run build:storybook
 
-      # legacy-v1 sits in the workspace, so the root `overrides` block rewrites
-      # its dependency tree as well - it lifts postcss off the exact pin
-      # next@15 declares, and jumps uuid three majors for pdfjs. Nothing else in
-      # this job touches it, so without these two steps an override tuned for
-      # portfolio-web can break legacy-v1 and no one finds out.
-      - name: Typecheck legacy-v1
-        run: bun run typecheck:legacy
-
-      - name: Build legacy-v1
-        run: bun run build:legacy
-
   deploy-preview:
     name: Deploy portfolio-web to Vercel Preview
     runs-on: ubuntu-latest

@@ -46,7 +46,7 @@ export default function Home() {
         role={profile.role.en}
         headline={profile.headline.en}
         // Generator options that produced /avataaars.svg (getavataaars.com),
-        // kept so the avatar can be regenerated after legacy-v1 is deleted:
+        // kept so the avatar can be regenerated now that legacy-v1 is gone:
         // https://avataaars.io/?avatarStyle=Circle&topType=LongHairBob&accessoriesType=Prescription02&hairColor=Black&facialHairType=Blank&clotheType=Hoodie&clotheColor=Heather&eyeType=Default&eyebrowType=Default&mouthType=Eating&skinColor=Light
         portrait={{
           src: "/avataaars.svg",

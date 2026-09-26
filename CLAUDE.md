@@ -1,10 +1,10 @@
 # CLAUDE.md
 
-Project-specific instructions for AI agents working in this repo. Read `README.md` first — it already covers architecture, workspaces, commands, core packages, the `legacy-v1` policy, and env/secrets. This file only covers what isn't written down there or in `docs/`.
+Project-specific instructions for AI agents working in this repo. Read `README.md` first — it already covers architecture, workspaces, commands, core packages, and env/secrets. This file only covers what isn't written down there or in `docs/`.
 
 ## Where things are documented
 
-- `README.md` — architecture, setup, commands, core packages, legacy-v1 policy, env/secrets, deployment.
+- `README.md` — architecture, setup, commands, core packages, env/secrets, deployment.
 - `docs/architecture/code-quality.md` — ESLint/Prettier, security sanitization (`sanitizeUrl`, `sanitizeHTML`), naming conventions, the "Requirement-First" workflow.
 - `docs/design/design-system.md` — the full design system: colour/typography/spacing/radius tokens, dark-mode implementation, accessibility requirements. Read this before touching any UI in `apps/portfolio-web`.
 - `docs/design/ux-principles.md`, `docs/design/information-architecture.md`, `docs/design/motion-guidelines.md` — supporting design docs.
@@ -20,7 +20,7 @@ Don't duplicate any of the above here — update the relevant doc instead, and k
 bun test && bun run typecheck && bun run lint && bun run format:check
 ```
 
-`legacy-v1` and `docs/requirements` are excluded from Prettier on purpose — don't reformat them.
+`docs/requirements` is excluded from Prettier on purpose — don't reformat it.
 
 ## Hard-won conventions not written elsewhere
 

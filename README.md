@@ -11,9 +11,7 @@ The platform is built as a high-performance monorepo using **Bun** and **Next.js
 ```text
 .
 ├── apps/
-│   ├── portfolio-web/    # Main Next.js portfolio application (2026 version)
-│   ├── playground/       # Experiments, visual demos, and game ideas
-│   └── admin/            # (Planned) CMS/Admin interface
+│   └── portfolio-web/    # Main Next.js portfolio application (2026 version)
 ├── packages/
 │   ├── content/          # Structured profile, project, and CV data (Zod/JSON)
 │   ├── cv-engine/        # Role-targeted CV logic (filtering, ranking, formatting)
@@ -21,8 +19,7 @@ The platform is built as a high-performance monorepo using **Bun** and **Next.js
 │   ├── configs/          # Shared configuration presets (ESLint, Prettier, TS)
 │   └── utils/            # Shared utility helpers
 ├── docs/                 # Architecture, requirements, and design decisions
-├── infra/                # Infrastructure and deployment configurations
-└── legacy-v1/            # Previous production portfolio (retained for reference)
+└── infra/                # Infrastructure and deployment configurations
 ```
 
 ## Getting Started
@@ -43,17 +40,16 @@ bun install
 | :---------------------- | :----------------------------------------------- |
 | `bun run dev`           | Start the main portfolio app in development mode |
 | `bun run dev:portfolio` | Alias for `bun run dev`                          |
-| `bun run dev:legacy`    | Start the legacy-v1 portfolio app                |
 
 ### Build & Quality
 
-| Command                   | Description                                     |
-| :------------------------ | :---------------------------------------------- |
-| `bun run build`           | Build both the new portfolio and the legacy app |
-| `bun run build:portfolio` | Build the main Next.js portfolio                |
-| `bun run lint`            | Run ESLint across the workspace                 |
-| `bun run typecheck`       | Run TypeScript compiler checks                  |
-| `bun run format:check`    | Check file formatting with Prettier             |
+| Command                   | Description                         |
+| :------------------------ | :---------------------------------- |
+| `bun run build`           | Alias for `bun run build:portfolio` |
+| `bun run build:portfolio` | Build the main Next.js portfolio    |
+| `bun run lint`            | Run ESLint across the workspace     |
+| `bun run typecheck`       | Run TypeScript compiler checks      |
+| `bun run format:check`    | Check file formatting with Prettier |
 
 ## Core Packages
 
@@ -71,11 +67,11 @@ A specialized engine that generates role-targeted CVs. It handles:
 
 ## Legacy Portfolio Policy
 
-`legacy-v1` contains the previous production version of the portfolio. Its GitHub Pages deployment has been decommissioned; `apps/portfolio-web` is now the sole live site.
+The previous production portfolio (`legacy-v1`) was removed from the tree on 2026-09-26, after its GitHub Pages deployment had already been decommissioned. Its last state is preserved at the `legacy-v1-final` tag:
 
-- **Do NOT delete** this directory.
-- Kept for migration reference; eventually archived.
-- It is a **bun workspace member**, installed from the root `bun.lock` like everything else. It had a leftover `yarn.lock` from before the migration, pinning versions nobody installed; it was removed and CI now rejects stray lockfiles. Do not add one back.
+```bash
+git worktree add ../legacy-v1 legacy-v1-final   # browse it outside this tree, never re-staged
+```
 
 ## Environment & Secrets
 
@@ -89,7 +85,6 @@ A specialized engine that generates role-targeted CVs. It handles:
 The platform is configured for continuous deployment to **Vercel** via GitHub Actions.
 
 - Pushing to `main` triggers a production deployment of `portfolio-web`.
-- `legacy-v1` has no active deployment; its GitHub Pages workflow was removed.
 
 ## Deployment Status
 

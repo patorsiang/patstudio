@@ -5,7 +5,7 @@ This document outlines the deployment setup for the Patorsiang Portfolio Platfor
 ## Status
 
 - **Development Deployment**: Active
-- **Production Deployment**: Cut over. `legacy-v1`'s GitHub Pages workflow (`nextjs.yml`) was removed; `apps/portfolio-web` is the only app built and deployed. `legacy-v1`'s source stays in the repo (`bun run build:legacy` etc. still work locally); only the automated deploy stopped.
+- **Production Deployment**: Cut over. `legacy-v1`'s GitHub Pages workflow (`nextjs.yml`) was removed; `apps/portfolio-web` is the only app built and deployed. `legacy-v1` was later removed from the tree; its last state is the `legacy-v1-final` tag.
 - The `patorsiang.github.io` GitHub Pages site has been taken down (repo Settings → Pages disabled). The repo and Vercel project were both renamed to `patstudio`.
 
 ## Deployment URLs
@@ -96,5 +96,5 @@ Only the Production environment is configured so far - Preview builds still fall
 - [x] Configure production-specific environment variables in Vercel: `NEXT_PUBLIC_APP_ENV`, `NEXT_PUBLIC_SITE_URL`.
 - [x] Update `NEXT_PUBLIC_SITE_URL` to the current production domain (had drifted to the pre-rename `patorsiang-github-io.vercel.app`, a dead domain; corrected 2026-08-24, redeployed via `deploy-production.yml`'s `workflow_dispatch`).
 - [x] Verify SEO and Open Graph metadata on the live deployment: canonical tags, OG image URLs, and the `/card` vCard's `URL:` field all confirmed pointing at `patstudio.vercel.app`.
-- [x] Finalize the `legacy-v1` fallback and archival plan: its GitHub Pages workflow is removed, source stays in the repo unbuilt by default.
+- [x] Finalize the `legacy-v1` fallback and archival plan: its GitHub Pages workflow is removed, source removed from the tree, preserved at the `legacy-v1-final` tag.
 - [x] Decide what happens to the already-live GitHub Pages site at `patorsiang.github.io`: disabled in repo Settings. Repo and Vercel project both renamed to `patstudio`.

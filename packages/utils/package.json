@@ -1,23 +1,24 @@
 {
   "name": "@patorsiang/utils",
   "version": "0.1.0",
-  "private": true,
-  "type": "module",
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/sanitize-html": "^2.16.1",
+    "bun-types": "^1.4.1",
+    "typescript": "^5"
+  },
   "exports": {
     ".": "./src/index.ts",
     "./sanitize-url": "./src/sanitize-url.ts",
     "./security": "./src/security.ts"
   },
-  "types": "./src/index.ts",
+  "private": true,
   "scripts": {
     "typecheck": "tsc --noEmit"
   },
+  "type": "module",
+  "types": "./src/index.ts",
   "dependencies": {
-    "isomorphic-dompurify": "^4.1.0"
-  },
-  "devDependencies": {
-    "@types/node": "^20",
-    "bun-types": "^1.4.1",
-    "typescript": "^5"
+    "sanitize-html": "^2.17.7"
   }
 }

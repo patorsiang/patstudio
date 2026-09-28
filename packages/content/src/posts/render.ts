@@ -1,5 +1,5 @@
 // Subpath, not the main barrel: this is the one file in the app that
-// actually needs DOMPurify - see packages/utils/src/index.ts.
+// actually needs the HTML sanitiser - see packages/utils/src/index.ts.
 import { sanitizeArticleHTML } from "@patorsiang/utils/security";
 import { marked } from "marked";
 
@@ -80,7 +80,7 @@ export function candidateWidths(sourceWidth: number | undefined): number[] {
 
 /**
  * The renderer below builds raw HTML strings before sanitizeArticleHTML ever
- * sees them - safety today rests entirely on DOMPurify's ALLOWED_ATTR
+ * sees them - safety today rests entirely on the sanitiser's attribute allowlist
  * excluding event handlers, with no independent layer if that ever changes.
  * Escaping href/text here means a crafted alt or URL can't break out of the
  * attribute or tag in the first place.

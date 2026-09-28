@@ -1,8 +1,8 @@
 /**
  * Deliberately its own module, not part of security.ts: sanitizeUrl is pure
- * string logic with no DOM dependency, but security.ts also imports
+ * string logic with no DOM dependency, but security.ts imported
  * isomorphic-dompurify (for sanitizeHTML/sanitizeArticleHTML) at module
- * scope. Because @patorsiang/utils re-exports everything through one barrel
+ * scope until 2026-09-28, when it moved to sanitize-html. Because @patorsiang/utils re-exports everything through one barrel
  * (src/index.ts), any consumer that only needed sanitizeUrl was still
  * pulling in isomorphic-dompurify's jsdom dependency at bundle time - which
  * broke every *dynamic* route built on that chain in production (jsdom's

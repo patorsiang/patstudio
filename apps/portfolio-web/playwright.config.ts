@@ -16,6 +16,13 @@ const port = 3100;
 const devPort = 3101;
 
 /**
+ * Storybook, for the one spec about how stories render rather than how the
+ * app does. `storybook dev` rather than a static build: it starts in a couple
+ * of seconds, where `build-storybook` would add a full build to every run.
+ */
+const storybookPort = 6106;
+
+/**
  * Runs against a production build, not `next dev`: dev-only overlays inject
  * their own focusable controls, which the tap-target sweep would then measure
  * and report as app violations.
@@ -51,7 +58,7 @@ export default defineConfig({
     // in its own project below.
     {
       name: "mobile",
-      testIgnore: "**/hydration.e2e.ts",
+      testIgnore: ["**/hydration.e2e.ts", "**/storybook-*.e2e.ts"],
       use: {
         ...devices["Desktop Chrome"],
         viewport: { width: 375, height: 667 },
@@ -61,7 +68,7 @@ export default defineConfig({
     },
     {
       name: "desktop",
-      testIgnore: "**/hydration.e2e.ts",
+      testIgnore: ["**/hydration.e2e.ts", "**/storybook-*.e2e.ts"],
       use: { ...devices["Desktop Chrome"] },
     },
     // The one project pointed at `next dev` rather than a production build -
@@ -86,6 +93,13 @@ export default defineConfig({
     // visitor sees is backwards text. Nothing else in the suite could catch
     // that. Scoped by testMatch to just that file, so the second browser
     // download buys exactly the coverage that needs it and nothing else.
+    // Stories, not the app: a separate server and origin, so the sweeps above
+    // exclude it and it excludes them.
+    {
+      name: "storybook",
+      testMatch: "**/storybook-*.e2e.ts",
+      use: { ...devices["Desktop Chrome"], baseURL: `http://localhost:${storybookPort}` },
+    },
     {
       name: "webkit",
       testMatch: "**/namecard-flip.e2e.ts",
@@ -110,6 +124,12 @@ export default defineConfig({
       command: `NEXT_DIST_DIR=.next/e2e-dev bun run dev --port ${devPort}`,
       env: { CONTACT_PHONE_E164: "+66000000000" },
       url: `http://localhost:${devPort}`,
+      reuseExistingServer: !process.env.CI,
+      timeout: 180_000,
+    },
+    {
+      command: `bunx storybook dev --ci --no-open --port ${storybookPort}`,
+      url: `http://localhost:${storybookPort}/iframe.html`,
       reuseExistingServer: !process.env.CI,
       timeout: 180_000,
     },

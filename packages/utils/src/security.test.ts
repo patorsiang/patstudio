@@ -18,7 +18,9 @@ describe("sanitizeHTML", () => {
     expect(html).toContain("<strong>b</strong>");
     expect(html).toContain("<em>c</em>");
     expect(html).toContain("<span>d</span>");
-    expect(html).toContain("<br>");
+    // Serialisation-agnostic: DOMPurify writes <br>, sanitize-html <br />.
+    // Both are valid HTML5; the test is about the tag surviving.
+    expect(html).toMatch(/<br\s*\/?>/);
   });
 
   test("keeps class but drops other attributes", () => {
@@ -80,7 +82,7 @@ describe("sanitizeArticleHTML", () => {
   });
 
   test("keeps the responsive-image attributes render.ts emits", () => {
-    // The regression guard for a failure that is entirely silent: DOMPurify
+    // The regression guard for a failure that is entirely silent: the sanitiser
     // drops an unlisted attribute without complaint, so losing these would
     // leave every post image working, un-optimized, and shifting the layout -
     // visible only in a Lighthouse run nobody happened to do that week.
@@ -115,6 +117,62 @@ describe("sanitizeArticleHTML", () => {
 
     expect(html).not.toContain("onerror");
     expect(html).toContain('src="/x.png"');
+  });
+
+  /*
+   * Parity guards for the jsdom-free sanitiser swap (2026-09-28). Each is an
+   * obfuscation that naive scheme checks miss; all passed against DOMPurify
+   * before the swap, so a failure here means the replacement is weaker.
+   */
+  test("strips javascript: URLs however they are disguised", () => {
+    for (const href of [
+      "JaVaScRiPt:alert(1)",
+      " javascript:alert(1)",
+      "java\tscript:alert(1)",
+      "javascript&#58;alert(1)",
+      "&#106;avascript:alert(1)",
+    ]) {
+      expect(sanitizeArticleHTML(`<a href="${href}">x</a>`).toLowerCase()).not.toContain(
+        "alert(1)",
+      );
+    }
+  });
+
+  test("strips vbscript: and data: from a link", () => {
+    expect(sanitizeArticleHTML('<a href="vbscript:msgbox(1)">x</a>')).not.toContain("vbscript");
+    expect(
+      sanitizeArticleHTML('<a href="data:text/html,<script>alert(1)</script>">x</a>'),
+    ).not.toContain("data:");
+  });
+
+  test("strips a javascript: URL from an image src and srcset", () => {
+    const html = sanitizeArticleHTML(
+      '<img src="javascript:alert(1)" srcset="javascript:alert(2) 1x" alt="a">',
+    );
+
+    expect(html).not.toContain("javascript:");
+    expect(html).toContain('alt="a"');
+  });
+
+  test("removes svg and math, which carry their own script vectors", () => {
+    expect(sanitizeArticleHTML("<svg><script>alert(1)</script></svg>")).not.toContain("alert(1)");
+    expect(sanitizeArticleHTML('<svg onload="alert(1)"></svg>')).not.toContain("onload");
+    expect(sanitizeArticleHTML('<math><a href="javascript:alert(1)">x</a></math>')).not.toContain(
+      "javascript:",
+    );
+  });
+
+  test("keeps https and mailto links", () => {
+    expect(sanitizeArticleHTML('<a href="https://example.com/a?b=1">x</a>')).toContain(
+      'href="https://example.com/a?b=1"',
+    );
+    expect(sanitizeArticleHTML('<a href="mailto:a@b.co">x</a>')).toContain('href="mailto:a@b.co"');
+  });
+
+  test("escapes text so a stray angle bracket cannot open a tag", () => {
+    const html = sanitizeArticleHTML("<p>1 &lt; 2 &amp;&amp; 3 &gt; 2</p>");
+
+    expect(html).toBe("<p>1 &lt; 2 &amp;&amp; 3 &gt; 2</p>");
   });
 
   test("drops style and id, which are not on the attribute allowlist", () => {

@@ -1,4 +1,18 @@
-import DOMPurify from "isomorphic-dompurify";
+import sanitize from "sanitize-html";
+
+/*
+ * sanitize-html, not DOMPurify: DOMPurify needs a DOM, which on the server
+ * means jsdom, and jsdom's dependency chain (html-encoding-sniffer ->
+ * @exodus/bytes) does a synchronous require() of an ES module. Vercel's
+ * serverless runtime refuses that with ERR_REQUIRE_ESM, so every post rendered
+ * at request time 500'd - unknown slugs, new posts, hourly revalidation - while
+ * build-time prerendering hid it. sanitize-html parses without a DOM.
+ * security.runtime.test.ts reproduces that runtime; security.test.ts holds the
+ * parity guards both libraries had to pass.
+ */
+
+// DOMPurify's default URI allowlist, minus the schemes nothing here links to.
+const allowedSchemes = ["http", "https", "ftp", "mailto", "tel"];
 
 // Re-exported for existing consumers of "@patorsiang/utils" - see
 // sanitize-url.ts for why the implementation lives there instead of here.
@@ -9,9 +23,10 @@ export { sanitizeUrl } from "./sanitize-url";
  * By default, it allows a very limited set of safe formatting tags.
  */
 export function sanitizeHTML(html: string): string {
-  return DOMPurify.sanitize(html, {
-    ALLOWED_TAGS: ["b", "strong", "i", "em", "br", "p", "span"],
-    ALLOWED_ATTR: ["class"], // Allow classes for basic styling if needed
+  return sanitize(html, {
+    allowedTags: ["b", "strong", "i", "em", "br", "p", "span"],
+    allowedAttributes: { "*": ["class"] }, // Allow classes for basic styling if needed
+    allowedSchemes,
   });
 }
 
@@ -26,8 +41,8 @@ export function sanitizeHTML(html: string): string {
  * accessibility feature failing shut rather than open.
  */
 export function sanitizeArticleHTML(html: string): string {
-  return DOMPurify.sanitize(html, {
-    ALLOWED_TAGS: [
+  return sanitize(html, {
+    allowedTags: [
       "h2",
       "h3",
       "h4",
@@ -59,8 +74,8 @@ export function sanitizeArticleHTML(html: string): string {
     ],
     /*
      * srcset/sizes/width/height/decoding are here for post images, which
-     * render.ts emits through /_next/image with a responsive srcset. DOMPurify
-     * drops an unlisted attribute silently, so omitting them does not fail -
+     * render.ts emits through /_next/image with a responsive srcset. The
+     * sanitiser drops an unlisted attribute silently, so omitting them does not fail -
      * it just quietly serves one full-size image and loses the height
      * reservation that keeps CLS at zero. security.test.ts guards that.
      *
@@ -69,19 +84,22 @@ export function sanitizeArticleHTML(html: string): string {
      * /_next/image ones this codebase generates, and CSP img-src 'self'
      * remains the backstop either way.
      */
-    ALLOWED_ATTR: [
-      "href",
-      "src",
-      "srcset",
-      "sizes",
-      "width",
-      "height",
-      "decoding",
-      "alt",
-      "loading",
-      "rel",
-      "target",
-      "lang",
-    ],
+    allowedAttributes: {
+      "*": [
+        "href",
+        "src",
+        "srcset",
+        "sizes",
+        "width",
+        "height",
+        "decoding",
+        "alt",
+        "loading",
+        "rel",
+        "target",
+        "lang",
+      ],
+    },
+    allowedSchemes,
   });
 }

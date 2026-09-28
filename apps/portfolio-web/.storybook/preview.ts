@@ -1,6 +1,7 @@
 import type { Preview } from "@storybook/nextjs-vite";
 
 import "../src/app/globals.css";
+import { geistMono, geistSans } from "../src/app/fonts";
 
 const preview: Preview = {
   parameters: {
@@ -38,6 +39,9 @@ const preview: Preview = {
   decorators: [
     (Story, context) => {
       document.documentElement.dataset.theme = context.globals.theme as string;
+      // Stories never render layout.tsx, which is where <html> gets these. Without
+      // them --font-geist-sans is empty and every story falls back to system-ui.
+      document.documentElement.classList.add(geistSans.variable, geistMono.variable, "antialiased");
 
       return Story();
     },

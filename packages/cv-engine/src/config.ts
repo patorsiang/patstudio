@@ -253,7 +253,8 @@ export const roleConfigs = {
       "Computer Vision",
       "Model Evaluation",
       "FastAPI",
-      "Data Processing",
+      // "Data Processing" is gone for the same reason security_engineer dropped "CTF":
+      // no content entry says it, so it could only ever produce a warning.
     ],
     prioritySkillGroups: [
       "machine-learning-ai",
@@ -379,7 +380,10 @@ export const roleConfigs = {
     requiredTags: ["frontend", "web", "software-engineering"],
     preferredTags: ["react", "nextjs", "vue", "nuxt", "dashboard", "cloud", "privacy-tech"],
     excludedTags: ["private-only", "tutorial-learning"],
-    atsKeywords: ["Customers", "Clients", "Team", "Requirements", "Support", "Training", "Agile"],
+    // "Customers" appears nowhere in the content - the real client-facing work is phrased
+    // as clients - and "Agile" only lives on entries this one-page CV drops. Neither is
+    // worth inventing on a real application.
+    atsKeywords: ["Clients", "Team", "Requirements", "Support", "Training"],
     prioritySkillGroups: ["frontend", "programming-fundamentals"],
     priorityProjectCategories: ["web"],
     priorityExperienceTypes: ["work"],

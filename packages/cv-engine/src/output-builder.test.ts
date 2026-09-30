@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { buildCVOutput, generateCV, isCvLanguage, isCvRoleId } from "./index";
+import { buildCVOutput, generateCV, isCvLanguage, isCvRoleId, roleConfigs } from "./index";
 import { isMissingTranslation, text } from "./content-language";
 
 function stripGeneratedAt<T extends { readonly meta: { readonly generatedAt: string } }>(value: T) {
@@ -194,4 +194,30 @@ describe("output builder", () => {
     expect(summary).not.toContain("ctf");
     expect(summary).not.toContain("cryptography");
   });
+
+  // A keyword the content cannot back is not a gap to fill - inventing it on a real CV is
+  // the bug. Every configured keyword has to be something the English CV actually says.
+  test.each(Object.keys(roleConfigs) as (keyof typeof roleConfigs)[])(
+    "%s English CV covers every configured ATS keyword",
+    (role) => {
+      const cv = buildCVOutput(role, "en");
+
+      expect(cv.meta.warnings.filter((warning) => warning.includes("Missing ATS keyword"))).toEqual(
+        [],
+      );
+    },
+  );
+
+  // The keywords are English and normalizeTag strips everything outside a-z0-9, so on a
+  // Thai CV the check only ever measured how much stayed untranslated.
+  test.each(Object.keys(roleConfigs) as (keyof typeof roleConfigs)[])(
+    "%s Thai CV raises no ATS keyword warning",
+    (role) => {
+      const cv = buildCVOutput(role, "th");
+
+      expect(cv.meta.warnings.filter((warning) => warning.includes("Missing ATS keyword"))).toEqual(
+        [],
+      );
+    },
+  );
 });

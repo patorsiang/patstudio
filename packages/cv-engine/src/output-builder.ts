@@ -505,10 +505,14 @@ function buildWarnings(
   lang: CvLanguage,
 ): readonly string[] {
   const warnings: string[] = [];
+  // The keywords are English and normalizeTag strips everything outside a-z0-9, so a
+  // Thai CV erases to whatever stayed untranslated. Selection is by tags, not text, so
+  // the English check already covers the same entries.
   const generatedText = normalizeTag(buildGeneratedCvText(generatedContent));
-  const missingKeywords = roleConfig.atsKeywords.filter(
-    (keyword) => !generatedText.includes(normalizeTag(keyword)),
-  );
+  const missingKeywords =
+    lang === "en"
+      ? roleConfig.atsKeywords.filter((keyword) => !generatedText.includes(normalizeTag(keyword)))
+      : [];
 
   if (missingKeywords.length > 0) {
     warnings.push(`Missing ATS keyword coverage: ${missingKeywords.slice(0, 6).join(", ")}.`);

@@ -72,8 +72,8 @@ export const skills = [
       translated: { th: { value: "Cloud & Infrastructure", status: "reviewed" } },
     },
     // Scoped 2026-09-15 to what is evidenced elsewhere in this repo and current enough to
-    // be interviewed on. Vercel: `.github/workflows/deploy-production.yml` drives the Vercel
-    // CLI against a real project, documented in `docs/deployment/vercel.md`. Redis:
+    // be interviewed on. Vercel: this site deploys to a real Vercel project through its
+    // GitHub integration, documented in `docs/deployment/vercel.md`. Redis:
     // `projects.ts` rug-pull detection techStack, with a bullet on coordinating backend
     // services. Removed: GCP, Azure, Firebase, IBM Cloud, RabbitMQ (no supporting experience
     // or project anywhere in this data) and AWS (real, but Data Wow only, ended Apr 2023 —

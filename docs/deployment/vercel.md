@@ -11,7 +11,7 @@ This document outlines the deployment setup for the Patorsiang Portfolio Platfor
 ## Deployment URLs
 
 - **Production URL**: `https://patstudio.vercel.app` (no custom domain configured yet)
-- **Preview URL**: generated per-deploy by `deploy-preview`
+- **Preview URL**: generated per commit on each PR by Vercel's GitHub integration
 
 ## App Deployed
 
@@ -36,23 +36,20 @@ This document outlines the deployment setup for the Patorsiang Portfolio Platfor
 
 > **Development Branch needs updating in the Vercel dashboard.** It pointed at `feat/portfolio-platform-2026`, the branch the 2026 rebuild was built on. That branch was merged into `main` and has now been deleted, so the setting names a ref that no longer exists. This table documents the dashboard, which only a project admin can change — update it there, then correct this row. **Production Branch (`main`) is unaffected**; only the development/preview association is stale.
 
-## GitHub Actions Workflows
+## How Deploys Happen
 
-The repository uses automated workflows for deployment:
+Vercel's GitHub integration builds and deploys on its own infrastructure, using the project settings above:
 
-### Production (`deploy-production.yml`)
+- **Production**: every push to `main`.
+- **Preview**: every push to a PR branch, with a per-deployment URL posted on the PR as the `Vercel` status.
 
-- **Trigger**: Push to `main`.
-- **Environment**: Pulls settings from the **Production** environment.
-- **Build**: Runs `bun run build:portfolio` locally.
-- **Result**: Updates the live site (`--prod`).
+GitHub Actions (`ci.yml`) only runs checks; it does not deploy. Until 2026-09-30 it also deployed with the Vercel CLI (a `deploy-preview` job and `deploy-production.yml`), alongside the integration, so every commit was deployed twice. Those were removed; the `VERCEL_TOKEN`, `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID` repository secrets are no longer used.
 
-### Staging / Preview (`ci.yml`, `deploy-preview` job)
+Trade-offs of letting Vercel deploy:
 
-- **Trigger**: Pull Request to `main`, or manual dispatch. Runs after the `checks` job passes.
-- **Environment**: Pulls settings from the **Preview** environment.
-- **Build**: Runs `bun run build:portfolio` locally.
-- **Result**: Generates a temporary Preview URL.
+- **A preview deploys even when CI fails.** It is a throwaway URL; the red `checks` status on the PR is the signal, not whether a preview exists.
+- **Production is gated by branch protection, not by the deploy.** `main` requires the `Format, lint, types, tests, build` check, enforced for admins too, so a commit only lands there after going green on a PR - and the integration only ever builds production from those.
+- **Build environment is Vercel's, not CI's.** The posts listing hits `api.github.com` unauthenticated from Vercel's builders unless `GITHUB_TOKEN` is set in the Vercel project; on a rate-limit 403 the build falls back to the committed post summaries rather than failing.
 
 ## Monorepo Configuration
 
@@ -94,7 +91,7 @@ Only the Production environment is configured so far - Preview builds still fall
 
 - [ ] Choose a custom domain, if any - currently shipping on the Vercel-assigned `patstudio.vercel.app`.
 - [x] Configure production-specific environment variables in Vercel: `NEXT_PUBLIC_APP_ENV`, `NEXT_PUBLIC_SITE_URL`.
-- [x] Update `NEXT_PUBLIC_SITE_URL` to the current production domain (had drifted to the pre-rename `patorsiang-github-io.vercel.app`, a dead domain; corrected 2026-08-24, redeployed via `deploy-production.yml`'s `workflow_dispatch`).
+- [x] Update `NEXT_PUBLIC_SITE_URL` to the current production domain (had drifted to the pre-rename `patorsiang-github-io.vercel.app`, a dead domain; corrected 2026-08-24, redeployed via `deploy-production.yml`'s `workflow_dispatch` (since removed; redeploy from the Vercel dashboard now)).
 - [x] Verify SEO and Open Graph metadata on the live deployment: canonical tags, OG image URLs, and the `/card` vCard's `URL:` field all confirmed pointing at `patstudio.vercel.app`.
 - [x] Finalize the `legacy-v1` fallback and archival plan: its GitHub Pages workflow is removed, source removed from the tree, preserved at the `legacy-v1-final` tag.
 - [x] Decide what happens to the already-live GitHub Pages site at `patorsiang.github.io`: disabled in repo Settings. Repo and Vercel project both renamed to `patstudio`.

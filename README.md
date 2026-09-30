@@ -82,7 +82,7 @@ git worktree add ../legacy-v1 legacy-v1-final   # browse it outside this tree, n
 
 ## Deployment
 
-The platform is configured for continuous deployment to **Vercel** via GitHub Actions.
+The platform is configured for continuous deployment to **Vercel** via Vercel's GitHub integration; GitHub Actions only runs the checks.
 
 - Pushing to `main` triggers a production deployment of `portfolio-web`.
 

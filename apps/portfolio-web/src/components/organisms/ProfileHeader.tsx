@@ -42,6 +42,10 @@ export function ProfileHeader({
             // unnecessary and disabled for SVG by default. Matches how the CV
             // QR code is rendered.
             unoptimized
+            // The header opens every page it's used on, so the portrait is the
+            // LCP element there - lazy loading (Next's default) delays it.
+            loading="eager"
+            fetchPriority="high"
             className="h-24 w-24 shrink-0 sm:h-28 sm:w-28"
           />
         ) : null}

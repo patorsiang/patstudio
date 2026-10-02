@@ -34,7 +34,7 @@ const workExperiences = experiences
 const educationExperiences = experiences.filter((experience) => experience.type === "education");
 
 function formatDateRange(startDate: string, endDate?: string) {
-  return endDate ? `${startDate} - ${endDate}` : startDate;
+  return endDate ? `${startDate}–${endDate}` : startDate;
 }
 
 export default function Home() {

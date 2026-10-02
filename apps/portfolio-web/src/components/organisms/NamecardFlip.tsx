@@ -157,7 +157,7 @@ export function NamecardFlip() {
   }, [flipped]);
 
   return (
-    <div className="namecard-stage namecard-rig mx-auto w-[308px]">
+    <div className="namecard-stage namecard-rig mx-auto w-[min(308px,calc(100vw-48px))]">
       <NamecardStrap flipped={flipped} />
       {/* The clip is inside .namecard-swing, whose transform-origin is its own
           top edge - the point the band ends at - so the card hangs from the
@@ -165,7 +165,7 @@ export function NamecardFlip() {
       <div className="namecard-swing w-full">
         <div className="namecard-clip mx-auto" aria-hidden="true" />
         <div className="namecard-tilt">
-          <div className="namecard-inner relative h-[504px] w-full" data-flipped={flipped}>
+          <div className="namecard-inner relative aspect-[308/504] w-full" data-flipped={flipped}>
             {/* FRONT - identity. The whole face is the flip control: there are
               no links here, so any tap can only turn the card. */}
             <button

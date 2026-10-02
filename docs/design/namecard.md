@@ -292,6 +292,7 @@ negotiating with it.
 - **The print card has no punched slot**, so the physical and digital cards now diverge at the top
   edge. Section 1's premise says they should be the same object. Either the print card gains a
   slot or this is an accepted, documented divergence.
-- **Section 2's scaling gap is still open and is now tighter.** The card is still a fixed 308x504
-  in the build, not the proportional scale section 2 asks for. The strap does not cause this, but
-  it spends the remaining vertical slack.
+- ~~**Section 2's scaling gap is still open and is now tighter.**~~ **Closed 2026-10-02.** The
+  card is `w-[min(308px,calc(100vw-48px))]` with `aspect-[308/504]`, so it keeps its 55x90 shape
+  below 356px instead of squeezing to 272x504 (ratio 1.853). Guarded by `e2e/namecard-fit.e2e.ts`
+  at 320 and 360px, plus a full-size check at 414px.

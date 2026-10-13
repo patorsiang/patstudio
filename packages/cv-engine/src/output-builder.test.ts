@@ -87,6 +87,9 @@ describe("output builder", () => {
   test("supports explicit role and language guards", () => {
     expect(isCvRoleId("fullstack_engineer")).toBe(true);
     expect(isCvRoleId("security-engineer")).toBe(false);
+    expect(isCvRoleId("toString")).toBe(false);
+    expect(isCvRoleId("constructor")).toBe(false);
+    expect(isCvRoleId("__proto__")).toBe(false);
     expect(isCvLanguage("en")).toBe(true);
     expect(isCvLanguage("th")).toBe(true);
     expect(isCvLanguage("es")).toBe(false);

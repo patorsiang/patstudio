@@ -423,7 +423,7 @@ export function getRoleConfig(role: CvRoleId): CvRoleConfig {
 }
 
 export function isCvRoleId(value: string): value is CvRoleId {
-  return value in roleConfigs;
+  return Object.hasOwn(roleConfigs, value);
 }
 
 export function isCvLanguage(value: string): value is CvLanguage {

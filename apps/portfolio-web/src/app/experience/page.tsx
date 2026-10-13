@@ -34,11 +34,11 @@ function byNewest(a: Experience, b: Experience) {
 
 function formatDateRange(experience: Experience) {
   if (experience.current) {
-    return `${experience.startDate} - present`;
+    return `${experience.startDate}–present`;
   }
 
   return experience.endDate
-    ? `${experience.startDate} - ${experience.endDate}`
+    ? `${experience.startDate}–${experience.endDate}`
     : experience.startDate;
 }
 

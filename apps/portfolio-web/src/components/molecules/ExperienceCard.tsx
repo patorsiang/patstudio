@@ -31,7 +31,7 @@ export function ExperienceCard({
         )}
       >
         {variant === "card" ? (
-          <p className="text-xs font-medium uppercase tracking-[0.14em] text-(--color-text-subtle)">
+          <p className="text-xs font-medium uppercase tracking-[0.14em] text-(--color-text-subtle) tabular-nums">
             {dateRange}
           </p>
         ) : null}
@@ -44,7 +44,7 @@ export function ExperienceCard({
           {title}
         </h3>
         {variant === "plain" ? (
-          <p className="text-sm font-medium text-(--color-text-subtle)">{dateRange}</p>
+          <p className="text-sm font-medium text-(--color-text-subtle) tabular-nums">{dateRange}</p>
         ) : null}
       </div>
       <p className="mt-1 text-sm font-medium text-(--color-text-muted)">

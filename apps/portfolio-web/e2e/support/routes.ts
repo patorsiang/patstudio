@@ -27,6 +27,9 @@ export const routes = [
   "/card",
   "/posts",
   "/posts/bkkjs-summer-2026",
+  // The only post with a wide Thai table, which ran past the phone edge until
+  // render.ts wrapped tables in a scroll container.
+  "/posts/line-dev-conf-2026",
   "/en/cv/fullstack-engineer",
   "/en/cv/ai-ml-engineer",
   "/en/cv/security-engineer",

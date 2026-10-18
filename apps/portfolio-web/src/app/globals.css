@@ -564,8 +564,19 @@ body {
   margin-block: 2.5rem;
 }
 
+/* render.ts wraps every table in this; see wrapTables there for why. */
+.post-body .table-scroll {
+  overflow-x: auto;
+}
+
+/*
+ * The min-width is what makes the wrapper scroll: Thai breaks at word
+ * boundaries, so without it a 5-column table squeezes to the column width into
+ * tall slivers instead of overflowing.
+ */
 .post-body table {
   border-collapse: collapse;
+  min-width: 36rem;
   width: 100%;
 }
 

@@ -162,6 +162,38 @@ describe("renderPostBody", () => {
   });
 });
 
+describe("renderPostBody tables", () => {
+  const markdown = "| a | b |\n|---|---|\n| 1 | 2 |";
+
+  // A wide table has nowhere to go on a phone: `main` clips overflow, so
+  // without a scroll container of its own the right-hand columns are
+  // unreachable rather than merely cramped.
+  test("wraps a table in a keyboard-focusable scroll region", () => {
+    const html = renderPostBody(markdown, { imageSizes: noSizes });
+
+    expect(html).toMatch(/^<div class="table-scroll" role="region" [^>]*tabindex="0"[^>]*><table>/);
+    expect(html).toContain("</table></div>");
+  });
+
+  test("wraps each table separately", () => {
+    const html = renderPostBody(`${markdown}\n\ntext\n\n${markdown}`, { imageSizes: noSizes });
+
+    expect(html.match(/class="table-scroll"/g)).toHaveLength(2);
+    expect(html.match(/<\/table><\/div>/g)).toHaveLength(2);
+  });
+
+  // The wrapper is added after sanitising, so it must not become a way for
+  // post content to smuggle in a div of its own.
+  test("still strips a raw div from the body", () => {
+    const html = renderPostBody('<div class="table-scroll" onclick="x()">hi</div>', {
+      imageSizes: noSizes,
+    });
+
+    expect(html).not.toContain("<div");
+    expect(html).not.toContain("onclick");
+  });
+});
+
 describe("candidateWidths", () => {
   test("offers every width when the source size is unknown", () => {
     expect(candidateWidths(undefined)).toEqual([256, 384, 640, 828, 1080, 1920]);

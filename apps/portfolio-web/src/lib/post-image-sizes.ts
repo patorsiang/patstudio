@@ -29,6 +29,10 @@ export const POST_IMAGE_SIZES: ReadonlyMap<string, readonly [number, number]> = 
     [1765, 702],
   ],
   [
+    "https://raw.githubusercontent.com/patorsiang/thinking-in-public/main/assets/line-dev-2026-lockdown-egress.png",
+    [1728, 484],
+  ],
+  [
     "https://raw.githubusercontent.com/patorsiang/thinking-in-public/main/assets/line-dev-2026-review-tiers.png",
     [2400, 920],
   ],

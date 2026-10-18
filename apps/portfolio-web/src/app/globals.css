@@ -575,15 +575,22 @@ body {
   outline-offset: 2px;
 }
 
+.post-body table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
 /*
  * The min-width is what makes the wrapper scroll: Thai breaks at word
  * boundaries, so without it a 5-column table squeezes to the column width into
  * tall slivers instead of overflowing.
+ *
+ * Only from 4 columns up. A 2-3 column table - the image comparisons - fits a
+ * phone, and being side by side is the point of one, so it keeps shrinking to
+ * fit as it did before the scroll wrapper existed.
  */
-.post-body table {
-  border-collapse: collapse;
+.post-body table:has(tr > :nth-child(4)) {
   min-width: 36rem;
-  width: 100%;
 }
 
 .post-body th,

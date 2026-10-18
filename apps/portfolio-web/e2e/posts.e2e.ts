@@ -144,3 +144,26 @@ test("a post page carries BreadcrumbList and BlogPosting structured data", async
     datePublished: "2026-06-14",
   });
 });
+
+// Scrolling is for a table that cannot fit; a 2-3 column image comparison can,
+// and the point of one is seeing the images side by side. A blanket table
+// min-width once made those scroll on a phone too.
+test("on a phone only a wide table scrolls, not a narrow image comparison", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto("/posts/four-frameworks-one-question-2026");
+
+  const tables = await page.locator(".post-body .table-scroll").evaluateAll((wrappers) =>
+    wrappers.map((wrapper) => ({
+      columns: wrapper.querySelector("tr")?.children.length ?? 0,
+      scrolls: wrapper.scrollWidth > wrapper.clientWidth + 1,
+    })),
+  );
+
+  const narrow = tables.filter((table) => table.columns <= 3);
+  const wide = tables.filter((table) => table.columns >= 4);
+
+  expect(narrow.length, "no narrow table to check - the test is vacuous").toBeGreaterThan(0);
+  expect(wide.length, "no wide table to check - the test is vacuous").toBeGreaterThan(0);
+  expect(narrow.filter((table) => table.scrolls)).toEqual([]);
+  expect(wide.every((table) => table.scrolls)).toBe(true);
+});

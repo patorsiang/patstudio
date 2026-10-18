@@ -163,5 +163,26 @@ export function renderPostBody(markdown: string, { imageSizes }: RenderOptions):
 
   const html = marked.parse(markdown, { renderer, async: false });
 
-  return sanitizeArticleHTML(html);
+  return wrapTables(sanitizeArticleHTML(html));
+}
+
+/**
+ * Gives each table a horizontal scroll container, so a wide one scrolls
+ * inside the post body instead of running past a phone's edge, where `main`'s
+ * `overflow-hidden` clips it out of reach. `tabindex="0"` and the region role
+ * let a keyboard user scroll it.
+ *
+ * Done on the sanitised string rather than in a marked renderer because the
+ * sanitiser allowlist has no `div`, `class`, `role` or `tabindex` - widening it
+ * would let post content supply them too. The sanitiser re-emits a bare
+ * `<table>` (no attribute is allowed on it) and markdown cannot nest tables,
+ * so the literal tags are unambiguous.
+ */
+function wrapTables(html: string): string {
+  return html
+    .replaceAll(
+      "<table>",
+      '<div class="table-scroll" role="region" aria-label="Scrollable table" tabindex="0"><table>',
+    )
+    .replaceAll("</table>", "</table></div>");
 }

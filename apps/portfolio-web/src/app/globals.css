@@ -569,6 +569,12 @@ body {
   overflow-x: auto;
 }
 
+/* Focusable so a keyboard user can scroll it, so it needs the same ring as a link. */
+.post-body .table-scroll:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
 /*
  * The min-width is what makes the wrapper scroll: Thai breaks at word
  * boundaries, so without it a 5-column table squeezes to the column width into

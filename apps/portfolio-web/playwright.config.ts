@@ -38,9 +38,25 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: 0,
-  reporter: process.env.CI ? "github" : "list",
+  // Every run leaves files a QA report can cite: results.json for the numbers,
+  // and the HTML report for screenshots and traces. The console reporter alone
+  // left nothing behind. Both live outside test-results/, which Playwright
+  // empties at the start of each run.
+  reporter: [
+    [process.env.CI ? "github" : "list"],
+    ["json", { outputFile: "playwright-report/results.json" }],
+    ["html", { outputFolder: "playwright-report/html", open: "never" }],
+  ],
   use: {
     baseURL: `http://127.0.0.1:${port}`,
+    // A trace holds the network panel, console and DOM snapshots for each
+    // step, so a failure carries its own evidence and no separate HAR is
+    // needed. Kept on failure only, to keep a green run small.
+    trace: "retain-on-failure",
+    // A QA report shows what passed as well as what failed, so a local run
+    // keeps a screenshot of every test. CI keeps failures only: nobody reads
+    // 869 screenshots from a push.
+    screenshot: process.env.CI ? "only-on-failure" : "on",
     // A service worker can serve a cached response inside an unrelated spec,
     // so an assertion passes without ever touching the app. That failure is
     // invisible — the suite goes green either way. Every spec runs with

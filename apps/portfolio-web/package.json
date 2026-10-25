@@ -28,6 +28,7 @@
     "react-dom": "19.2.8"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
     "@patorsiang/configs": "workspace:*",
     "@playwright/test": "^1.62.1",
     "@storybook/addon-a11y": "10.5.7",

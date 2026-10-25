@@ -1,0 +1,33 @@
+{
+  "projectId": "39b548d6-83ec-46e1-a940-3235402d67e9",
+  "shape": "storybook",
+  "storybookConfigDir": "apps/portfolio-web/.storybook",
+  "storybookStatic": ".design-sync/sb-reference",
+  "pkg": "@patorsiang/portfolio-ui",
+  "globalName": "PortfolioUI",
+  "entry": ".design-sync/ds-package/dist/index.js",
+  "buildCmd": "node .design-sync/build-dist.mjs",
+  "srcDir": "../../apps/portfolio-web/src/components",
+  "componentSrcMap": {
+    "Button": "../../apps/portfolio-web/src/components/atoms/Button.tsx",
+    "ButtonLink": "../../apps/portfolio-web/src/components/atoms/ButtonLink.tsx",
+    "Card": "../../apps/portfolio-web/src/components/atoms/Card.tsx",
+    "GridGlow": "../../apps/portfolio-web/src/components/atoms/GridGlow.tsx",
+    "HeroMark": "../../apps/portfolio-web/src/components/atoms/HeroMark.tsx",
+    "RevealOnView": "../../apps/portfolio-web/src/components/atoms/RevealOnView.tsx",
+    "SiteMark": "../../apps/portfolio-web/src/components/atoms/SiteMark.tsx",
+    "Tag": "../../apps/portfolio-web/src/components/atoms/Tag.tsx",
+    "TextLink": "../../apps/portfolio-web/src/components/atoms/TextLink.tsx",
+    "Breadcrumbs": "../../apps/portfolio-web/src/components/molecules/Breadcrumbs.tsx",
+    "ContactLinks":"../../apps/portfolio-web/src/components/molecules/ContactLinks.tsx",
+    "ExperienceCard": "../../apps/portfolio-web/src/components/molecules/ExperienceCard.tsx",
+    "ProjectCard": "../../apps/portfolio-web/src/components/molecules/ProjectCard.tsx",
+    "SegmentedLinks": "../../apps/portfolio-web/src/components/molecules/SegmentedLinks.tsx",
+    "SkillGroup": "../../apps/portfolio-web/src/components/molecules/SkillGroup.tsx",
+    "ProfileHeader": "../../apps/portfolio-web/src/components/organisms/ProfileHeader.tsx"
+  },
+  "extraFonts": [
+    "../../.design-sync/fonts/geist.css"
+  ],
+  "readmeHeader": ".design-sync/conventions.md"
+}

@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "skipLibCheck": true,
+    "types": [],
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "outDir": "dist/types",
+    "rootDir": "../..",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["../../apps/portfolio-web/src/*"],
+      "next/link": ["./shims/next-link.tsx"],
+      "next/image": ["./shims/next-image.tsx"],
+      "@patorsiang/utils": ["../../packages/utils/src/sanitize-url.ts"],
+      "react": ["../../apps/portfolio-web/node_modules/@types/react"],
+      "react/jsx-runtime": ["../../apps/portfolio-web/node_modules/@types/react/jsx-runtime"]
+    }
+  },
+  "files": ["src/index.ts"]
+}

@@ -71,3 +71,18 @@ next-env.d.ts
 .agents/
 .claude/
 skills-lock.json
+
+# design-sync (claude.ai/design): build artifacts and transient state. The durable
+# set - .design-sync/config.json, NOTES.md, conventions.md, previews/, build-dist.mjs,
+# ds-package/ sources - is committed.
+.design-sync/sb-reference/
+.design-sync/sb-build.log
+.design-sync/learnings/
+.design-sync/.cache/
+.design-sync/node_modules
+.design-sync/ds-package/dist/
+.ds-sync/
+ds-bundle/
+.design-sync/*.log
+.design-sync/resync-verdict.json
+.design-sync/upload-manifest.json

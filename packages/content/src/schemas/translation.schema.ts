@@ -11,5 +11,5 @@ export const translationEntrySchema = z.object({
 
 export const translatableTextSchema = z.object({
   en: z.string(),
-  translated: z.record(supportedLocaleSchema, translationEntrySchema).optional(),
+  translated: z.partialRecord(supportedLocaleSchema, translationEntrySchema).optional(),
 });

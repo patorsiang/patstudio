@@ -9,3 +9,4 @@ docs/requirements
 *.log
 *.tmp
 *.temp
+.design-sync

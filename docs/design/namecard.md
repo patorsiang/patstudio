@@ -132,6 +132,15 @@ handler first, so tapping one of them does only that: it never also turns the ca
 remains a real, independently-focusable `<button>` so keyboard users always have an explicit,
 labelled way to flip regardless of where else a click would land.
 
+The front face cannot copy that pattern: a `div` with an `onClick` is what static analysis flags
+(S1082 / S6848), and it was a `<button>` wrapping the QR and URL links before, which is invalid
+HTML (axe `nested-interactive`). So there the flip control is a real `<button>` stretched over the
+whole face, and the content is its **sibling**, layered above with `pointer-events: none`. A tap on
+text or empty card falls through to the button; the QR and URL links switch `pointer-events` back
+on and take their own taps, so neither needs `stopFlip`. The `contacts` pill is a visual-only cue
+over it. The URL link is also `min-h-6`: `.tap-reach` widens the hit area with a pseudo-element,
+which axe's `target-size` rule does not count, so the link needs 24px of real box.
+
 ## 8. Accepted cost
 
 Research is consistent that gating a primary action behind an interaction is this pattern's weak

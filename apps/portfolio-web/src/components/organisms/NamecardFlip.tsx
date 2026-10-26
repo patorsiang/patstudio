@@ -166,21 +166,29 @@ export function NamecardFlip() {
         <div className="namecard-clip mx-auto" aria-hidden="true" />
         <div className="namecard-tilt">
           <div className="namecard-inner relative aspect-[308/504] w-full" data-flipped={flipped}>
-            {/* FRONT - identity. The whole face is the flip control: there are
-              no links here, so any tap can only turn the card. */}
-            <button
-              type="button"
+            {/* FRONT - identity. The whole face flips on a tap, same as the back.
+              It is a div, not a <button>: the QR and URL below are real links,
+              and a link nested inside a button is invalid (axe nested-
+              interactive) and unreliable for assistive tech. Keyboard access
+              is the real <button ref={frontRef}> cue below - its native
+              Enter/Space click bubbles to this handler, and each link stops
+              its own click first via stopFlip. For why no onKeyDown is added
+              here, see the longer note on the back face. */}
+            <div
               onClick={toggle}
-              aria-label="Turn card over to see contact channels"
               aria-hidden={flipped}
               inert={flipped ? true : undefined}
-              ref={frontRef}
-              className="namecard-face absolute inset-0 flex cursor-pointer flex-col items-center rounded-[10px] border border-(--color-border) bg-(--color-surface) px-5 pt-[22px] pb-[34px] text-left shadow-[0_18px_40px_rgba(0,0,0,0.45)] focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-(--color-focus)"
+              className="namecard-face absolute inset-0 flex cursor-pointer flex-col items-center rounded-[10px] border border-(--color-border) bg-(--color-surface) px-5 pt-[22px] pb-[34px] shadow-[0_18px_40px_rgba(0,0,0,0.45)]"
             >
-              <span className={cueClassName} aria-hidden="true">
+              <button
+                type="button"
+                ref={frontRef}
+                aria-label="Turn card over to see contact channels"
+                className={cueClassName}
+              >
                 <FlipIcon />
                 contacts
-              </span>
+              </button>
 
               <SiteMark size={21} className="self-start text-(--color-accent)" />
 
@@ -231,11 +239,11 @@ export function NamecardFlip() {
                 rel="noreferrer"
                 onClick={stopFlip}
                 tabIndex={flipped ? -1 : undefined}
-                className="tap-reach mt-3 font-mono text-[9px] tracking-[0.02em] text-(--color-text-subtle) underline-offset-2 hover:text-(--color-accent) hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-focus)"
+                className="tap-reach mt-3 inline-flex min-h-6 items-center font-mono text-[9px] tracking-[0.02em] text-(--color-text-subtle) underline-offset-2 hover:text-(--color-accent) hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-focus)"
               >
                 {displayUrl}
               </a>
-            </button>
+            </div>
 
             {/* BACK - contact. Adapted from the printed card's back face (same
               portrait/email/rule/icon-row composition). The whole face flips

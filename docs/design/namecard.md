@@ -132,6 +132,12 @@ handler first, so tapping one of them does only that: it never also turns the ca
 remains a real, independently-focusable `<button>` so keyboard users always have an explicit,
 labelled way to flip regardless of where else a click would land.
 
+The front face follows the same pattern for the same reason: it is a `div`, not a `<button>`,
+because the QR and the URL on it are real links and a link nested inside a button is invalid HTML
+(axe `nested-interactive`). Its `contacts` cue is the real, focusable `<button>`; the links stop
+their own click first. The URL link is also `min-h-6` — `.tap-reach` widens the hit area with a
+pseudo-element, which axe's `target-size` rule does not count, so the link needs 24px of real box.
+
 ## 8. Accepted cost
 
 Research is consistent that gating a primary action behind an interaction is this pattern's weak

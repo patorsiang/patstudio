@@ -166,83 +166,85 @@ export function NamecardFlip() {
         <div className="namecard-clip mx-auto" aria-hidden="true" />
         <div className="namecard-tilt">
           <div className="namecard-inner relative aspect-[308/504] w-full" data-flipped={flipped}>
-            {/* FRONT - identity. The whole face flips on a tap, same as the back.
-              It is a div, not a <button>: the QR and URL below are real links,
-              and a link nested inside a button is invalid (axe nested-
-              interactive) and unreliable for assistive tech. Keyboard access
-              is the real <button ref={frontRef}> cue below - its native
-              Enter/Space click bubbles to this handler, and each link stops
-              its own click first via stopFlip. For why no onKeyDown is added
-              here, see the longer note on the back face. */}
+            {/* FRONT - identity. The whole face flips on a tap, but the QR and URL
+              are real links, so the face cannot itself be a <button> (a link
+              nested in a button is invalid - axe nested-interactive) nor a div
+              with an onClick (static analysis S1082/S6848, and no keyboard
+              story). Instead the flip control is a button stretched over the
+              whole face, and the content is its SIBLING, layered above with
+              pointer-events off: a tap on text or empty card falls through to
+              the button, while the two links switch pointer-events back on and
+              take their own taps. That also means neither link needs stopFlip. */}
             <div
-              onClick={toggle}
               aria-hidden={flipped}
               inert={flipped ? true : undefined}
-              className="namecard-face absolute inset-0 flex cursor-pointer flex-col items-center rounded-[10px] border border-(--color-border) bg-(--color-surface) px-5 pt-[22px] pb-[34px] shadow-[0_18px_40px_rgba(0,0,0,0.45)]"
+              className="namecard-face absolute inset-0 rounded-[10px] border border-(--color-border) bg-(--color-surface) shadow-[0_18px_40px_rgba(0,0,0,0.45)]"
             >
               <button
                 type="button"
-                ref={frontRef}
+                onClick={toggle}
                 aria-label="Turn card over to see contact channels"
-                className={cueClassName}
-              >
-                <FlipIcon />
-                contacts
-              </button>
+                ref={frontRef}
+                className="absolute inset-0 cursor-pointer rounded-[10px] focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-(--color-focus)"
+              />
 
-              <SiteMark size={21} className="self-start text-(--color-accent)" />
+              <div className="pointer-events-none absolute inset-0 flex flex-col items-center px-5 pt-[22px] pb-[34px]">
+                <span className={cueClassName} aria-hidden="true">
+                  <FlipIcon />
+                  contacts
+                </span>
 
-              <div className="mt-6 text-center">
-                <p className="text-[21px] leading-[1.15] font-bold tracking-[-0.02em] text-(--color-text)">
-                  {profile.name.en}
-                </p>
-                <p className="mt-2.5 font-mono text-[10.5px] lowercase text-(--color-text-subtle)">
-                  {profile.role.en}
-                </p>
-                <p className="mt-1 font-mono text-[11px] text-(--color-accent)">
-                  @{profile.handle}
-                </p>
+                <SiteMark size={21} className="self-start text-(--color-accent)" />
+
+                <div className="mt-6 text-center">
+                  <p className="text-[21px] leading-[1.15] font-bold tracking-[-0.02em] text-(--color-text)">
+                    {profile.name.en}
+                  </p>
+                  <p className="mt-2.5 font-mono text-[10.5px] lowercase text-(--color-text-subtle)">
+                    {profile.role.en}
+                  </p>
+                  <p className="mt-1 font-mono text-[11px] text-(--color-accent)">
+                    @{profile.handle}
+                  </p>
+                </div>
+
+                <div className="flex-1" />
+
+                {/* A real link, not just a decorative image - pointer-events-auto
+                  keeps a tap here from falling through to the flip button
+                  underneath. Points at the portfolio home page rather than at the URL
+                  this QR actually encodes (this /card page): the alt text below
+                  stays accurate to what the QR encodes, since that has to be
+                  true for a screen reader regardless of where the visible
+                  click target goes. target="_blank" since this is a different
+                  page, not the one already open. */}
+                <a
+                  href={homeUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  tabIndex={flipped ? -1 : undefined}
+                  className="pointer-events-auto rounded-[3px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-focus)"
+                >
+                  <Image
+                    src={qrSrc}
+                    alt={`QR code linking to ${cardDisplayUrl}`}
+                    width={112}
+                    height={112}
+                    unoptimized
+                    priority
+                    className="rounded-[3px]"
+                  />
+                </a>
+                <a
+                  href={homeUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  tabIndex={flipped ? -1 : undefined}
+                  className="tap-reach pointer-events-auto mt-3 inline-flex min-h-6 items-center font-mono text-[9px] tracking-[0.02em] text-(--color-text-subtle) underline-offset-2 hover:text-(--color-accent) hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-focus)"
+                >
+                  {displayUrl}
+                </a>
               </div>
-
-              <div className="flex-1" />
-
-              {/* A real link, not just a decorative image inside the flip
-                button - onClick={stopFlip} keeps a tap here from also
-                turning the card, same pattern as every real link on the back
-                face. Points at the portfolio home page rather than at the URL
-                this QR actually encodes (this /card page): the alt text below
-                stays accurate to what the QR encodes, since that has to be
-                true for a screen reader regardless of where the visible
-                click target goes. target="_blank" since this is a different
-                page, not the one already open. */}
-              <a
-                href={homeUrl}
-                target="_blank"
-                rel="noreferrer"
-                onClick={stopFlip}
-                tabIndex={flipped ? -1 : undefined}
-                className="rounded-[3px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-focus)"
-              >
-                <Image
-                  src={qrSrc}
-                  alt={`QR code linking to ${cardDisplayUrl}`}
-                  width={112}
-                  height={112}
-                  unoptimized
-                  priority
-                  className="rounded-[3px]"
-                />
-              </a>
-              <a
-                href={homeUrl}
-                target="_blank"
-                rel="noreferrer"
-                onClick={stopFlip}
-                tabIndex={flipped ? -1 : undefined}
-                className="tap-reach mt-3 inline-flex min-h-6 items-center font-mono text-[9px] tracking-[0.02em] text-(--color-text-subtle) underline-offset-2 hover:text-(--color-accent) hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-focus)"
-              >
-                {displayUrl}
-              </a>
             </div>
 
             {/* BACK - contact. Adapted from the printed card's back face (same

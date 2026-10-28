@@ -80,6 +80,8 @@ Footer navigation should provide utility access without duplicating every page i
 
 Footer links should be direct, readable, and keyboard accessible. Avoid large footer sections, marketing copy, or repeated content blocks.
 
+The one exception to "avoid large footer sections" is a short privacy line in English and Thai, stating that the site uses Vercel Web Analytics and Speed Insights and giving the email for data questions (Thailand PDPA, QA card c25). It is plain text, not links.
+
 ## Page Purposes And Content Sections
 
 ### Homepage `/`

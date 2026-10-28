@@ -100,3 +100,27 @@ test("the footer is not printed on the CV", async ({ page }) => {
   // noise there, and GlobalNav already hides itself the same way.
   await expect(page.locator("footer")).toBeHidden();
 });
+
+/*
+ * The analytics privacy line (PDPA, QA card c25). The site runs Vercel Web
+ * Analytics and Speed Insights on every page, so every page that renders a
+ * footer says so, in English and in Thai. Each language sits in its own element
+ * with its own `lang`, because the footer itself is lang="en" (WCAG 3.1.2).
+ */
+for (const route of routes) {
+  test(`${route} footer says what the analytics collect, in English and Thai`, async ({ page }) => {
+    await page.goto(route);
+
+    const en = page.locator('footer [data-testid="privacy-line"][lang="en"]');
+    const th = page.locator('footer [data-testid="privacy-line"][lang="th"]');
+
+    await expect(en, `${route} has no English privacy line`).toHaveCount(1);
+    await expect(th, `${route} has no Thai privacy line`).toHaveCount(1);
+
+    await expect(en).toContainText("Vercel Web Analytics");
+    await expect(en).toContainText("no cookies");
+    await expect(en).toContainText("napatchol.tha@gmail.com");
+    await expect(th).toContainText("Vercel Web Analytics");
+    await expect(th).toContainText("napatchol.tha@gmail.com");
+  });
+}

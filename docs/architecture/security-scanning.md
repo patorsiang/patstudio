@@ -28,3 +28,9 @@ Real secrets must not be committed. Use `.env.example` files for names only and 
 - New Relic account settings
 - SonarCloud/SonarQube project settings
 - Snyk organization settings
+
+## Reporting a vulnerability
+
+`SECURITY.md` at the repository root tells a researcher where to send a report, and `apps/portfolio-web/public/.well-known/security.txt` publishes the same contact for tools (RFC 9116). Both use the owner's public email.
+
+`security.txt` carries an `Expires` date, and readers are told to ignore the file after it. Renew the date once a year, before it passes. `e2e/security-txt.e2e.ts` fails once the date is in the past, and also if it is set more than a year ahead.

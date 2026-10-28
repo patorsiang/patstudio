@@ -47,16 +47,28 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
+      # Actions are pinned to a full commit SHA, not a tag. A tag is a movable
+      # pointer: whoever controls the action's repo (or steals the token that
+      # does) can re-point `v7` at malicious code, and the next run executes it
+      # with this job's GITHUB_TOKEN. A SHA cannot be re-pointed. The trailing
+      # `# vN` is for humans; dependabot's github-actions ecosystem reads it and
+      # opens a PR bumping SHA and comment together.
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
           bun-version: "1.3.11"
 
+      # --ignore-scripts: a dependency's install/postinstall script runs with
+      # the job's environment, so a compromised package could read
+      # GITHUB_TOKEN during install, before any check has had a chance to fail.
+      # Nothing here needs one - the only lifecycle script is the root `prepare`
+      # (husky, which installs git hooks CI never uses). Playwright's browsers
+      # come from the explicit step below, not a postinstall.
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        run: bun install --frozen-lockfile --ignore-scripts
 
       # bun.lock is the only lockfile in this repo, and the only one anything
       # installs from. A stray yarn.lock / package-lock.json does not change a

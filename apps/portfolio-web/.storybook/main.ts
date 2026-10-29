@@ -2,6 +2,8 @@ import type { StorybookConfig } from "@storybook/nextjs-vite";
 
 const config: StorybookConfig = {
   stories: ["../src/components/**/*.stories.@(ts|tsx)"],
+  // The namecard story loads /avataaars.svg and the QR code from public/.
+  staticDirs: ["../public"],
   // Runs axe against each story as you open it. Pinned to the exact storybook
   // version rather than a caret range - mixed Storybook package versions fail
   // at runtime in ways the install only warns about.

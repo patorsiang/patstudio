@@ -1,6 +1,15 @@
+import type { Metadata } from "next";
 import { sanitizeUrl } from "@patorsiang/utils";
 
 import { ButtonLink } from "@/components/atoms/ButtonLink";
+
+/**
+ * The root layout's title template turns this into "Page not found | <owner>".
+ * Without it the 404 inherits the home page's title (WCAG 2.4.2 Page Titled).
+ */
+export const metadata: Metadata = {
+  title: "Page not found",
+};
 
 export default function NotFound() {
   return (

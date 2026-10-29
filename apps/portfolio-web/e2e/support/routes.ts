@@ -1,3 +1,5 @@
+import { POST_FALLBACK } from "@patorsiang/content/posts";
+
 /**
  * The canonical route list every accessibility sweep checks.
  *
@@ -9,11 +11,11 @@
  * checked by the others. This file exists so that cannot happen again: add a
  * route here once, and every sweep picks it up.
  *
- * Any new route added to the app must be added here too. Nothing generates
- * this list automatically the way sitemap.ts derives CV routes from
- * cvLanguages/cvRoleSlugs, so it is on the person adding the route to also
- * add it here - the payoff is that from then on every suite stays in sync
- * with every other one.
+ * Post routes are generated from POST_FALLBACK, the same list sitemap.ts reads,
+ * so a new post enters every sweep without anyone editing this file. Any other
+ * new route is still added by hand below - the payoff is that from then on
+ * every suite stays in sync with every other one. src/lib/e2e-routes.test.ts fails if a
+ * post is missing or a route is listed twice.
  *
  * `/this-route-does-not-exist` is deliberate, not a placeholder: it renders
  * not-found.tsx, which has its own controls and needs its own coverage.
@@ -26,10 +28,10 @@ export const routes = [
   "/contact",
   "/card",
   "/posts",
-  "/posts/bkkjs-summer-2026",
-  // The only post with a wide Thai table, which ran past the phone edge until
-  // render.ts wrapped tables in a scroll container.
-  "/posts/line-dev-conf-2026",
+  // Includes line-dev-conf-2026, the only post with a wide Thai table, which
+  // ran past the phone edge until render.ts wrapped tables in a scroll
+  // container.
+  ...POST_FALLBACK.map((post) => `/posts/${post.slug}`),
   "/en/cv/fullstack-engineer",
   "/en/cv/ai-ml-engineer",
   "/en/cv/security-engineer",

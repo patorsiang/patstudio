@@ -163,7 +163,7 @@ export function renderPostBody(markdown: string, { imageSizes }: RenderOptions):
 
   const html = marked.parse(markdown, { renderer, async: false });
 
-  return wrapTables(sanitizeArticleHTML(html));
+  return focusableCodeBlocks(wrapTables(sanitizeArticleHTML(html)));
 }
 
 /**
@@ -185,4 +185,16 @@ function wrapTables(html: string): string {
       '<div class="table-scroll" role="region" aria-label="Scrollable table" tabindex="0"><table>',
     )
     .replaceAll("</table>", "</table></div>");
+}
+
+/**
+ * Makes each code block focusable, so a keyboard user can scroll one whose line
+ * runs wider than the column (axe: scrollable-region-focusable, WCAG 2.1.1).
+ *
+ * Done after sanitising for the same reason as `wrapTables`: the allowlist has
+ * no `tabindex`, and widening it would let post content supply one. The
+ * sanitiser re-emits a bare `<pre>`, so the literal tag is unambiguous.
+ */
+function focusableCodeBlocks(html: string): string {
+  return html.replaceAll("<pre>", '<pre tabindex="0">');
 }

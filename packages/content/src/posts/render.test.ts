@@ -194,6 +194,24 @@ describe("renderPostBody tables", () => {
   });
 });
 
+describe("renderPostBody code blocks", () => {
+  const markdown = "```ts\nconst x = 1;\n```";
+
+  // A long line makes the block scroll sideways. axe fails a scrollable region a
+  // keyboard cannot focus (scrollable-region-focusable, WCAG 2.1.1).
+  test("makes a code block keyboard-focusable so it can scroll", () => {
+    const html = renderPostBody(markdown, { imageSizes: noSizes });
+
+    expect(html).toMatch(/^<pre tabindex="0">/);
+  });
+
+  test("still strips a tabindex that post content supplies", () => {
+    const html = renderPostBody('<p tabindex="5">hi</p>', { imageSizes: noSizes });
+
+    expect(html).not.toContain("tabindex");
+  });
+});
+
 describe("candidateWidths", () => {
   test("offers every width when the source size is unknown", () => {
     expect(candidateWidths(undefined)).toEqual([256, 384, 640, 828, 1080, 1920]);

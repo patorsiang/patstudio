@@ -548,6 +548,12 @@ body {
   padding: 1rem;
 }
 
+/* render.ts makes every code block focusable so a keyboard user can scroll it, so it needs the same ring as a link. */
+.post-body pre:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
 .post-body pre code {
   background: none;
   padding: 0;

@@ -16,6 +16,9 @@
       "@/*": ["../../apps/portfolio-web/src/*"],
       "next/link": ["./shims/next-link.tsx"],
       "next/image": ["./shims/next-image.tsx"],
+      "next/navigation": ["./shims/next-navigation.tsx"],
+      "@patorsiang/content": ["../../packages/content/src/index.ts"],
+      "@patorsiang/cv-engine": ["../../packages/cv-engine/src/index.ts"],
       "@patorsiang/utils": ["../../packages/utils/src/sanitize-url.ts"],
       "react": ["../../apps/portfolio-web/node_modules/@types/react"],
       "react/jsx-runtime": ["../../apps/portfolio-web/node_modules/@types/react/jsx-runtime"]

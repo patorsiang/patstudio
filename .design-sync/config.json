@@ -19,12 +19,23 @@
     "Tag": "../../apps/portfolio-web/src/components/atoms/Tag.tsx",
     "TextLink": "../../apps/portfolio-web/src/components/atoms/TextLink.tsx",
     "Breadcrumbs": "../../apps/portfolio-web/src/components/molecules/Breadcrumbs.tsx",
-    "ContactLinks":"../../apps/portfolio-web/src/components/molecules/ContactLinks.tsx",
+    "ContactLinks": "../../apps/portfolio-web/src/components/molecules/ContactLinks.tsx",
     "ExperienceCard": "../../apps/portfolio-web/src/components/molecules/ExperienceCard.tsx",
     "ProjectCard": "../../apps/portfolio-web/src/components/molecules/ProjectCard.tsx",
     "SegmentedLinks": "../../apps/portfolio-web/src/components/molecules/SegmentedLinks.tsx",
     "SkillGroup": "../../apps/portfolio-web/src/components/molecules/SkillGroup.tsx",
-    "ProfileHeader": "../../apps/portfolio-web/src/components/organisms/ProfileHeader.tsx"
+    "ProfileHeader": "../../apps/portfolio-web/src/components/organisms/ProfileHeader.tsx",
+    "NamecardStrap": "../../apps/portfolio-web/src/components/atoms/NamecardStrap.tsx",
+    "NamecardIcons": "../../apps/portfolio-web/src/components/atoms/NamecardIcons.tsx",
+    "OfflineBanner": "../../apps/portfolio-web/src/components/molecules/OfflineBanner.tsx",
+    "PostCard": "../../apps/portfolio-web/src/components/molecules/PostCard.tsx",
+    "PostElsewhere": "../../apps/portfolio-web/src/components/molecules/PostElsewhere.tsx",
+    "CVSection": "../../apps/portfolio-web/src/components/organisms/CVSection.tsx",
+    "GlobalNav": "../../apps/portfolio-web/src/components/organisms/GlobalNav.tsx",
+    "NamecardFlip": "../../apps/portfolio-web/src/components/organisms/NamecardFlip.tsx",
+    "Section": "../../apps/portfolio-web/src/components/organisms/Section.tsx",
+    "SiteFooter": "../../apps/portfolio-web/src/components/organisms/SiteFooter.tsx",
+    "PageShell": "../../apps/portfolio-web/src/components/templates/PageShell.tsx"
   },
   "extraFonts": [
     "../../.design-sync/fonts/geist.css"

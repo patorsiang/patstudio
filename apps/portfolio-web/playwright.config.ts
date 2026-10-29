@@ -27,6 +27,17 @@ const storybookPort = 6106;
  * their own focusable controls, which the tap-target sweep would then measure
  * and report as app violations.
  */
+
+/**
+ * The visual-snapshot project, defined only on request (`bun run test:visual`).
+ * Its baselines are macOS Chromium PNGs, so it must not run in CI, where fonts
+ * and anti-aliasing differ, and it should not slow the everyday `test:e2e` run
+ * or fail it for a change that is allowed to move pixels. A project that is
+ * not defined cannot run by accident. It needs only the production server, so
+ * the dev and Storybook servers are left out of a visual run.
+ */
+const visual = !!process.env.VISUAL;
+
 export default defineConfig({
   testDir: "./e2e",
   // Undoes the dev server's rewrite of the committed next-env.d.ts; the file
@@ -35,6 +46,9 @@ export default defineConfig({
   // Not *.spec.ts: `bun test` at the repo root globs that pattern and would try
   // to run these under its own runner, which fails on Playwright's fixtures.
   testMatch: "**/*.e2e.ts",
+  // The one tolerance for the visual project. Zero: the same machine and the same
+  // browser draw the same pixels, so any difference is a change worth looking at.
+  expect: { toHaveScreenshot: { maxDiffPixels: 0 } },
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: 0,
@@ -121,6 +135,25 @@ export default defineConfig({
       testMatch: "**/namecard-flip.e2e.ts",
       use: { ...devices["Desktop Safari"] },
     },
+    ...(visual
+      ? [
+          {
+            name: "visual-mobile",
+            testMatch: "**/*.visual.ts",
+            use: {
+              ...devices["Desktop Chrome"],
+              viewport: { width: 375, height: 667 },
+              isMobile: true,
+              hasTouch: true,
+            },
+          },
+          {
+            name: "visual-desktop",
+            testMatch: "**/*.visual.ts",
+            use: { ...devices["Desktop Chrome"] },
+          },
+        ]
+      : []),
   ],
   webServer: [
     {
@@ -149,5 +182,5 @@ export default defineConfig({
       reuseExistingServer: !process.env.CI,
       timeout: 180_000,
     },
-  ],
+  ].slice(0, visual ? 1 : undefined),
 });

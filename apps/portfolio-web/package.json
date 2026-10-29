@@ -9,6 +9,8 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.scripts.json",
     "test:e2e": "playwright test",
+    "test:visual": "VISUAL=1 playwright test --project=visual-mobile --project=visual-desktop",
+    "test:visual:update": "VISUAL=1 playwright test --project=visual-mobile --project=visual-desktop --update-snapshots",
     "test:e2e:install": "playwright install --with-deps chromium webkit",
     "generate:brand": "bun run scripts/generate-brand-assets.ts",
     "generate:qr": "bun run scripts/generate-qr.ts",

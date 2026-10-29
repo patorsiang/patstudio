@@ -17,6 +17,13 @@ describe("sweep routes", () => {
     expect(missing).toEqual([]);
   });
 
+  // POST_FALLBACK is hand-written and behind the live site (8 posts against 9),
+  // so this post is listed by hand in routes.ts. Its Thai table ran past the
+  // phone edge once, and PR #60 dropped it from the sweeps by mistake.
+  test("keep the post with the wide Thai table", () => {
+    expect(routes).toContain("/posts/line-dev-conf-2026");
+  });
+
   test("list no route twice", () => {
     expect(new Set(routes).size).toBe(routes.length);
   });

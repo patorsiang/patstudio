@@ -32,7 +32,11 @@ const primaryLinks = [
   { href: "/contact", label: "Contact", matches: (pathname: string) => pathname === "/contact" },
 ] as const;
 
-/** Each language names itself, so the control reads the same whichever page you are on. */
+/**
+ * Each language names itself, so the control reads the same whichever page you are on.
+ * The accessible name starts with the visible short label ("TH, ภาษาไทย"), because
+ * WCAG 2.5.3 Label in Name needs the visible text inside the name.
+ */
 const languageOptions = [
   { id: "en", short: "EN", name: "English" },
   { id: "th", short: "TH", name: "ภาษาไทย" },
@@ -109,7 +113,7 @@ export function GlobalNav() {
                 key={option.id}
                 href={languageLinks.hrefs[option.id]}
                 aria-current={languageLinks.active === option.id ? "page" : undefined}
-                aria-label={option.name}
+                aria-label={`${option.short}, ${option.name}`}
                 lang={option.id}
                 hrefLang={option.id}
                 className={controlClassName(languageLinks.active === option.id)}

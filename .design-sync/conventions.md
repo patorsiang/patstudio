@@ -43,6 +43,7 @@ Interactive targets should be at least 40px tall.
 - `ContactLink` = `{ label: string; href: string; variant?: "primary" | "secondary"; external?: boolean }` (used by `ContactLinks`, `ProfileHeader`; `ProfileHeader` prepends `~/` to `handle` itself)
 - `SegmentedLinkItem` = `{ id: string; href: string; label: string; fullLabel?: string; active: boolean }` (used by `SegmentedLinks`; exactly one item has `active: true`)
 - `ProjectLink` = `{ label: string; href: string }` (used by `ProjectCard`)
+- `PostSummary` = `{ slug: string; title: string; date: string /* "2026-09-06" */; summary: string; tags: string[]; maturity: "raw-note" | "draft" | "published" | "evergreen"; lang: ("en" | "th")[]; canonical?: string; elsewhere: string[] /* urls of copies on other sites */ }` (used by `PostCard`; `PostElsewhere` takes only `canonical` and `elsewhere`)
 
 ## Composition rules
 
@@ -50,6 +51,10 @@ Interactive targets should be at least 40px tall.
 - `Button` is for actions (`onClick` required); `ButtonLink` / `TextLink` are for navigation (`href`). `variant`: `"primary"` (filled) or `"secondary"` (outlined, default).
 - `Breadcrumbs` is a page-level trail (Home / Posts / current page). Place it once above the page title, not inside a Card.
 - `GridGlow` is a decorative backdrop pinned to the top of its container (`position: absolute`, full width, 32rem tall, fades out downward): put it inside a `position: relative` container, behind content.
+- `PageShell` is the page frame: grid glow, `GlobalNav`, `SiteFooter` and a `<main>` around `children`. Use it once per page and do not add your own nav or footer. `GlobalNav`, `SiteFooter`, `NamecardFlip` and `OfflineBanner` take no props.
+- `GlobalNav` marks the active link and shows the EN / TH switch from the route. With no router, wrap it in `<window.PortfolioUI.PathnameProvider path="/about">` (or `path="/en/cv/fullstack-engineer"`, which also shows the EN / TH switch); without the wrapper it reads `location.pathname`.
+- `Section` (`eyebrow?`, `title?`) heads a page block; `CVSection` (`title`) is the ruled heading used on CV pages. `PostCard` is already a card: do not wrap it in `Card`.
+- `NamecardFlip` is the contact namecard (front: QR code; back: contact channels). Its QR code and portrait are app images that do not load outside the real site.
 - `RevealOnView` fades its children in once on scroll; it does nothing under `prefers-reduced-motion`.
 
 ## One idiomatic build

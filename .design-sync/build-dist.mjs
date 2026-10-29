@@ -38,6 +38,9 @@ await build({
   target: "es2022",
   external: ["react", "react-dom", "react/jsx-runtime"],
   logLevel: "warning",
+  // Next inlines NEXT_PUBLIC_* at build time; a browser bundle has no `process`.
+  // seo.ts falls back to the production URL when this is undefined.
+  define: { "process.env.NEXT_PUBLIC_SITE_URL": "undefined" },
   plugins: [
     {
       name: "ds-resolve",
@@ -45,6 +48,10 @@ await build({
         const shim = (name, file) => ({ path: join(pkg, "shims", file) });
         b.onResolve({ filter: /^next\/link$/ }, () => shim("link", "next-link.tsx"));
         b.onResolve({ filter: /^next\/image$/ }, () => shim("image", "next-image.tsx"));
+        b.onResolve({ filter: /^next\/navigation$/ }, () => shim("navigation", "next-navigation.tsx"));
+        // Workspace packages ship TS source; map to it directly (Bun does not link them at the root).
+        b.onResolve({ filter: /^@patorsiang\/content$/ }, () => ({ path: join(root, "packages/content/src/index.ts") }));
+        b.onResolve({ filter: /^@patorsiang\/cv-engine$/ }, () => ({ path: join(root, "packages/cv-engine/src/index.ts") }));
         // The utils barrel pulls in sanitize-html (Node-only); components only need sanitizeUrl.
         b.onResolve({ filter: /^@patorsiang\/utils$/ }, () => ({ path: sanitizeUrl }));
         b.onResolve({ filter: /^@\// }, (a) => {

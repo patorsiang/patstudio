@@ -7,7 +7,10 @@ Artifact sync, short form (the artifact holds the new Design System layout under
 - `components/bundle.js` = `ds-bundle/_ds_bundle.js` with line 1 replaced by `/* @ds-bundle: {"format":4,"namespace":"PortfolioUI","components":[{"name":"..."}]} */` (names alphabetical).
 - `components/<Name>/preview.html` = the card html with its CSS links/script tags removed, `#e5e7eb` -> `var(--color-border)`, `#6b7280` -> `var(--color-text-muted)`, `_preview/<Name>.js` inlined. `README.md` = `<Name>.prompt.md` with the bundle path and "(see `preview.html`)" fixed. Both transforms reproduced the existing SkillGroup/Button files byte for byte.
 - `.d.ts` files publish with `contentType: "text/plain"`. `components/index.d.ts` and `project/README.md` (Crumb shape, composition rules, component list) need a hand edit per new component.
-- Legacy-layout files the move left (`_ds_bundle.js`, `_preview/`, `components/<group>/<Name>/`) are not updated by this flow; they lack Breadcrumbs.
+- Legacy-layout files were moved to `project/archived/` on 2026-10-29 (c19); this flow does not touch them.
+- Script: the staging script that did all of the above on 2026-10-29 is `qa/tools/design-sync-stage.py` in life-planning (`drafts/design-to-delivery-2026/evidence/patstudio-10-28/`). It reproduced the 16 published components byte for byte before it was used for the new ones. It also rewrites `bundle.css` (token blocks removed, they live in `tokens.css`), builds `index.d.ts`, and needs `project/README.md` and `tokens.json` edited by hand for new tokens or components.
+- Publish order that worked: content files, then `project/design-system.json` alone with a new `lastChange`. Send `.d.ts` with `contentType: "text/plain"`.
+- Known gap: NamecardFlip's QR code and portrait (`/card-qr.svg`, `/avataaars.svg`) do not load in the synced previews; they are app `public/` files.
 
 Old target (standalone, closing): Claude Design project `patorsiang-portfolio`, https://claude.ai/design/p/39b548d6-83ec-46e1-a940-3235402d67e9
 
@@ -17,7 +20,10 @@ The design system is **not a library package**: components live in the Next app 
 
 - `.design-sync/build-dist.mjs` (run it first; it is `cfg.buildCmd`) bundles `.design-sync/ds-package/src/index.ts` (the 15 storied components, re-exported from app source) into `ds-package/dist/index.js` with esbuild and emits `.d.ts` with tsc. Nothing in app source is touched.
 - `ds-package/shims/next-link.tsx`, `next-image.tsx`: plain `<a>` / `<img>` stand-ins for the two `next/*` modules in scope. `@patorsiang/utils` is mapped to `sanitize-url.ts` only (the barrel pulls in Node-only `sanitize-html`).
-- To add a component: add a story, add one line to `ds-package/src/index.ts`, add it to `cfg.componentSrcMap`.
+- To add a component: add a story, add one line to `ds-package/src/index.ts`, add it to `cfg.componentSrcMap`. A story whose module exports several things and no component named like the story (`NamecardIcons`: 8 icon functions) is dropped with `[TITLE_UNMAPPED]` and is not synced.
+- `next/navigation` is a shim too (`shims/next-navigation.tsx`): `usePathname` reads a `PathnameProvider` context, else `location.pathname`. `PathnameProvider` is exported on `window.PortfolioUI` (not a component). Owned previews `previews/GlobalNav.tsx` and `PageShell.tsx` wrap each story in it; `previews/OfflineBanner.tsx` fakes `navigator.onLine = false`; `previews/NamecardFlip.tsx` clicks "Turn card over" for the Back story.
+- `@patorsiang/content` and `@patorsiang/cv-engine` are mapped to their `src/index.ts`; `process.env.NEXT_PUBLIC_SITE_URL` is defined away in `build-dist.mjs` (a browser bundle has no `process`; without it the whole bundle throws on load and `window.PortfolioUI` is undefined).
+- The bundle is 948 KB since GlobalNav, PostCard and NamecardFlip pulled in zod and the content data (it was 29 KB).
 - Run the converter with `--node-modules apps/portfolio-web/node_modules --entry .design-sync/ds-package/dist/index.js` (React lives only there; Bun does not hoist).
 
 ## Fixes (symptom -> cause -> fix)

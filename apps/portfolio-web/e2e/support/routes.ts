@@ -1,6 +1,19 @@
 import { POST_FALLBACK } from "@patorsiang/content/posts";
 
 /**
+ * Live posts that POST_FALLBACK does not hold yet. line-dev-conf-2026 is the
+ * only post with a wide Thai table, which ran past the phone edge until
+ * render.ts wrapped tables in a scroll container. Remove an entry once the
+ * post is in POST_FALLBACK; listing it in both places is harmless, because the
+ * Set below drops the duplicate.
+ */
+const handListedPosts = ["/posts/line-dev-conf-2026"];
+
+const postRoutes = [
+  ...new Set([...POST_FALLBACK.map((post) => `/posts/${post.slug}`), ...handListedPosts]),
+];
+
+/**
  * The canonical route list every accessibility sweep checks.
  *
  * tap-targets.e2e.ts, contrast.e2e.ts, focus-visible.e2e.ts and
@@ -12,10 +25,12 @@ import { POST_FALLBACK } from "@patorsiang/content/posts";
  * route here once, and every sweep picks it up.
  *
  * Post routes are generated from POST_FALLBACK, the same list sitemap.ts reads,
- * so a new post enters every sweep without anyone editing this file. Any other
- * new route is still added by hand below - the payoff is that from then on
- * every suite stays in sync with every other one. src/lib/e2e-routes.test.ts fails if a
- * post is missing or a route is listed twice.
+ * so a new post enters every sweep without anyone editing this file. That list
+ * is hand-written and can lag the live site, so a post that is live but not in
+ * it (see `handListedPosts`) is added by hand. Any other new route is added by
+ * hand below - the payoff is that from then on every suite stays in sync with
+ * every other one. src/lib/e2e-routes.test.ts fails if a post is missing or a
+ * route is listed twice.
  *
  * `/this-route-does-not-exist` is deliberate, not a placeholder: it renders
  * not-found.tsx, which has its own controls and needs its own coverage.
@@ -28,10 +43,7 @@ export const routes = [
   "/contact",
   "/card",
   "/posts",
-  // Includes line-dev-conf-2026, the only post with a wide Thai table, which
-  // ran past the phone edge until render.ts wrapped tables in a scroll
-  // container.
-  ...POST_FALLBACK.map((post) => `/posts/${post.slug}`),
+  ...postRoutes,
   "/en/cv/fullstack-engineer",
   "/en/cv/ai-ml-engineer",
   "/en/cv/security-engineer",

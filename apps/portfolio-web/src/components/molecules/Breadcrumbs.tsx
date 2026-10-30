@@ -1,4 +1,5 @@
 import { TextLink } from "@/components/atoms/TextLink";
+import { markThaiText } from "@/lib/thai-text";
 
 type Crumb = {
   readonly href: string;
@@ -21,7 +22,7 @@ export function Breadcrumbs({ trail }: { readonly trail: readonly Crumb[] }) {
               {index > 0 ? <span aria-hidden="true">/</span> : null}
               {isCurrent ? (
                 <span aria-current="page" className="text-foreground">
-                  {crumb.label}
+                  {markThaiText(crumb.label)}
                 </span>
               ) : (
                 <TextLink

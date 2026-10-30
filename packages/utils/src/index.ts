@@ -10,3 +10,4 @@
 // because the barrel is still the lighter import for string-only helpers.
 export * from "./sanitize-url";
 export * from "./logger";
+export * from "./thai";

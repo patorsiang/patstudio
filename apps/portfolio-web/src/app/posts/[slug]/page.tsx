@@ -8,6 +8,7 @@ import { postDateFormat } from "@/lib/dates";
 import { buildBlogPostingJsonLd, buildBreadcrumbJsonLd, toJsonLdScript } from "@/lib/json-ld";
 import { getPost, getPosts } from "@/lib/posts";
 import { buildPageMetadata } from "@/lib/seo";
+import { markThaiText } from "@/lib/thai-text";
 
 export const revalidate = 3600;
 
@@ -69,9 +70,11 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
           <time dateTime={post.date}>{postDateFormat.format(new Date(post.date))}</time>
         </p>
         <h1 className="mt-4 text-3xl font-semibold leading-tight text-foreground sm:text-4xl">
-          {post.title}
+          {markThaiText(post.title)}
         </h1>
-        <p className="mt-4 text-lg leading-8 text-(--color-text-muted)">{post.summary}</p>
+        <p className="mt-4 text-lg leading-8 text-(--color-text-muted)">
+          {markThaiText(post.summary)}
+        </p>
 
         {/* Above the body, not below it: for an archive post the reader
             should learn the original lives elsewhere before reading a

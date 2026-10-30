@@ -1,5 +1,7 @@
 import { test, expect } from "@playwright/test";
 
+import { routes } from "./support/routes";
+
 test("the index lists every post, newest first", async ({ page }) => {
   await page.goto("/posts");
 
@@ -102,13 +104,49 @@ test("a post image is served resized and re-encoded by the optimizer", async ({
   expect(optimized.headers()["content-type"]).toMatch(/image\/(avif|webp)/);
 });
 
-test("Thai paragraphs are marked up as Thai", async ({ page }) => {
-  await page.goto("/posts/bkkjs-summer-2026");
+// WCAG 3.1.2 Language of Parts: a screen reader picks its voice from lang, so
+// Thai text outside lang="th" is read with an English voice. This walks every
+// text node on every post and the index, not one element on one post - the
+// check it replaces passed while 32 of 32 Thai blocks on line-dev-conf-2026
+// carried no lang at all.
+const postPages = routes.filter((route) => route === "/posts" || route.startsWith("/posts/"));
 
-  const thai = page.locator('.post-body [lang="th"]');
+for (const route of postPages) {
+  test(`every Thai passage on ${route} is marked lang="th"`, async ({ page }) => {
+    await page.goto(route);
 
-  await expect(thai.first(), "no Thai passage carries lang=th").toBeVisible();
-});
+    const result = await page.evaluate(() => {
+      const thai = /[฀-๿]/;
+      const walker = document.createTreeWalker(
+        document.querySelector("main")!,
+        NodeFilter.SHOW_TEXT,
+      );
+      const unmarked: string[] = [];
+      let found = 0;
+
+      for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+        const text = node.textContent ?? "";
+
+        // JSON-LD sits in a script tag inside main; nobody hears it.
+        if (!thai.test(text) || node.parentElement?.closest("script, style")) continue;
+
+        found += 1;
+
+        if (!node.parentElement?.closest('[lang="th"]')) unmarked.push(text.trim().slice(0, 60));
+      }
+
+      return { found, unmarked };
+    });
+
+    expect(result.unmarked, "Thai text outside lang=th").toEqual([]);
+
+    // Most posts are English only. These two carry Thai, so the loop cannot
+    // pass vacuously on them.
+    if (route === "/posts/line-dev-conf-2026" || route === "/posts/bkkjs-summer-2026") {
+      expect(result.found, "no Thai text found - the test is vacuous").toBeGreaterThan(0);
+    }
+  });
+}
 
 test("posts appear in the sitemap", async ({ request }) => {
   const body = await (await request.get("/sitemap.xml")).text();

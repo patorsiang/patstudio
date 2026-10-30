@@ -1,5 +1,6 @@
 // Subpath, not the main barrel: this is the one file in the app that
 // actually needs the HTML sanitiser - see packages/utils/src/index.ts.
+import { splitThai } from "@patorsiang/utils";
 import { sanitizeArticleHTML } from "@patorsiang/utils/security";
 import { marked } from "marked";
 
@@ -163,7 +164,52 @@ export function renderPostBody(markdown: string, { imageSizes }: RenderOptions):
 
   const html = marked.parse(markdown, { renderer, async: false });
 
-  return focusableCodeBlocks(wrapTables(sanitizeArticleHTML(html)));
+  return focusableCodeBlocks(wrapTables(markThai(sanitizeArticleHTML(html))));
+}
+
+const VOID_TAGS = new Set(["area", "br", "col", "hr", "img", "input", "wbr"]);
+
+/**
+ * Wraps each run of Thai script in `<span lang="th">`, so a screen reader
+ * switches to a Thai voice for it (WCAG 3.1.2). The author does not mark the
+ * Thai, and posts mix it with English inside one sentence, so this is done per
+ * run rather than per paragraph.
+ *
+ * Works on the sanitised string, like `wrapTables`, because it only touches
+ * text between tags - the sanitiser escapes `<` and `>` in both text and
+ * attribute values, so splitting on `<...>` cannot cut a tag in half. Thai
+ * inside an attribute (an image's alt) stays as it is. Text already inside a
+ * `lang="th"` element is skipped, so a post that marks its own Thai does not
+ * get a second span nested in the first.
+ */
+function markThai(html: string): string {
+  // One entry per open element: does it carry lang="th"?
+  const open: boolean[] = [];
+
+  return html
+    .split(/(<[^>]*>)/)
+    .map((chunk) => {
+      if (chunk.startsWith("<")) {
+        const tag = /^<(\/?)([a-z][a-z0-9]*)/i.exec(chunk);
+
+        if (!tag) return chunk;
+
+        if (tag[1]) {
+          open.pop();
+        } else if (!VOID_TAGS.has(tag[2].toLowerCase()) && !chunk.endsWith("/>")) {
+          open.push(/\slang="th"/.test(chunk));
+        }
+
+        return chunk;
+      }
+
+      if (open.some(Boolean)) return chunk;
+
+      return splitThai(chunk)
+        .map((part) => (part.thai ? `<span lang="th">${part.text}</span>` : part.text))
+        .join("");
+    })
+    .join("");
 }
 
 /**

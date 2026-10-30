@@ -27,7 +27,22 @@ try { lstatSync(nm); } catch { symlinkSync("../../apps/portfolio-web/node_module
 rmSync(dist, { recursive: true, force: true });
 
 // -- 1. bundle ---------------------------------------------------------------
-const sanitizeUrl = join(root, "packages/utils/src/sanitize-url.ts");
+
+// next/image serves app/public files at their own path; a design-system bundle
+// has no server, so those requests 404 and the preview shows alt text (QA card
+// c27). The images the components use ride inside the bundle as data URIs, and
+// the next/image shim looks them up by src. Add a file here when a component
+// starts using another one; src/components/design-sync-docs.test.ts fails if it
+// is missing. SVG only: other types need their own media type below.
+const publicDir = join(root, "apps/portfolio-web/public");
+const publicFiles = Object.fromEntries(
+  ["card-qr.svg", "avataaars.svg"].map((file) => {
+    if (!file.endsWith(".svg")) throw new Error(`build-dist: no media type for ${file}`);
+    const base64 = readFileSync(join(publicDir, file)).toString("base64");
+    return [`/${file}`, `data:image/svg+xml;base64,${base64}`];
+  }),
+);
+
 await build({
   entryPoints: [join(pkg, "src/index.ts")],
   outfile: join(dist, "index.js"),
@@ -40,7 +55,10 @@ await build({
   logLevel: "warning",
   // Next inlines NEXT_PUBLIC_* at build time; a browser bundle has no `process`.
   // seo.ts falls back to the production URL when this is undefined.
-  define: { "process.env.NEXT_PUBLIC_SITE_URL": "undefined" },
+  define: {
+    "process.env.NEXT_PUBLIC_SITE_URL": "undefined",
+    __DS_PUBLIC_FILES__: JSON.stringify(publicFiles),
+  },
   plugins: [
     {
       name: "ds-resolve",
@@ -52,8 +70,9 @@ await build({
         // Workspace packages ship TS source; map to it directly (Bun does not link them at the root).
         b.onResolve({ filter: /^@patorsiang\/content$/ }, () => ({ path: join(root, "packages/content/src/index.ts") }));
         b.onResolve({ filter: /^@patorsiang\/cv-engine$/ }, () => ({ path: join(root, "packages/cv-engine/src/index.ts") }));
-        // The utils barrel pulls in sanitize-html (Node-only); components only need sanitizeUrl.
-        b.onResolve({ filter: /^@patorsiang\/utils$/ }, () => ({ path: sanitizeUrl }));
+        // Not the utils barrel: its logger reads process.env at load. The shim re-exports
+        // only what components use (sanitizeUrl, splitThai).
+        b.onResolve({ filter: /^@patorsiang\/utils$/ }, () => shim("utils", "utils.ts"));
         b.onResolve({ filter: /^@\// }, (a) => {
           const base = join(appSrc, a.path.slice(2));
           for (const ext of ["", ".ts", ".tsx", "/index.ts", "/index.tsx"]) {

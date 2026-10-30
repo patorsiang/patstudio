@@ -37,6 +37,13 @@ Interactive targets should be at least 40px tall.
 - `styles.css` and its imports (`fonts/fonts.css`, `_ds_bundle.css`) - the real tokens and every compiled class. Read the `:root` blocks in `_ds_bundle.css` before inventing a value.
 - `components/<group>/<Name>/<Name>.d.ts` - prop contract; `<Name>.prompt.md` - usage. Note the `.prompt.md` "Examples" are raw Storybook story code (`export const X: Story = {...}`): take the `args` from them, not the wrapper.
 
+## Icons with no component card
+
+The namecard's eight icons are on `window.PortfolioUI` but have no folder under `components/`, because they are eight functions in one file, not one component. Use them like this: `<window.PortfolioUI.EmailIcon size={18} />`. Each takes `size?: number` (default 18) and `className?: string`. They are outline glyphs drawn with `currentColor`, so they take the colour of the text around them, and they are `aria-hidden`: always put a text label beside one.
+
+- `LineIcon`, `WhatsAppIcon`, `GitHubIcon`, `LinkedInIcon`, `EmailIcon` - generic channel glyphs (not the brand marks)
+- `PlusIcon` (the namecard's "save contact" button), `FlipIcon` (turn the card over), `ChevronRightIcon` (a right-pointing chevron)
+
 ## Prop shapes the `.d.ts` files reference but do not define
 
 - `Crumb` = `{ href: string; label: string }` (used by `Breadcrumbs`; `trail` is ordered root to current page, and the last crumb renders as plain text with `aria-current="page"`, not a link)

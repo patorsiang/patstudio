@@ -212,6 +212,54 @@ describe("renderPostBody code blocks", () => {
   });
 });
 
+// WCAG 3.1.2 Language of Parts. Posts mix Thai and English freely and the
+// author does not mark either, so the renderer does it, per run of Thai script.
+describe("renderPostBody Thai", () => {
+  test("marks a Thai run in a paragraph as lang=th", () => {
+    const html = renderPostBody("สวัสดีครับ", { imageSizes: noSizes });
+
+    expect(html).toBe('<p><span lang="th">สวัสดีครับ</span></p>\n');
+  });
+
+  test("leaves the English words of a mixed sentence outside lang=th", () => {
+    const html = renderPostBody("ช่วง AI Governance และ AI Workshop", { imageSizes: noSizes });
+
+    expect(html).toContain('<span lang="th">ช่วง</span> AI Governance <span lang="th">และ</span>');
+    expect(html).not.toContain('lang="th">ช่วง AI');
+  });
+
+  test("marks Thai in a heading, a list item and a table cell", () => {
+    const html = renderPostBody("## หัวข้อ\n\n- รายการ\n\n| a |\n|---|\n| ตาราง |", {
+      imageSizes: noSizes,
+    });
+
+    for (const word of ["หัวข้อ", "รายการ", "ตาราง"]) {
+      expect(html).toContain(`<span lang="th">${word}</span>`);
+    }
+  });
+
+  test("does not nest a second lang=th inside one the post already supplies", () => {
+    const html = renderPostBody('<span lang="th">สวัสดี</span>', { imageSizes: noSizes });
+
+    expect(html.match(/lang="th"/g)).toHaveLength(1);
+  });
+
+  // The Thai in an attribute is not text a reader hears from the page; a span
+  // spliced into it would break the tag.
+  test("does not touch Thai inside an attribute", () => {
+    const html = renderPostBody("![รูปภาพ](/icons/icon-192.png)", { imageSizes: noSizes });
+
+    expect(html).toContain('alt="รูปภาพ"');
+    expect(html).not.toContain("<span");
+  });
+
+  test("leaves a post with no Thai exactly as it was", () => {
+    const html = renderPostBody("Just English.", { imageSizes: noSizes });
+
+    expect(html).toBe("<p>Just English.</p>\n");
+  });
+});
+
 describe("candidateWidths", () => {
   test("offers every width when the source size is unknown", () => {
     expect(candidateWidths(undefined)).toEqual([256, 384, 640, 828, 1080, 1920]);

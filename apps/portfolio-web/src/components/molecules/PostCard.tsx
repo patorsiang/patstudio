@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Card } from "@/components/atoms/Card";
 import { Tag } from "@/components/atoms/Tag";
 import { PostElsewhere } from "@/components/molecules/PostElsewhere";
+import { markThaiText } from "@/lib/thai-text";
 
 const dateFormat = new Intl.DateTimeFormat("en-GB", {
   day: "numeric",
@@ -37,11 +38,13 @@ export function PostCard({ post }: { readonly post: PostSummary }) {
           href={`/posts/${post.slug}`}
           className="tap-reach block underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-focus)"
         >
-          {post.title}
+          {markThaiText(post.title)}
         </Link>
       </h2>
 
-      <p className="mt-3 text-sm leading-7 text-(--color-text-muted)">{post.summary}</p>
+      <p className="mt-3 text-sm leading-7 text-(--color-text-muted)">
+        {markThaiText(post.summary)}
+      </p>
 
       {post.tags.length > 0 ? (
         <div className="mt-5 flex flex-wrap gap-2">

@@ -61,7 +61,7 @@ The namecard's eight icons are on `window.PortfolioUI` but have no folder under 
 - `PageShell` is the page frame: grid glow, `GlobalNav`, `SiteFooter` and a `<main>` around `children`. Use it once per page and do not add your own nav or footer. `GlobalNav`, `SiteFooter`, `NamecardFlip` and `OfflineBanner` take no props.
 - `GlobalNav` marks the active link and shows the EN / TH switch from the route. With no router, wrap it in `<window.PortfolioUI.PathnameProvider path="/about">` (or `path="/en/cv/fullstack-engineer"`, which also shows the EN / TH switch); without the wrapper it reads `location.pathname`.
 - `Section` (`eyebrow?`, `title?`) heads a page block; `CVSection` (`title`) is the ruled heading used on CV pages. `PostCard` is already a card: do not wrap it in `Card`.
-- `NamecardFlip` is the contact namecard (front: QR code; back: contact channels). Its QR code and portrait are app images that do not load outside the real site.
+- `NamecardFlip` is the contact namecard (front: QR code; back: contact channels). Its QR code and portrait ship inside the bundle (as data URIs), so they show with no `public/` folder next to the page.
 - `RevealOnView` fades its children in once on scroll; it does nothing under `prefers-reduced-motion`.
 
 ## One idiomatic build

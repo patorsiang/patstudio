@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 
 import { isCvLanguage, type CvLanguage } from "@patorsiang/cv-engine";
 import { buildCanonicalCvHref, cvRoleSlugToId } from "@/lib/cv-routes";
@@ -85,12 +85,25 @@ export function GlobalNav() {
 
   const languageLinks = useMemo(() => buildLanguageLinks(pathname), [pathname]);
 
-  function closeMenuOnEscape(event: KeyboardEvent<HTMLElement>) {
-    if (event.key === "Escape" && menuOpen) {
-      setMenuOpen(false);
-      menuButtonRef.current?.focus();
+  // Escape closes the menu from wherever focus is, and hands focus back to the
+  // button. A listener on the document rather than on <nav>, which is not an
+  // interactive element and should not carry key handlers of its own. It exists
+  // only while the menu is open.
+  useEffect(() => {
+    if (!menuOpen) {
+      return;
     }
-  }
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setMenuOpen(false);
+        menuButtonRef.current?.focus();
+      }
+    }
+
+    document.addEventListener("keydown", closeOnEscape);
+    return () => document.removeEventListener("keydown", closeOnEscape);
+  }, [menuOpen]);
 
   return (
     <nav
@@ -98,7 +111,6 @@ export function GlobalNav() {
       // The chrome is English on every route, including the Thai CV, so it does
       // not inherit the surrounding page language. Drop this once it localizes.
       lang="en"
-      onKeyDown={closeMenuOnEscape}
       // A wrapping row, so the Menu button and the theme buttons share a line
       // when they fit and the opened link list takes a line of its own between
       // them. Reading order and visual order stay the same either way.

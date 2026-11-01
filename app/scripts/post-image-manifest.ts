@@ -3,7 +3,7 @@
  * src/lib/post-image-sizes.ts.
  *
  * Run by hand when a post gains an image:
- *   bun run --cwd apps/portfolio-web post-images:manifest
+ *   bun run --cwd app post-images:manifest
  *
  * This replaced a script that downloaded the images themselves into public/.
  * The bytes now stay in `thinking-in-public` and reach the reader through
@@ -32,7 +32,7 @@ import { fetchRawPosts, isOptimizableImageUrl, selectImageUrls } from "@patorsia
 import { imageSize } from "image-size";
 
 const mapPath = join(import.meta.dir, "../src/lib/post-image-sizes.ts");
-const prettierBin = join(import.meta.dir, "../../../node_modules/.bin/prettier");
+const prettierBin = join(import.meta.dir, "../../node_modules/.bin/prettier");
 
 async function measure(url: string): Promise<readonly [number, number] | null> {
   const response = await fetch(url);

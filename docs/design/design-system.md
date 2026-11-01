@@ -10,7 +10,7 @@ The system is intentionally restrained: native CSS, Tailwind utilities, and exis
 
 The portfolio web app currently uses:
 
-- Tailwind CSS v4 through `@import "tailwindcss"` in `apps/portfolio-web/src/app/globals.css`.
+- Tailwind CSS v4 through `@import "tailwindcss"` in `app/src/app/globals.css`.
 - CSS variables for `--background`, `--foreground`, `--font-sans`, and `--font-mono`.
 - Geist Sans and Geist Mono loaded through `next/font`.
 - Existing page styles using Tailwind utility classes, mostly `stone`, `zinc`, and `teal`.
@@ -22,7 +22,7 @@ Future tokens should fit this setup and can be added through CSS variables and T
 
 ### Colour Tokens
 
-Transcribed from `apps/portfolio-web/src/app/globals.css`, which is the source of truth. Every screen style in the app resolves through these; no component uses a raw palette class.
+Transcribed from `app/src/app/globals.css`, which is the source of truth. Every screen style in the app resolves through these; no component uses a raw palette class.
 
 | Token                      | Light value            | Dark value            | Tailwind reference        | Usage                                                                                                                                                |
 | -------------------------- | ---------------------- | --------------------- | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |

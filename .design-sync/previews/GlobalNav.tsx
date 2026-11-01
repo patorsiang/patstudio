@@ -1,5 +1,5 @@
 import * as React from 'react';
-import * as S from "@ds-stories/apps/portfolio-web/src/components/stories/GlobalNav.stories";
+import * as S from "@ds-stories/app/src/components/stories/GlobalNav.stories";
 
 function compose(S: any, key: string) {
   const meta: any = S.default ?? {};

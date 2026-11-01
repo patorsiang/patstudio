@@ -13,7 +13,7 @@ import { createRequire } from "node:module";
 
 const root = resolve(import.meta.dirname, "..");
 const pkg = join(root, ".design-sync/ds-package");
-const appSrc = join(root, "apps/portfolio-web/src");
+const appSrc = join(root, "app/src");
 const dist = join(pkg, "dist");
 // esbuild is installed in the isolated .ds-sync/ deps, not the repo lockfile.
 const { build } = createRequire(join(root, ".ds-sync/package.json"))("esbuild");
@@ -22,7 +22,7 @@ const { build } = createRequire(join(root, ".ds-sync/package.json"))("esbuild");
 // finds React's types by walking up from the package dir for node_modules/@types/react;
 // without them every `ComponentPropsWithoutRef<"x">["onClick"]` collapses to a wrong type.
 const nm = join(pkg, "node_modules");
-try { lstatSync(nm); } catch { symlinkSync("../../apps/portfolio-web/node_modules", nm); }
+try { lstatSync(nm); } catch { symlinkSync("../../app/node_modules", nm); }
 
 rmSync(dist, { recursive: true, force: true });
 
@@ -34,7 +34,7 @@ rmSync(dist, { recursive: true, force: true });
 // the next/image shim looks them up by src. Add a file here when a component
 // starts using another one; src/components/design-sync-docs.test.ts fails if it
 // is missing. SVG only: other types need their own media type below.
-const publicDir = join(root, "apps/portfolio-web/public");
+const publicDir = join(root, "app/public");
 const publicFiles = Object.fromEntries(
   ["card-qr.svg", "avataaars.svg"].map((file) => {
     if (!file.endsWith(".svg")) throw new Error(`build-dist: no media type for ${file}`);

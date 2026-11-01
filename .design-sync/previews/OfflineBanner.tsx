@@ -1,5 +1,5 @@
 import * as React from 'react';
-import * as S from "@ds-stories/apps/portfolio-web/src/components/stories/OfflineBanner.stories";
+import * as S from "@ds-stories/app/src/components/stories/OfflineBanner.stories";
 
 // OfflineBanner renders nothing while the browser reports online. The story does
 // the same as this: report offline (the preview page is never reloaded, so no cleanup).

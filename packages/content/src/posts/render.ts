@@ -22,7 +22,7 @@ type RenderOptions = {
 
 const isLocal = (url: string) => url.startsWith("/");
 
-/** The post body is `max-w-2xl`; see apps/portfolio-web/src/app/posts/[slug]/page.tsx. */
+/** The post body is `max-w-2xl`; see app/src/app/posts/[slug]/page.tsx. */
 const BODY_WIDTH = 672;
 
 /**

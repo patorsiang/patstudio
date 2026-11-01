@@ -194,7 +194,7 @@ blank the card for the first half of every flip, because the incoming face's own
 turned away at that point. Under reduced motion that delay collapses to zero, which needs its own
 rule: the sitewide reduced-motion block resets `transition-duration`, not `transition-delay`.
 
-Guarded by `apps/portfolio-web/e2e/namecard-flip.e2e.ts`, which is the only reason
+Guarded by `app/e2e/namecard-flip.e2e.ts`, which is the only reason
 `playwright.config.ts` carries a WebKit project at all. If you change anything about the faces,
 their stacking, or the 3D chain above them, run that file — the rest of the suite is Chromium-only
 and cannot see this class of bug.

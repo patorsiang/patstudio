@@ -2,7 +2,7 @@
  * Writes every brand artefact that cannot be produced by the CSS pipeline.
  *
  * Run by hand after changing anything in src/lib/brand.ts:
- *   bun run --cwd apps/portfolio-web generate:brand
+ *   bun run --cwd app generate:brand
  *
  * Deliberately not wired into CI. These are committed artefacts; regenerating
  * them on every run would produce diff noise and, worse, make the drift test in

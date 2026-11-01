@@ -6,7 +6,7 @@ Project-specific instructions for AI agents working in this repo. Read `README.m
 
 - `README.md` — architecture, setup, commands, core packages, env/secrets, deployment.
 - `docs/architecture/code-quality.md` — ESLint/Prettier, security sanitization (`sanitizeUrl`, `sanitizeHTML`), naming conventions, the "Requirement-First" workflow.
-- `docs/design/design-system.md` — the full design system: colour/typography/spacing/radius tokens, dark-mode implementation, accessibility requirements. Read this before touching any UI in `apps/portfolio-web`.
+- `docs/design/design-system.md` — the full design system: colour/typography/spacing/radius tokens, dark-mode implementation, accessibility requirements. Read this before touching any UI in `app`.
 - `docs/design/ux-principles.md`, `docs/design/information-architecture.md`, `docs/design/motion-guidelines.md` — supporting design docs.
 - `docs/design/namecard.md` — the `/card` digital namecard's full spec: geometry, flip mechanics, the four discoverability affordances, and the accepted trade-off of gating contact actions behind one flip.
 - `docs/requirements/` — per-package requirements (`cv-engine.md`, `data-models.md`, `portfolio-web.md`, `namecard.md`).
@@ -24,13 +24,13 @@ bun test && bun run typecheck && bun run lint && bun run format:check
 
 ## Hard-won conventions not written elsewhere
 
-- **Tailwind custom-property syntax**: use `bg-(--color-x)`, not `bg-[var(--color-x)]`. That's the project convention for referencing the `--color-*` tokens defined in `apps/portfolio-web/src/app/globals.css` (see `docs/design/design-system.md` for the token table).
+- **Tailwind custom-property syntax**: use `bg-(--color-x)`, not `bg-[var(--color-x)]`. That's the project convention for referencing the `--color-*` tokens defined in `app/src/app/globals.css` (see `docs/design/design-system.md` for the token table).
 - **CV pages must be full pages.** A generated CV should fill whatever sheets it uses — the
   target is roughly 90-98% of the last sheet, which is where `security_engineer` sits.
   Never ship a CV that spills a few pixels past a page: the extra A4 arrives holding one
   line of Languages, which reads worse than a dense single page. This applies to the second
   sheet as much as the first — if a CV ever justifies two pages, page two has to earn it.
-  `apps/portfolio-web/e2e/cv-page-fit.e2e.ts` enforces both halves (within budget, and no
+  `app/e2e/cv-page-fit.e2e.ts` enforces both halves (within budget, and no
   sheet under 25% full); run `bun run test:e2e cv-page-fit` after touching role limits,
   content, or print CSS. Fill is tuned through `roleConfigs[role].limits` and the content
   itself, not by tightening print CSS — print leading is set to 1.45 for readability and
@@ -42,8 +42,8 @@ bun test && bun run typecheck && bun run lint && bun run format:check
   because an engineering wall works against a retail application, and padding it back would
   undo that.
 
-- **CV print CSS**: whenever you touch anything under `apps/portfolio-web/src/app/cv/` or its print rules in `globals.css`, manually verify dark-mode print contrast — printed output breaks silently and nothing checks colour. Page fit _is_ checked now (see the bullet above), but contrast still isn't.
+- **CV print CSS**: whenever you touch anything under `app/src/app/cv/` or its print rules in `globals.css`, manually verify dark-mode print contrast — printed output breaks silently and nothing checks colour. Page fit _is_ checked now (see the bullet above), but contrast still isn't.
 - **CV content is a real document, not fixture data.** `packages/content/src/data/experiences.ts` and `projects.ts` feed the user's actual job-search CVs. Never add a number, stat, or claim that isn't sourced from something verifiable — the user directly, a linked repo/README, or an official source. A fabricated metric on a real CV is a correctness bug with real-world consequences, not a style nit. Mark AI-authored Thai translations `status: "ai_draft"`, not `"reviewed"` or `"approved"`.
 - **`cv-engine` experience selection** (`packages/cv-engine/src/experience-selection.ts`): tag relevance can silently drop a real job and leave what reads as an unexplained employment gap; `selectBridgingExperiences` backfills the minimum needed to close it. If you add a role or change tag filters, check the resulting timeline for gaps — not just relevance scores. Full reasoning, verified behaviour and known limitations: `docs/decisions/0002-cv-timeline-gap-bridging.md`.
-- **Local QA on `apps/portfolio-web` can lie to you.** It registers a service worker (`ServiceWorkerRegistration`) that precaches pages and chunks. Rebuilding and restarting `bun run start` does not guarantee the browser fetches the new build — the already-open tab stays controlled by whatever service worker it loaded with, and unregistering it plus clearing `caches` from that tab still isn't enough, since the app re-registers a worker on the very next page load and browsers can hand control back before you've verified anything. The only way to be sure you're testing the current build is a **fresh origin with no prior visit history** (a new port is the easy way) — otherwise you can spend a long time debugging a fix that already works, against a page that was never actually running it.
+- **Local QA on `app` can lie to you.** It registers a service worker (`ServiceWorkerRegistration`) that precaches pages and chunks. Rebuilding and restarting `bun run start` does not guarantee the browser fetches the new build — the already-open tab stays controlled by whatever service worker it loaded with, and unregistering it plus clearing `caches` from that tab still isn't enough, since the app re-registers a worker on the very next page load and browsers can hand control back before you've verified anything. The only way to be sure you're testing the current build is a **fresh origin with no prior visit history** (a new port is the easy way) — otherwise you can spend a long time debugging a fix that already works, against a page that was never actually running it.
 - **Satori (`next/og`'s `ImageResponse`, used by every `opengraph-image.tsx`) requires an explicit `display` on any `<div>` with more than one child.** `{a} · {b}` compiles to three JSX children — two expressions plus the literal `" · "` string — not one, and fails the production build with `Expected <div> to have explicit "display"...`. Use a single template-literal child instead: ``{`${a} · ${b}`}``.

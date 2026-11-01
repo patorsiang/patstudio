@@ -4,7 +4,7 @@
  *
  * Run by hand whenever NEXT_PUBLIC_SITE_URL (or its fallback in src/lib/seo.ts)
  * changes - e.g. moving off the placeholder Vercel URL onto a custom domain:
- *   bun run --cwd apps/portfolio-web generate:qr
+ *   bun run --cwd app generate:qr
  *
  * Deliberately not wired into CI, same reasoning as generate-brand-assets.ts:
  * these are committed artefacts, not build output.

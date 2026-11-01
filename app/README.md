@@ -48,8 +48,8 @@ The application uses Next.js App Router with the following key routes:
 
 This application consumes two primary internal packages:
 
-- **[`@patorsiang/content`](../../packages/content)**: Provides the structured data (JSON) and Zod schemas.
-- **[`@patorsiang/cv-engine`](../../packages/cv-engine)**: Provides the logic for filtering, ranking, and building the CV output.
+- **[`@patorsiang/content`](../packages/content)**: Provides the structured data (JSON) and Zod schemas.
+- **[`@patorsiang/cv-engine`](../packages/cv-engine)**: Provides the logic for filtering, ranking, and building the CV output.
 
 ## Styling
 
@@ -59,4 +59,4 @@ The project uses **Tailwind CSS v4** for styling, following a clean and modern a
 
 - Routing parameters `lang` and `role` are validated using the `cv-engine` logic.
 - Metadata is dynamically generated for each role/language combination to optimize SEO.
-- The project follows the [Code Quality](../../docs/architecture/code-quality.md) and [Architecture](../../docs/architecture/monitoring.md) guidelines established in the `docs/` folder.
+- The project follows the [Code Quality](../docs/architecture/code-quality.md) and [Architecture](../docs/architecture/monitoring.md) guidelines established in the `docs/` folder.

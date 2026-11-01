@@ -15,7 +15,7 @@ import { join } from "node:path";
 
 const root = import.meta.dir;
 const iconsSource = readFileSync(join(root, "atoms/NamecardIcons.tsx"), "utf8");
-const conventions = readFileSync(join(root, "../../../../.design-sync/conventions.md"), "utf8");
+const conventions = readFileSync(join(root, "../../../.design-sync/conventions.md"), "utf8");
 
 const exportedIcons = [...iconsSource.matchAll(/^export function (\w+)\(/gm)].map(
   (match) => match[1],
@@ -41,7 +41,7 @@ describe("design-sync conventions", () => {
  * `public/` image must be added to that list, or its preview shows alt text.
  */
 const publicDir = join(root, "../../public");
-const buildDist = readFileSync(join(root, "../../../../.design-sync/build-dist.mjs"), "utf8");
+const buildDist = readFileSync(join(root, "../../../.design-sync/build-dist.mjs"), "utf8");
 
 function componentSources(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {

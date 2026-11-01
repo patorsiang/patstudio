@@ -5,7 +5,7 @@ This document outlines the deployment setup for the Patorsiang Portfolio Platfor
 ## Status
 
 - **Development Deployment**: Active
-- **Production Deployment**: Cut over. `legacy-v1`'s GitHub Pages workflow (`nextjs.yml`) was removed; `apps/portfolio-web` is the only app built and deployed. `legacy-v1` was later removed from the tree; its last state is the `legacy-v1-final` tag.
+- **Production Deployment**: Cut over. `legacy-v1`'s GitHub Pages workflow (`nextjs.yml`) was removed; `app` is the only app built and deployed. `legacy-v1` was later removed from the tree; its last state is the `legacy-v1-final` tag.
 - The `patorsiang.github.io` GitHub Pages site has been taken down (repo Settings → Pages disabled). The repo and Vercel project were both renamed to `patstudio`.
 
 ## Deployment URLs
@@ -16,7 +16,7 @@ This document outlines the deployment setup for the Patorsiang Portfolio Platfor
 ## App Deployed
 
 - **Project**: `patstudio`
-- **Location**: `apps/portfolio-web`
+- **Location**: `app`
 
 ## Package Manager
 
@@ -27,7 +27,7 @@ This document outlines the deployment setup for the Patorsiang Portfolio Platfor
 | Setting                | Value                           |
 | :--------------------- | :------------------------------ |
 | **Framework Preset**   | Next.js                         |
-| **Root Directory**     | `apps/portfolio-web`            |
+| **Root Directory**     | `app`                           |
 | **Build Command**      | `bun run build:portfolio`       |
 | **Install Command**    | `bun install`                   |
 | **Output Directory**   | Next.js default (`.next`)       |
@@ -58,7 +58,7 @@ The Vercel project is configured as a monorepo. It automatically resolves the fo
 - `@patorsiang/content`
 - `@patorsiang/cv-engine`
 
-These packages are transpiled by Next.js as configured in `apps/portfolio-web/next.config.ts`.
+These packages are transpiled by Next.js as configured in `app/next.config.ts`.
 
 ## Environment Variables
 

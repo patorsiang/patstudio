@@ -7,7 +7,7 @@ import { themes } from "./support/theme";
  * Guards the printed CV, which CLAUDE.md singles out as the thing that breaks
  * silently:
  *
- *   "whenever you touch anything under apps/portfolio-web/src/app/cv/ or its
+ *   "whenever you touch anything under app/src/app/cv/ or its
  *    print rules in globals.css, manually verify (a) dark-mode print contrast
  *    and (b) that content still fits the page. Printed output breaks silently
  *    and there's no automated check for it."

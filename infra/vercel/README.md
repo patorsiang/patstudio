@@ -1,6 +1,6 @@
 # Vercel Hosting
 
-`apps/portfolio-web` is the production portfolio app, deployed to Vercel as the `patstudio` project.
+`app` is the production portfolio app, deployed to Vercel as the `patstudio` project.
 
 ## Environments
 

@@ -12,7 +12,7 @@
 
 ## 1. Product Summary
 
-The namecard is a standalone, chrome-less page at `/card` inside `apps/portfolio-web`. It is not a new app and not a new repo (see ADR `docs/decisions/0001-namecard-in-portfolio-web.md`) — it reuses the existing `profile` content, design tokens, OG-image pipeline, and QR script already in this repo.
+The namecard is a standalone, chrome-less page at `/card` inside `app`. It is not a new app and not a new repo (see ADR `docs/decisions/0001-namecard-in-portfolio-web.md`) — it reuses the existing `profile` content, design tokens, OG-image pipeline, and QR script already in this repo.
 
 Unlike the rest of the site, `/card` is optimized for a single moment: someone has just met Napatchol (in person, at a conference, over a shared link) and wants to save contact info or start a conversation in one of a few clicks. It is not meant to explain her career story — that's `/about` and `/cv`.
 

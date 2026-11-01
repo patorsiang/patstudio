@@ -25,7 +25,7 @@ Old target (standalone, closing): Claude Design project `patorsiang-portfolio`, 
 
 ## How this repo differs from the converter's default
 
-The design system is **not a library package**: components live in the Next app (`apps/portfolio-web/src/components`), import through `@/`, and use `next/link`, `next/image`. `packages/ui` is tokens only. So the converter reads a package we build ourselves:
+The design system is **not a library package**: components live in the Next app (`app/src/components`), import through `@/`, and use `next/link`, `next/image`. `packages/ui` is tokens only. So the converter reads a package we build ourselves:
 
 - `.design-sync/build-dist.mjs` (run it first; it is `cfg.buildCmd`) bundles `.design-sync/ds-package/src/index.ts` (the 15 storied components, re-exported from app source) into `ds-package/dist/index.js` with esbuild and emits `.d.ts` with tsc. Nothing in app source is touched.
 - `ds-package/shims/next-link.tsx`, `next-image.tsx`: plain `<a>` / `<img>` stand-ins for the two `next/*` modules in scope. `@patorsiang/utils` is mapped to `shims/utils.ts`, which re-exports only `sanitize-url` and `thai` (the barrel's logger reads `process.env`, which a browser bundle lacks). A component that starts using another helper fails the bundle build with "No matching export" until it is added there; PR #67 (`splitThai`) did exactly that.
@@ -33,11 +33,11 @@ The design system is **not a library package**: components live in the Next app 
 - `next/navigation` is a shim too (`shims/next-navigation.tsx`): `usePathname` reads a `PathnameProvider` context, else `location.pathname`. `PathnameProvider` is exported on `window.PortfolioUI` (not a component). Owned previews `previews/GlobalNav.tsx` and `PageShell.tsx` wrap each story in it; `previews/OfflineBanner.tsx` fakes `navigator.onLine = false`; `previews/NamecardFlip.tsx` clicks "Turn card over" for the Back story.
 - `@patorsiang/content` and `@patorsiang/cv-engine` are mapped to their `src/index.ts`; `process.env.NEXT_PUBLIC_SITE_URL` is defined away in `build-dist.mjs` (a browser bundle has no `process`; without it the whole bundle throws on load and `window.PortfolioUI` is undefined).
 - The bundle is 948 KB since GlobalNav, PostCard and NamecardFlip pulled in zod and the content data (it was 29 KB).
-- Run the converter with `--node-modules apps/portfolio-web/node_modules --entry .design-sync/ds-package/dist/index.js` (React lives only there; Bun does not hoist).
+- Run the converter with `--node-modules app/node_modules --entry .design-sync/ds-package/dist/index.js` (React lives only there; Bun does not hoist).
 
 ## Fixes (symptom -> cause -> fix)
 
-- [GENERAL] `[DTS_REACT]`, and prop types wrong (`onClick: ComponentPropsWithoutRef<"button">`, dropped `["onClick"]`) -> converter finds `@types/react` by walking up from the package dir; Bun keeps it only under `apps/portfolio-web/node_modules` -> `build-dist.mjs` symlinks `ds-package/node_modules` to it. Without this the **`.d.ts` contract is silently wrong**.
+- [GENERAL] `[DTS_REACT]`, and prop types wrong (`onClick: ComponentPropsWithoutRef<"button">`, dropped `["onClick"]`) -> converter finds `@types/react` by walking up from the package dir; Bun keeps it only under `app/node_modules` -> `build-dist.mjs` symlinks `ds-package/node_modules` to it. Without this the **`.d.ts` contract is silently wrong**.
 - [GENERAL] Text in Arial -> `next/font/google` defines `--font-geist-sans/mono`; outside Next nothing does -> Geist woff2 vendored in `.design-sync/fonts/` (`cfg.extraFonts`), variables set by `ds-package/src/font-vars.ts` (the converter keeps only `@font-face` from extra font CSS, so `:root` vars there are dropped).
 - [GENERAL] Reference Storybook never loaded Geist offline -> `patch-sb-reference.mjs` injects the same `@font-face` into `sb-reference/iframe.html`. **Re-run it after every `storybook build`** (idempotent).
 - `.d.ts` references `ContactLink`, `SegmentedLinkItem`, `ProjectLink` without defining them (tsc emits them as unexported locals) -> spelled out in `conventions.md`.
@@ -50,7 +50,7 @@ The design system is **not a library package**: components live in the Next app 
 
 - **Story args are the only source of the generated `.prompt.md` "Examples"** - they ship as raw `export const X: Story = {...}` code. Usable but ugly; own `previews/` or a fork would be needed to change it.
 - `MouseEventHandler<HTMLButtonElement>` (Button) and similar React type names appear unqualified in the emitted `.d.ts`; fine for the agent to read, but not valid standalone TypeScript.
-- `build-dist.mjs` assumes `@/` -> `apps/portfolio-web/src`, the `node_modules` symlink, and the two `next/*` shims. A new component using `next/navigation`, `next/font`, or a workspace package other than `@patorsiang/utils` needs a shim/mapping first or the esbuild step fails.
+- `build-dist.mjs` assumes `@/` -> `app/src`, the `node_modules` symlink, and the two `next/*` shims. A new component using `next/navigation`, `next/font`, or a workspace package other than `@patorsiang/utils` needs a shim/mapping first or the esbuild step fails.
 - Geist files are a vendored snapshot (Google Fonts v5 / Mono v6, latin + latin-ext). If `app/fonts.ts` changes family, update `.design-sync/fonts/geist.css` and `font-vars.ts`.
 - `conventions.md` enumerates token names and prop shapes by hand; re-validate against the fresh build (names in `_ds_bundle.css`, components under `components/`) every sync.
 - Compare caps at 6 stories per component; none here exceed it (max 4). All 32 stories were graded image-by-image, none sibling-trusted.
@@ -61,5 +61,5 @@ The design system is **not a library package**: components live in the Next app 
 
 1. `bun install --frozen-lockfile`
 2. Stage scripts into `.ds-sync/` (storybook SKILL §2.4) and `npm i esbuild ts-morph @types/react playwright && npx playwright install chromium` inside it
-3. `cd apps/portfolio-web && npx storybook build -c .storybook -o ../../.design-sync/sb-reference`, then `node .design-sync/patch-sb-reference.mjs`
+3. `cd app && npx storybook build -c .storybook -o ../../.design-sync/sb-reference`, then `node .design-sync/patch-sb-reference.mjs`
 4. `node .design-sync/build-dist.mjs`, then the §7 driver with `--remote` after fetching `_ds_sync.json`

@@ -40,7 +40,7 @@ Standardized security utilities are provided in `@patorsiang/utils`:
 ### 3. Rendering Standards
 
 - **React Escaping**: Rely on React's default escaping for plain text.
-- **HTML Content**: Use the `<SanitizedHTML />` component in `apps/portfolio-web` or `sanitizeHTML` with `dangerouslySetInnerHTML` for trusted HTML from data files.
+- **HTML Content**: Use the `<SanitizedHTML />` component in `app` or `sanitizeHTML` with `dangerouslySetInnerHTML` for trusted HTML from data files.
 - **Dynamic Links**: Always wrap dynamic URLs with `sanitizeUrl`.
 
 ### 4. Dependency Auditing
@@ -105,7 +105,7 @@ No real `SONAR_TOKEN` is committed. Add scan tokens through GitHub Actions secre
 ### Project Structure
 
 - **Monorepo**: Powered by Bun Workspaces. Shared logic belongs in `packages/`.
-- **Apps**: Next.js applications live in `apps/`. They follow the App Router structure.
+- **App**: The Next.js application lives in `app/`. It follows the App Router structure.
 - **Packages**:
   - `src/index.ts`: Public API entry point.
   - `src/schemas/`: Zod validation schemas.

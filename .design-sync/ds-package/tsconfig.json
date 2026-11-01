@@ -13,15 +13,15 @@
     "rootDir": "../..",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["../../apps/portfolio-web/src/*"],
+      "@/*": ["../../app/src/*"],
       "next/link": ["./shims/next-link.tsx"],
       "next/image": ["./shims/next-image.tsx"],
       "next/navigation": ["./shims/next-navigation.tsx"],
       "@patorsiang/content": ["../../packages/content/src/index.ts"],
       "@patorsiang/cv-engine": ["../../packages/cv-engine/src/index.ts"],
       "@patorsiang/utils": ["./shims/utils.ts"],
-      "react": ["../../apps/portfolio-web/node_modules/@types/react"],
-      "react/jsx-runtime": ["../../apps/portfolio-web/node_modules/@types/react/jsx-runtime"]
+      "react": ["../../app/node_modules/@types/react"],
+      "react/jsx-runtime": ["../../app/node_modules/@types/react/jsx-runtime"]
     }
   },
   "files": ["src/index.ts"]

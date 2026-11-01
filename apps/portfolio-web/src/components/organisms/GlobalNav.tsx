@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent } from "react";
 
 import { isCvLanguage, type CvLanguage } from "@patorsiang/cv-engine";
 import { buildCanonicalCvHref, cvRoleSlugToId } from "@/lib/cv-routes";
@@ -45,6 +45,11 @@ const languageOptions = [
 export function GlobalNav() {
   const pathname = usePathname();
   const [activeTheme, setActiveTheme] = useState<Theme | null>(null);
+  // Phone menu. Closed on the server and on first paint, so there is nothing to
+  // mismatch at hydration. From the sm breakpoint up the links are always shown.
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const linksId = useId();
 
   useEffect(() => {
     const mediaQuery = globalThis.matchMedia("(prefers-color-scheme: dark)");
@@ -80,21 +85,52 @@ export function GlobalNav() {
 
   const languageLinks = useMemo(() => buildLanguageLinks(pathname), [pathname]);
 
+  function closeMenuOnEscape(event: KeyboardEvent<HTMLElement>) {
+    if (event.key === "Escape" && menuOpen) {
+      setMenuOpen(false);
+      menuButtonRef.current?.focus();
+    }
+  }
+
   return (
     <nav
       aria-label="Global navigation"
       // The chrome is English on every route, including the Thai CV, so it does
       // not inherit the surrounding page language. Drop this once it localizes.
       lang="en"
-      className="flex flex-col gap-3 border-b border-(--color-border) pb-4 print:hidden sm:flex-row sm:items-center sm:justify-between"
+      onKeyDown={closeMenuOnEscape}
+      // A wrapping row, so the Menu button and the theme buttons share a line
+      // when they fit and the opened link list takes a line of its own between
+      // them. Reading order and visual order stay the same either way.
+      className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 border-b border-(--color-border) pb-4 print:hidden sm:flex-nowrap"
     >
+      {/* Below sm the links sit behind this button: at 200% text they wrapped
+          into a block that filled most of a phone screen (audit O5). */}
+      <button
+        ref={menuButtonRef}
+        type="button"
+        aria-expanded={menuOpen}
+        aria-controls={linksId}
+        className={classNames(controlClassName(menuOpen), "sm:hidden")}
+        onClick={() => setMenuOpen((open) => !open)}
+      >
+        Menu
+      </button>
+
       {/* The IA's primary nav, now that every page in it exists. */}
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+      <div
+        id={linksId}
+        className={classNames(
+          "flex-wrap items-center gap-x-4 gap-y-2 max-sm:basis-full sm:flex",
+          menuOpen ? "flex" : "hidden",
+        )}
+      >
         {primaryLinks.map((link) => (
           <Link
             key={link.href}
             href={link.href}
             aria-current={link.matches(pathname) ? "page" : undefined}
+            onClick={() => setMenuOpen(false)}
             className={classNames(
               "inline-flex h-10 items-center text-sm font-semibold underline-offset-4 transition hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2",
               link.matches(pathname) ? "text-foreground underline" : "text-(--color-accent)",

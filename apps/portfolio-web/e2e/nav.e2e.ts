@@ -1,5 +1,7 @@
 import { test, expect } from "@playwright/test";
 
+import { openNavMenu } from "./support/nav";
+
 /**
  * The primary navigation and the language switcher.
  *
@@ -84,6 +86,7 @@ test.describe("every primary link goes where it says", () => {
   for (const { label, url } of destinations) {
     test(`${label} lands on its page`, async ({ page }) => {
       await page.goto("/");
+      await openNavMenu(page);
       await nav(page).getByRole("link", { name: label, exact: true }).click();
       await expect(page).toHaveURL(url);
       // A URL alone can be satisfied by an error boundary or an empty shell.
@@ -98,6 +101,7 @@ test.describe("every primary link goes where it says", () => {
 
   test("Home returns to the homepage", async ({ page }) => {
     await page.goto("/about");
+    await openNavMenu(page);
     await nav(page).getByRole("link", { name: "Home", exact: true }).click();
     await expect(page).toHaveURL(/\/$/);
   });

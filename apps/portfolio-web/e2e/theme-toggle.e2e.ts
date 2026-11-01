@@ -1,5 +1,7 @@
 import { test, expect } from "@playwright/test";
 
+import { openNavMenu } from "./support/nav";
+
 /**
  * The theme control is the most-used button on the site, and until this file
  * nothing in the suite had ever clicked it.
@@ -106,6 +108,7 @@ test("the choice survives navigating to another page", async ({ page }) => {
 
   // A client-side navigation: the root layout never re-runs, so the theme
   // survives only if it is held somewhere outside the page being replaced.
+  await openNavMenu(page);
   await page.getByRole("link", { name: "Projects", exact: true }).click();
   await expect(page).toHaveURL(/\/projects$/);
 

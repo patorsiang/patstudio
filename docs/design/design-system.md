@@ -181,7 +181,7 @@ Avoid:
 ### Navbar
 
 - Minimal horizontal nav on desktop.
-- Compact menu or wrapped links on mobile.
+- Below the `sm` breakpoint (40rem) the links sit behind a "Menu" button (`aria-expanded`, `aria-controls`); the theme buttons stay in view. Escape closes the menu and returns focus to the button, and choosing a link closes it. From `sm` up there is no button and the links are always shown. Wrapped links filled most of a phone screen at 200% text (audit observation O5).
 - Use text links or simple buttons with clear labels.
 - Keep primary nav to Home, About, Experience, Projects, CV, and Contact.
 - Active state may use accent text, underline, or subtle border.

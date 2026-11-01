@@ -41,7 +41,7 @@ export default function AboutPage() {
   return (
     <PageShell>
       <RevealOnView>
-        <Section eyebrow="About" title={profile.role.en}>
+        <Section eyebrow="About" title={profile.role.en} headingLevel={1}>
           <p className="mt-6 max-w-2xl text-base leading-8 text-(--color-text-muted)">
             {profile.headline.en}
           </p>

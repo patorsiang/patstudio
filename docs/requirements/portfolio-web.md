@@ -870,6 +870,10 @@ The portfolio should feel interactive, dynamic, and modern, while still staying 
 ## 9.2 Accessibility
 
 * Keyboard navigable
+* A skip link is the first Tab stop on every page that has the global navigation, and it moves focus past the navigation to the page content
+* Exactly one `h1` per page, naming the page
+* Links that share visible text but lead to different places have different accessible names (for example "GitHub: Project name"), and the name starts with the visible text
+* Every `nav` landmark has an `aria-label`, and no two on a page share one
 * Good color contrast
 * Alt text for images
 * Semantic HTML

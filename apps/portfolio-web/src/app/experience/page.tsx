@@ -46,7 +46,7 @@ export default function ExperiencePage() {
   return (
     <PageShell>
       <RevealOnView>
-        <Section eyebrow="Experience" title="Work, internships, and education.">
+        <Section eyebrow="Experience" title="Work, internships, and education." headingLevel={1}>
           <p className="mt-6 max-w-2xl text-base leading-8 text-(--color-text-muted)">
             Newest first within each group. Every entry lists the organization, location, dates, and
             the specific work behind it.

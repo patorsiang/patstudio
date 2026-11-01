@@ -874,6 +874,7 @@ The portfolio should feel interactive, dynamic, and modern, while still staying 
 * Exactly one `h1` per page, naming the page
 * Links that share visible text but lead to different places have different accessible names (for example "GitHub: Project name"), and the name starts with the visible text
 * Every `nav` landmark has an `aria-label`, and no two on a page share one
+* On a phone the navigation links sit behind a "Menu" button, so that the navigation does not fill the first screen when text is enlarged to 200%. The button reports whether the menu is open, Escape closes it and returns focus to the button, and the links are always shown from the `sm` breakpoint up
 * Good color contrast
 * Alt text for images
 * Semantic HTML

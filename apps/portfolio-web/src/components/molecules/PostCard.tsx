@@ -54,7 +54,7 @@ export function PostCard({ post }: { readonly post: PostSummary }) {
         </div>
       ) : null}
 
-      <PostElsewhere post={post} className="mt-5" />
+      <PostElsewhere post={post} title={post.title} className="mt-5" />
     </Card>
   );
 }

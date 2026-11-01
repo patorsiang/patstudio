@@ -36,7 +36,7 @@ export default function ProjectsPage() {
   return (
     <PageShell>
       <RevealOnView>
-        <Section eyebrow="Projects" title="Selected project work.">
+        <Section eyebrow="Projects" title="Selected project work." headingLevel={1}>
           <p className="mt-6 max-w-2xl text-base leading-8 text-(--color-text-muted)">
             Each entry states what the project does, what was built, the stack behind it, and where
             the code can be reviewed. Research prototypes are labelled as such, with their

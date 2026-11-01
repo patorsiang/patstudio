@@ -25,6 +25,15 @@ export function PageShell({ children, className, contentClassName, lang }: PageS
     // of a short page instead of always below the fold - the body is already
     // `min-h-full flex flex-col` for this.
     <>
+      {/* First Tab stop on every page that has the global nav. Visible only
+          while focused, so it costs sighted mouse users nothing. It jumps past
+          the nav and theme switch to #main-content, below. */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:inline-flex focus:h-10 focus:items-center focus:rounded-full focus:bg-(--color-accent) focus:px-4 focus:text-sm focus:font-semibold focus:text-(--color-on-accent) focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 print:hidden"
+      >
+        Skip to content
+      </a>
       <main
         lang={lang}
         className={classNames(
@@ -40,7 +49,13 @@ export function PageShell({ children, className, contentClassName, lang }: PageS
           )}
         >
           <GlobalNav />
-          {children}
+          {/* The skip link's target. tabIndex -1 so it can take focus from the
+              link without joining the tab order. `gap: inherit` keeps the
+              spacing between sections identical to when they were direct
+              children of the container above (the CV overrides that gap). */}
+          <div id="main-content" tabIndex={-1} className="flex flex-col [gap:inherit] outline-none">
+            {children}
+          </div>
         </div>
       </main>
       <SiteFooter />

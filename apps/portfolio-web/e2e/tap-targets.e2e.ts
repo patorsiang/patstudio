@@ -91,6 +91,11 @@ for (const route of routes) {
           // would need). See the module docstring above for the full reasoning.
           if (element.closest(".post-body")) continue;
 
+          // The skip link is 1px until it takes keyboard focus, and then it is
+          // 40px tall. It is for keyboard users, so no finger ever meets the
+          // 1px state; page-structure.e2e.ts measures it while focused instead.
+          if (element.matches('a[href="#main-content"]')) continue;
+
           // An inert element (or a descendant of one) cannot be reached by a
           // real tap or click at all - the browser excludes it from hit-
           // testing entirely, same as it would a display:none element. The

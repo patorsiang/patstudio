@@ -197,9 +197,9 @@ export function NamecardFlip() {
                 <SiteMark size={21} className="self-start text-(--color-accent)" />
 
                 <div className="mt-6 text-center">
-                  <p className="text-[21px] leading-[1.15] font-bold tracking-[-0.02em] text-(--color-text)">
+                  <h1 className="text-[21px] leading-[1.15] font-bold tracking-[-0.02em] text-(--color-text)">
                     {profile.name.en}
-                  </p>
+                  </h1>
                   <p className="mt-2.5 font-mono text-[10.5px] lowercase text-(--color-text-subtle)">
                     {profile.role.en}
                   </p>

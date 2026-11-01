@@ -118,6 +118,10 @@ export function ProjectCard({
               href={link.href}
               target="_blank"
               rel="noreferrer"
+              // Seven cards each have a "GitHub" link, and a screen reader's list
+              // of links shows names only. The plain variant already spells out
+              // the address, so it needs nothing more.
+              aria-label={variant === "card" ? `${link.label}: ${title}` : undefined}
               // The row is a flex container, so these are blockified either
               // way; only the height needs undoing for the dense CV print
               // sheet, where nothing is tappable anyway.

@@ -17,9 +17,16 @@ const PREFIX = {
 export function PostElsewhere({
   post,
   className,
+  title,
 }: {
   readonly post: Pick<PostSummary, "canonical" | "elsewhere">;
   readonly className?: string;
+  /**
+   * The post's title, when the link sits in a list of posts. Without it every
+   * card's link is just "Medium" to a screen reader's list of links. The name
+   * stays "Medium: <title>", so it starts with the visible text.
+   */
+  readonly title?: string;
 }) {
   const links = postExternalLinks(post);
 
@@ -44,6 +51,7 @@ export function PostElsewhere({
             href={link.href}
             target="_blank"
             rel="noreferrer"
+            aria-label={title ? `${link.label}: ${title}` : undefined}
             className="tap-reach inline-block"
           >
             {link.label}

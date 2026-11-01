@@ -22,7 +22,7 @@ export default async function PostsPage() {
   return (
     <PageShell>
       <RevealOnView>
-        <Section eyebrow="Posts" title="Learning in public.">
+        <Section eyebrow="Posts" title="Learning in public." headingLevel={1}>
           <p className="mt-6 max-w-2xl text-base leading-8 text-(--color-text-muted)">
             Notes and reflections from events, projects, and the day job.
           </p>

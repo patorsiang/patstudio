@@ -28,7 +28,7 @@ export default function ContactPage() {
   return (
     <PageShell>
       <RevealOnView>
-        <Section eyebrow="Contact" title="Direct channels.">
+        <Section eyebrow="Contact" title="Direct channels." headingLevel={1}>
           <p className="mt-6 max-w-2xl text-base leading-8 text-(--color-text-muted)">
             Email is the most direct route. There is no contact form here on purpose — these go
             straight to accounts that are actually monitored.

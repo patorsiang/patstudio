@@ -274,7 +274,9 @@ Rules:
 - Text contrast should meet WCAG AA at minimum. Verified 2026-08-03 across every token pair the app actually uses, in both themes: all text pairs clear 4.5:1, all control boundaries and focus rings clear the 3:1 that WCAG 1.4.11 requires for non-text. The tightest margins are subtle text on page in light (4.63:1) and the segmented-control track border in dark (3.08:1) — treat those two as the constraint when adjusting neutrals.
 - Focus states must be visible on all links, buttons, and controls.
 - Interactive targets should be at least 40px tall, with 44px preferred for mobile.
-- Use semantic headings in document order.
+- Use semantic headings in document order, with exactly one `h1` per page. `Section` takes `headingLevel={1}` for the section that names the page; the look is the same as `h2`.
+- The skip link in `PageShell` is the first Tab stop. It is hidden until focused, then a 40px pill, and it targets `#main-content`, the wrapper around the page content. Pages without the global nav (`/card`, the offline page) do not need one.
+- When links in a list share their visible text ("GitHub" on every project card), give each an `aria-label` that starts with that text and adds the owner: "GitHub: Project name". `TextLink` takes `aria-label` for this.
 - Do not use colour alone for selected, active, warning, or status states.
 - Respect `prefers-reduced-motion`.
 - Keep text readable on mobile and avoid cramped multi-column layouts.

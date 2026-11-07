@@ -22,7 +22,12 @@ const { build } = createRequire(join(root, ".ds-sync/package.json"))("esbuild");
 // finds React's types by walking up from the package dir for node_modules/@types/react;
 // without them every `ComponentPropsWithoutRef<"x">["onClick"]` collapses to a wrong type.
 const nm = join(pkg, "node_modules");
-try { lstatSync(nm); } catch { symlinkSync("../../app/node_modules", nm); }
+// lstat succeeds on a dangling link (for example one left pointing at the old
+// apps/portfolio-web path), so check that the target exists and replace the link if not.
+let nmIsLink = false;
+try { nmIsLink = lstatSync(nm).isSymbolicLink(); } catch {}
+if (nmIsLink && !existsSync(nm)) rmSync(nm);
+if (!existsSync(nm)) symlinkSync("../../app/node_modules", nm);
 
 rmSync(dist, { recursive: true, force: true });
 

@@ -47,7 +47,7 @@ const iconLinkClassName =
 // docs/design/namecard.md section 2 for the geometry. The ::after overlay
 // gives it a real 40px hit area without changing how it looks.
 const cueClassName =
-  "tap-reach absolute top-[15px] right-[15px] z-10 flex h-7 items-center gap-1.5 rounded-md border border-(--color-border) bg-background px-2.5 font-mono text-[9.5px] font-medium tracking-[0.03em] text-(--color-text-subtle) transition-colors hover:border-(--color-accent) hover:text-(--color-accent) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-focus)";
+  "tap-reach absolute top-[15px] right-[15px] z-10 flex h-7 items-center gap-1.5 rounded-md border border-(--color-border-strong) bg-background px-2.5 font-mono text-[9.5px] font-medium tracking-[0.03em] text-(--color-text-subtle) transition-colors hover:border-(--color-accent) hover:text-(--color-accent) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-focus)";
 
 // Lets a click on a real link (the icon row, Save Contact) do only that,
 // rather than also bubbling up to the back face's onClick and flipping the
@@ -216,12 +216,15 @@ export function NamecardFlip() {
                   this QR actually encodes (this /card page): the alt text below
                   stays accurate to what the QR encodes, since that has to be
                   true for a screen reader regardless of where the visible
-                  click target goes. target="_blank" since this is a different
-                  page, not the one already open. */}
+                  click target goes. The link's own aria-label says where a
+                  click lands, because a link takes its name from that label
+                  and not from the image's alt text. target="_blank" since
+                  this is a different page, not the one already open. */}
                 <a
                   href={homeUrl}
                   target="_blank"
                   rel="noreferrer"
+                  aria-label={`Open ${displayUrl} (the QR code encodes ${cardDisplayUrl})`}
                   tabIndex={flipped ? -1 : undefined}
                   className="pointer-events-auto rounded-[3px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-focus)"
                 >

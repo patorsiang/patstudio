@@ -1,6 +1,6 @@
 # Bypass counter. post-commit runs even under `git commit --no-verify`, which is what makes
-# this measurable at all: pre-commit can be skipped, this cannot. See
-# life-planning/drafts/design-to-delivery-2026/evidence/tools-trail.md
+# this measurable at all: pre-commit can be skipped, this cannot. (The trial notes that
+# measured it were in life-planning's tools-trail.md, deleted 2026-11-09; history in git.)
 #
 # Note: husky runs hooks under `sh -e`, so a bare failing test would abort the script.
 # Every test below is inside an `if`, and nothing here may fail the commit — post-commit's

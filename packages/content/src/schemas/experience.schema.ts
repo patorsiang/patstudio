@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "../zod";
 import { contentMetaSchema } from "./common.schema";
 import { translatableTextSchema } from "./translation.schema";
 

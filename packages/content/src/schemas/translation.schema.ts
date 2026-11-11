@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "../zod";
 
 export const supportedLocaleSchema = z.enum(["th", "ko", "zh-CN"]);
 

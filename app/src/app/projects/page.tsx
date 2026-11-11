@@ -43,6 +43,8 @@ export default function ProjectsPage() {
             limitations stated rather than omitted.
           </p>
 
+          {/* The h1 above names the page; without this h2 the card titles (h3) would skip a level. */}
+          <h2 className="sr-only">Selected projects</h2>
           <div className="mt-8 grid gap-5 lg:grid-cols-2">
             {selectedProjects.map((project) => (
               <ProjectCard key={project.id} {...toCardProps(project)} />

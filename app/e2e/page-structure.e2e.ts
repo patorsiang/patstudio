@@ -69,6 +69,37 @@ test.describe("one h1 per page", () => {
   }
 });
 
+test.describe("heading order", () => {
+  for (const route of routes) {
+    test(`${route} never skips a heading level going down`, async ({ page }) => {
+      await page.goto(route);
+
+      // Same rule as axe's heading-order (Lighthouse reports it): going deeper
+      // may only step one level at a time. Going back up may jump any amount.
+      const skips = await page.evaluate(() => {
+        const found: string[] = [];
+        let previous = 0;
+
+        for (const heading of document.querySelectorAll("h1, h2, h3, h4, h5, h6")) {
+          // Hidden headings are not in the accessibility tree, so they cannot skip.
+          if (heading.closest("[hidden], [inert], [aria-hidden='true']")) continue;
+
+          const level = Number(heading.tagName[1]);
+
+          if (previous > 0 && level > previous + 1) {
+            found.push(`h${previous} -> h${level}: ${heading.textContent?.trim()}`);
+          }
+          previous = level;
+        }
+
+        return found;
+      });
+
+      expect(skips, "headings that skip a level").toEqual([]);
+    });
+  }
+});
+
 test.describe("link names", () => {
   for (const route of routes) {
     test(`${route} has no two links with one name and different targets`, async ({

@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "../zod";
 import { supportedLocaleSchema, translatableTextSchema } from "./translation.schema";
 
 export const localeSchema = z.union([z.literal("en"), supportedLocaleSchema]);

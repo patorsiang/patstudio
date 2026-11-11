@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "../zod";
 
 /**
  * Mirrors the maturity levels the source repo's README already defines, so the

@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "./zod";
 import {
   experiences as rawExperiences,
   profile as rawProfile,

@@ -7,9 +7,10 @@
 //   2. tsc: emit .d.ts -> dist/types, then rewrite `@/` specifiers to relative
 //   3. dist/index.d.ts re-exports the emitted barrel
 import { execFileSync } from "node:child_process";
-import { existsSync, lstatSync, readdirSync, symlinkSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { createRequire } from "node:module";
+import { linkAppNodeModules } from "./link-node-modules.mjs";
 
 const root = resolve(import.meta.dirname, "..");
 const pkg = join(root, ".design-sync/ds-package");
@@ -18,16 +19,7 @@ const dist = join(pkg, "dist");
 // esbuild is installed in the isolated .ds-sync/ deps, not the repo lockfile.
 const { build } = createRequire(join(root, ".ds-sync/package.json"))("esbuild");
 
-// Bun does not hoist, so @types/react exists only under the app. The converter
-// finds React's types by walking up from the package dir for node_modules/@types/react;
-// without them every `ComponentPropsWithoutRef<"x">["onClick"]` collapses to a wrong type.
-const nm = join(pkg, "node_modules");
-// lstat succeeds on a dangling link (for example one left pointing at the old
-// apps/portfolio-web path), so check that the target exists and replace the link if not.
-let nmIsLink = false;
-try { nmIsLink = lstatSync(nm).isSymbolicLink(); } catch {}
-if (nmIsLink && !existsSync(nm)) rmSync(nm);
-if (!existsSync(nm)) symlinkSync("../../app/node_modules", nm);
+linkAppNodeModules(pkg);
 
 rmSync(dist, { recursive: true, force: true });
 

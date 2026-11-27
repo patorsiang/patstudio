@@ -13,6 +13,12 @@ updates:
   # week, none of them mergeable by anyone. Re-enabling this without also
   # solving the lockfile write just resumes that.
   #
+  # Dependabot *alerts* miss bun.lock too, for a different reason: GitHub's
+  # dependency graph reads only the package.json manifests (checked 2026-11-16:
+  # 47 packages, as ranges such as `sanitize-html ^2.17.7`). It never sees a
+  # transitive dependency or a resolved version, so it raised 0 alerts while
+  # `bun audit` listed 9 (issue #86). bun audit is the only source of truth.
+  #
   # Dependency security is covered better elsewhere: `bun run security:audit`
   # fails the build on any high advisory, on EVERY push rather than weekly, and
   # the accepted-risk register in docs/architecture/code-quality.md records what

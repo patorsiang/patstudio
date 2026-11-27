@@ -183,3 +183,40 @@ describe("sanitizeArticleHTML", () => {
     expect(html).toContain('lang="en"');
   });
 });
+
+/**
+ * The three sanitize-html advisories fixed in 2.18.0 (issue #86), replayed against
+ * both of our configs. None of them reaches our output, before or after the upgrade:
+ * noscript, meta and svg are all outside our allowlists, and the attribute and
+ * scheme filters still run on whatever does survive. These tests pin that, so a
+ * later change that widens an allowlist (adding svg for diagrams, say) fails here
+ * rather than quietly reopening the advisory.
+ */
+describe("sanitize-html 2.18 advisories stay unreachable", () => {
+  const both = (html: string) => [sanitizeHTML(html), sanitizeArticleHTML(html)];
+  const executable = /javascript:|data:|\bon[a-z]+=|<script|<meta|<noscript|<svg|<animate/i;
+
+  test("GHSA-x3q4-9hxx-gx8m: content after a noscript implied close carries no script", () => {
+    for (const payload of [
+      "<noscript><p>x</p><img src=x onerror=alert(1)></noscript>",
+      '<p><noscript></p><a href="javascript:alert(1)">x</a></noscript>',
+      "<noscript><select><option></noscript><img src=x onerror=alert(1)>",
+    ]) {
+      for (const out of both(payload)) expect(out).not.toMatch(executable);
+    }
+  });
+
+  test("GHSA-374f-7chj-9948: a namespace-prefixed SMIL animate cannot set a javascript: href", () => {
+    const payload =
+      '<svg><svg:animate attributeName="href" to="javascript:alert(1)"/><a><text>x</text></a></svg>';
+    for (const out of both(payload)) expect(out).not.toMatch(executable);
+  });
+
+  test("GHSA-cv27-6wvh-8x7j: a meta refresh to a javascript: or data: URL is removed", () => {
+    for (const url of ["javascript:alert(1)", "data:text/html,<script>alert(1)</script>"]) {
+      for (const out of both(`<meta http-equiv="refresh" content="0;url=${url}">`)) {
+        expect(out).not.toMatch(executable);
+      }
+    }
+  });
+});

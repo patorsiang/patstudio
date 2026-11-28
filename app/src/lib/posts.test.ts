@@ -1,32 +1,18 @@
-import { describe, expect, mock, test } from "bun:test";
+import { afterEach, beforeEach, describe, expect, spyOn, test, type Mock } from "bun:test";
 import { POST_FALLBACK } from "@patorsiang/content/posts";
 
-/**
- * `getPosts`/`getPost` degrade to `POST_FALLBACK` when the live fetch
- * throws (a GitHub outage, or - post I3 - the listing call itself failing).
- * Nothing previously exercised that path: an absence assertion ("the posts
- * page doesn't crash") would pass whether or not the fallback actually
- * fires. `fetchPosts` calls the real `fetch` global and Playwright can't
- * intercept it (this runs server-side), so the only way to force the
- * failure is to mock `@patorsiang/content/posts` itself - the exact
- * specifier lib/posts.ts imports `fetchPosts` from.
- *
- * `mock.module` swaps the module for every import that happens after this
- * call, including the dynamic `import("./posts")` below - which is why
- * `getPosts`/`getPost` are imported dynamically inside each test rather
- * than statically at the top of the file. The static import of
- * `POST_FALLBACK` above runs first (module evaluation, before any test
- * body), so it captures the real fallback data to assert against.
- */
-mock.module("@patorsiang/content/posts", () => ({
-  fetchPosts: () => Promise.reject(new Error("network down")),
-  POST_FALLBACK,
-}));
+import { getPost, getPosts } from "./posts";
+
+let fetchMock: Mock<(...args: Parameters<typeof fetch>) => ReturnType<typeof fetch>>;
+
+beforeEach(() => {
+  fetchMock = spyOn(globalThis, "fetch").mockRejectedValue(new Error("network down"));
+});
+
+afterEach(() => fetchMock.mockRestore());
 
 describe("getPosts", () => {
   test("falls back to POST_FALLBACK when the live fetch fails", async () => {
-    const { getPosts } = await import("./posts");
-
     const posts = await getPosts();
 
     expect(posts).toEqual([...POST_FALLBACK]);
@@ -34,11 +20,42 @@ describe("getPosts", () => {
 });
 
 describe("getPost", () => {
-  test("returns null when the fetch fails, rather than a stale body", async () => {
-    const { getPost } = await import("./posts");
+  test("throws when the listing fails", async () => {
+    await expect(getPost(POST_FALLBACK[0].slug)).rejects.toThrow("network down");
+  });
 
-    const post = await getPost(POST_FALLBACK[0].slug);
+  test("only reports an unlisted post as missing during a partial outage", async () => {
+    const goodSlug = POST_FALLBACK[0].slug;
+    const goodPost = `---
+title: A working post
+date: 2026-06-14
+summary: A summary
+maturity: published
+lang: [en]
+---
+An **available** post.`;
+    fetchMock.mockImplementation(async (input) => {
+      const url = new URL(String(input));
+      if (url.hostname === "api.github.com") {
+        return Response.json(
+          [goodSlug, "unavailable"].map((slug) => ({
+            name: `${slug}.md`,
+            type: "file",
+            path: `posts/${slug}.md`,
+          })),
+        );
+      }
+      if (url.pathname.endsWith(`/posts/${goodSlug}.md`)) return new Response(goodPost);
+      return new Response(null, { status: 503 });
+    });
 
-    expect(post).toBeNull();
+    await expect(getPosts()).resolves.toMatchObject([{ slug: goodSlug }]);
+    await expect(getPost(goodSlug)).resolves.toMatchObject({
+      body: "<p>An <strong>available</strong> post.</p>\n",
+    });
+    await expect(getPost("missing")).resolves.toBeNull();
+    await expect(getPost("unavailable")).rejects.toThrow(
+      "fetching posts/unavailable.md failed: 503",
+    );
   });
 });

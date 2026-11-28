@@ -80,6 +80,17 @@ async function listPostPaths(): Promise<string[]> {
     .map((entry) => entry.path);
 }
 
+async function fetchRawPost(path: string): Promise<Post> {
+  const response = await fetch(rawUrl(path));
+
+  if (!response.ok) {
+    throw new Error(`fetching ${path} failed: ${response.status}`);
+  }
+
+  const slug = path.replace(/^posts\//, "").replace(/\.md$/, "");
+  return parsePost(slug, await response.text());
+}
+
 /**
  * Every post, newest first, with `body` still raw markdown - not rendered to
  * HTML.
@@ -87,9 +98,8 @@ async function listPostPaths(): Promise<string[]> {
  * Exported separately from `fetchPosts` because the manifest script needs
  * markdown link syntax (`![alt](url)`) to find image URLs with
  * `selectImageUrls`, and `renderPostBody` has already turned that into `<img>`
- * tags by the time `fetchPosts` returns. This is the single place that lists
- * and parses posts, so `fetchPosts` is defined in terms of it below rather
- * than duplicating the fetch-and-parse loop.
+ * tags by the time `fetchPosts` returns. Both the manifest and the index
+ * use this same batch loader.
  *
  * Throws only if the listing itself fails, or if every path it names fails
  * to fetch or parse. A single post that fails (missing/malformed front
@@ -110,20 +120,7 @@ async function listPostPaths(): Promise<string[]> {
  */
 export async function fetchRawPosts(): Promise<RawPost[]> {
   const paths = await listPostPaths();
-
-  const results = await Promise.allSettled(
-    paths.map(async (path) => {
-      const response = await fetch(rawUrl(path));
-
-      if (!response.ok) {
-        throw new Error(`fetching ${path} failed: ${response.status}`);
-      }
-
-      const slug = path.replace(/^posts\//, "").replace(/\.md$/, "");
-      return parsePost(slug, await response.text());
-    }),
-  );
-
+  const results = await Promise.allSettled(paths.map(fetchRawPost));
   const posts = settleFetchedPosts(paths, results);
 
   if (paths.length > 0 && posts.length === 0) {
@@ -155,6 +152,13 @@ export function settleFetchedPosts(
   return posts;
 }
 
+function renderFetchedPost(
+  post: Post,
+  imageSizes: ReadonlyMap<string, readonly [number, number]>,
+): Post {
+  return { ...post, body: renderPostBody(post.body, { imageSizes }) };
+}
+
 /**
  * Every post, newest first, with `body` already sanitised HTML.
  *
@@ -171,9 +175,17 @@ export async function fetchPosts(
   imageSizes: ReadonlyMap<string, readonly [number, number]> = new Map(),
 ): Promise<Post[]> {
   const posts = await fetchRawPosts();
+  return posts.map((post) => renderFetchedPost(post, imageSizes));
+}
 
-  return posts.map((post) => ({
-    ...post,
-    body: renderPostBody(post.body, { imageSizes }),
-  }));
+/** A listed post must load successfully or throw. Only an unlisted slug is missing. */
+export async function fetchPost(
+  slug: string,
+  imageSizes: ReadonlyMap<string, readonly [number, number]>,
+): Promise<Post | null> {
+  const path = `posts/${slug}.md`;
+  const paths = await listPostPaths();
+  if (!paths.includes(path)) return null;
+
+  return renderFetchedPost(await fetchRawPost(path), imageSizes);
 }

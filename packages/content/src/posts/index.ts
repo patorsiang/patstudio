@@ -1,4 +1,5 @@
 export {
+  fetchPost,
   fetchPosts,
   fetchRawPosts,
   orderPosts,

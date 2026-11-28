@@ -3,7 +3,7 @@ import type { Post, PostSummary } from "@patorsiang/content";
 // renderPostBody's jsdom dependency, which most other consumers of
 // @patorsiang/content (including cv-engine) must not carry - see
 // packages/content/src/index.ts.
-import { fetchPosts, POST_FALLBACK } from "@patorsiang/content/posts";
+import { fetchPost, fetchPosts, POST_FALLBACK } from "@patorsiang/content/posts";
 
 import { POST_IMAGE_SIZES } from "@/lib/post-image-sizes";
 
@@ -22,19 +22,24 @@ import { POST_IMAGE_SIZES } from "@/lib/post-image-sizes";
  */
 export async function getPosts(): Promise<PostSummary[]> {
   try {
-    return await fetchPosts(POST_IMAGE_SIZES);
+    const posts = await fetchPosts(POST_IMAGE_SIZES);
+    // Set only by the visual-snapshot run (playwright.config.ts): publishing a
+    // post must not change the /posts screenshot.
+    if (process.env.POSTS_PIN_TO_FALLBACK !== "1") return posts;
+    const pinned = new Set(POST_FALLBACK.map((post) => post.slug));
+    return posts.filter((post) => pinned.has(post.slug));
   } catch (error) {
     console.error("Falling back to committed post summaries", error);
     return [...POST_FALLBACK];
   }
 }
 
-export async function getPost(slug: string): Promise<Post | null> {
-  try {
-    const posts = await fetchPosts(POST_IMAGE_SIZES);
-    return posts.find((post) => post.slug === slug) ?? null;
-  } catch (error) {
-    console.error(`Could not load post ${slug}`, error);
-    return null;
-  }
+/**
+ * Null means "no such post", so a failed fetch must throw instead: the caller
+ * turns null into notFound(), which during revalidation would replace a good
+ * cached page with a 404. A throw keeps the last good page serving, and fails
+ * a build loudly rather than prerendering every post as a 404.
+ */
+export function getPost(slug: string): Promise<Post | null> {
+  return fetchPost(slug, POST_IMAGE_SIZES);
 }

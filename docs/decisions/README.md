@@ -33,6 +33,11 @@ Two consequences worth stating outright:
   cleaner" is not a reason; "all five consumers read it by fixed field name" is.
 - State the expiry condition. A decision with no trip-wire becomes dogma.
 
+Two existing records share the number `0002`. Use their full filenames when citing them.
+
+- [0002-cv-timeline-gap-bridging.md](0002-cv-timeline-gap-bridging.md)
+- [0002-post-images-through-the-next-optimizer.md](0002-post-images-through-the-next-optimizer.md)
+
 ## ADRs are immutable
 
 **Never edit an accepted ADR to reflect a changed mind.** Write a new one that supersedes it,

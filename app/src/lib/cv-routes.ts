@@ -2,12 +2,6 @@ import { isCvLanguage, isCvRoleId, type CvLanguage, type CvRoleId } from "@pator
 
 export const defaultCvRole: CvRoleId = "fullstack_engineer";
 export const defaultCvLanguage: CvLanguage = "en";
-export const cvRoleSlugs = [
-  "fullstack-engineer",
-  "ai-ml-engineer",
-  "security-engineer",
-  "apple-specialist",
-] as const;
 export const cvLanguages = ["en", "th"] as const satisfies readonly CvLanguage[];
 
 /**
@@ -31,13 +25,9 @@ export type CvSelection = {
   readonly lang: CvLanguage;
 };
 
-export type CvRouteSelection = {
-  readonly role: CvRoleId;
-  readonly lang: CvLanguage;
-};
-
 type SearchParamSource = Record<string, string | string[] | undefined> | URLSearchParams;
 
+/** The one list of roles: `satisfies` makes a role missing here a type error. */
 const roleSlugById = {
   fullstack_engineer: "fullstack-engineer",
   ai_ml_engineer: "ai-ml-engineer",
@@ -45,12 +35,12 @@ const roleSlugById = {
   apple_specialist: "apple-specialist",
 } as const satisfies Record<CvRoleId, string>;
 
-const roleIdBySlug: Readonly<Record<string, CvRoleId | undefined>> = {
-  "fullstack-engineer": "fullstack_engineer",
-  "ai-ml-engineer": "ai_ml_engineer",
-  "security-engineer": "security_engineer",
-  "apple-specialist": "apple_specialist",
-};
+/** Every role's URL slug, in the order above. */
+export const cvRoleSlugs = Object.values(roleSlugById);
+
+const roleIdBySlug: Readonly<Record<string, CvRoleId | undefined>> = Object.fromEntries(
+  Object.entries(roleSlugById).map(([id, slug]) => [slug, id as CvRoleId]),
+);
 
 export function resolveCvSelection(source: SearchParamSource): CvSelection {
   return (
@@ -61,7 +51,7 @@ export function resolveCvSelection(source: SearchParamSource): CvSelection {
   );
 }
 
-export function resolveLegacyCvRouteSelection(source: SearchParamSource): CvRouteSelection {
+export function resolveLegacyCvRouteSelection(source: SearchParamSource): CvSelection {
   const role = getFirstValue(source, "role");
   const lang = getFirstValue(source, "lang");
 

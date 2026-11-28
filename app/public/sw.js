@@ -93,12 +93,17 @@ const isImage = (request, url) =>
   request.destination === "image" ||
   (request.mode !== "navigate" && /\.(png|svg|jpg|jpeg|webp|ico)$/.test(url.pathname));
 
+// A cache write can fail (storage quota, an evicted cache). The visitor already
+// has the network response, so a failed write must not become an unhandled
+// rejection - it only means the next offline visit misses this entry.
+function ignoreCacheWriteError() {}
+
 async function networkFirst(request, cacheName) {
   const cache = await caches.open(cacheName);
 
   try {
     const response = await fetch(request);
-    if (response.ok) cache.put(request, response.clone());
+    if (response.ok) cache.put(request, response.clone()).catch(ignoreCacheWriteError);
     return response;
   } catch {
     const cached = await cache.match(request);
@@ -137,7 +142,7 @@ async function cacheFirst(request, cacheName) {
   if (cached) return cached;
 
   const response = await fetch(request);
-  if (response.ok) cache.put(request, response.clone());
+  if (response.ok) cache.put(request, response.clone()).catch(ignoreCacheWriteError);
   return response;
 }
 
@@ -147,7 +152,7 @@ async function staleWhileRevalidate(request, cacheName) {
 
   const network = fetch(request)
     .then((response) => {
-      if (response.ok) cache.put(request, response.clone());
+      if (response.ok) cache.put(request, response.clone()).catch(ignoreCacheWriteError);
       return response;
     })
     .catch(() => cached);

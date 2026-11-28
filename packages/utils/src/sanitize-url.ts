@@ -23,8 +23,8 @@ export function sanitizeUrl(url: string | undefined): string {
   // "//host" is protocol-relative - a browser resolves it against the
   // current scheme, so it is an external URL wearing an internal-path
   // disguise, not an internal path. Reject it before the "/" case below
-  // would otherwise let it through.
-  if (trimmedUrl.startsWith("//")) {
+  // would otherwise let it through. Browsers read "/\" the same way.
+  if (trimmedUrl.startsWith("//") || trimmedUrl.startsWith("/\\")) {
     return "about:blank";
   }
 

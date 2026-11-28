@@ -24,7 +24,7 @@ export function ButtonLink({
   rel,
   download,
 }: ButtonLinkProps) {
-  const safeHref = href.startsWith("/") ? href : sanitizeUrl(href);
+  const safeHref = sanitizeUrl(href);
   const styles = buttonClassName(variant, className);
 
   // A download must not be intercepted by the client router, so it stays a

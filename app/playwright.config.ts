@@ -163,7 +163,11 @@ export default defineConfig({
       // that the vCard carries a TEL line, and that the digits appear in no rendered
       // HTML. With the variable unset the first half cannot be tested at all, and
       // /card/whatsapp 404s, which links.e2e.ts reports as a broken internal link.
-      env: { CONTACT_PHONE_E164: "+66000000000" },
+      env: {
+        CONTACT_PHONE_E164: "+66000000000",
+        // Freezes the /posts list to POST_FALLBACK so a new post isn't a visual diff.
+        ...(visual ? { POSTS_PIN_TO_FALLBACK: "1" } : {}),
+      },
       reuseExistingServer: !process.env.CI,
       timeout: 180_000,
     },

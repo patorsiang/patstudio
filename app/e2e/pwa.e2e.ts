@@ -335,4 +335,31 @@ test.describe("service worker", () => {
     // serves the wrong role or language to the next visitor.
     expect(cachedExports, `export routes were cached: ${cachedExports.join(", ")}`).toEqual([]);
   });
+
+  test("never caches client-router ?_rsc= fetches", async ({ page }) => {
+    await page.goto("/");
+    await page.evaluate(() => navigator.serviceWorker.ready);
+
+    // The control fetch takes the same path minus the guard. Waiting for it to
+    // land is what makes the absence check below mean something: cache.put is
+    // not awaited, so checking straight away would pass with the guard deleted.
+    await page.evaluate(async () => {
+      await fetch("/about?rsc-control=1");
+      await fetch("/about?_rsc=e2e1");
+    });
+
+    const cachedSearches = () =>
+      page.evaluate(async () => {
+        const found: string[] = [];
+        for (const name of await caches.keys()) {
+          for (const request of await (await caches.open(name)).keys()) {
+            found.push(new URL(request.url).search);
+          }
+        }
+        return found;
+      });
+
+    await expect.poll(cachedSearches).toContain("?rsc-control=1");
+    expect(await cachedSearches()).not.toContain("?_rsc=e2e1");
+  });
 });

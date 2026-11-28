@@ -9,7 +9,7 @@
  * are network-first, so content stays fresh regardless, and waiting avoids
  * swapping content-hashed chunks under a page that is already running.
  */
-const CACHE_VERSION = "v1";
+const CACHE_VERSION = "v2";
 const SHELL_CACHE = `portfolio-shell-${CACHE_VERSION}`;
 const OFFLINE_URL = "/offline";
 
@@ -167,6 +167,10 @@ self.addEventListener("fetch", (event) => {
 
   if (url.origin !== location.origin) return;
   if (isNeverCacheable(url)) return;
+  // Client-router data fetches carry a fresh ?_rsc= key each time, so caching
+  // them adds an entry per navigation forever. Offline, Next falls back to a
+  // full page load, which the cached documents already cover.
+  if (url.searchParams.has("_rsc")) return;
 
   if (isImmutableAsset(url)) {
     event.respondWith(cacheFirst(request, ASSET_CACHE));
